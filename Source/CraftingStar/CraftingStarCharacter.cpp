@@ -3,7 +3,9 @@
 #include "CraftingStarCharacter.h"
 #include "CraftingStarPC.h"
 #include "CraftingStarPS.h"
+#include "CraftingStarGS.h"
 #include "CustomEnum.h"
+#include "UtilityFunction.h"
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -53,6 +55,11 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 	
 	PaletteWidgetRef = NULL;
 	PaletteCnt = 0.0f;
+
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	PrimaryActorTick.bCanEverTick = true;
+
+
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -61,10 +68,9 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 void ACraftingStarCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	
 	//GameWB 생성
 	CreateWidget(GetWorld(), GameWidget)->AddToViewport();
-
-	//플레이어 스테이트가 생성되는데는 1~2초정도 걸린다
 }
 
 
@@ -104,6 +110,33 @@ void ACraftingStarCharacter::SetupPlayerInputComponent(class UInputComponent* Pl
 	PlayerInputComponent->BindAction("Interaction", IE_Pressed, this, &ACraftingStarCharacter::Interaction);
 }
 
+
+void ACraftingStarCharacter::Tick(float DeltaTime)
+{
+	//일정 프레임마다 현재 능력 데이터 서버쪽에 업데이트
+	Super::Tick(DeltaTime);
+
+}
+
+void ACraftingStarCharacter::UpdatePlayerAbility(EPlayerAbility playerAbility) {
+
+	auto playerState = Cast<ACraftingStarPS>(GetPlayerState());
+
+	if (playerState != nullptr)
+		playerState->RequestPlayerAbility(playerAbility);
+	  
+}
+
+void ACraftingStarCharacter::UpdatePlayerGMState(EPlayerGMState playerGMState) {
+
+	auto playerState = Cast<ACraftingStarPS>(GetPlayerState());
+
+	if (playerState != nullptr)
+		playerState->RequestPlayerGMState(playerGMState);
+
+}
+
+
 void ACraftingStarCharacter::Palette() {
 	//타이머 실행 (0.1초당 1회씩 함수 호출)
 	GetWorldTimerManager().SetTimer(HoldTimerHandle, this, &ACraftingStarCharacter::RepeatingFunction, 0.1f, true);
@@ -119,12 +152,15 @@ void ACraftingStarCharacter::StopPalette() {
 	//만약 능력 준비고 팔레트가 생성되지 않았으면
 	if (PaletteWidgetRef == NULL && Cast<ACraftingStarPS>(GetPlayerState())->NowState == EPlayerGMState::EAbilityReady) {
 		//기본상태로 돌아가고 바로 종료
-		Cast<ACraftingStarPS>(GetPlayerState())->NowState = EPlayerGMState::EIdle;
+		auto controller = GetController();
+		UpdatePlayerGMState(EPlayerGMState::EIdle);
+		//Cast<ACraftingStarPS>(GetPlayerState())->NowState = EPlayerGMState::EIdle;
+		
 		return;
 	}
 
 	//상태 능력 준비모드로 전환
-	if (Cast<ACraftingStarPS>(GetPlayerState())->NowAbility != EPlayerAbility::ENone) Cast<ACraftingStarPS>(GetPlayerState())->NowState = EPlayerGMState::EAbilityReady;
+	if (Cast<ACraftingStarPS>(GetPlayerState())->NowAbility != EPlayerAbility::ENone) UpdatePlayerGMState(EPlayerGMState::EAbilityReady);
 
 	//만약 팔레트 UI가 생성됐다면 
 	if (PaletteWidgetRef != NULL) {
@@ -141,8 +177,8 @@ void ACraftingStarCharacter::StopPalette() {
 void ACraftingStarCharacter::RepeatingFunction() {
 	
 	//UE_LOG(LogTemp, Log, TEXT("GetTimeElapsed : %f"), PaletteCnt);
-	if (PaletteCnt >= 0.5f) {
-		//0.5초 이상 홀드하면 팔레트 생성
+	if (PaletteCnt >= 0.2f) {
+		//0.2초 이상 홀드하면 팔레트 생성
 		PaletteCnt = 0.0f;
 		GetWorldTimerManager().ClearTimer(HoldTimerHandle);		
 		PaletteWidgetRef = CreateWidget(GetWorld(), PaletteWidget);
@@ -178,19 +214,20 @@ void ACraftingStarCharacter::Interaction() {
 }
 
 void  ACraftingStarCharacter::SetPause(bool isPaused) {
-	if (isPaused) {
-		//키보드 입력 정지 & 마우스 포인터 활성화
-		Cast<ACraftingStarPC>(GetController())->SetInputMode(FInputModeGameAndUI());
-		DisableInput(Cast<ACraftingStarPC>(GetController()));
-		Cast<ACraftingStarPC>(GetController())->SetShowMouseCursor(true);
+	if (Cast<ACraftingStarPC>(GetController()) != nullptr) {
+		if (isPaused) {
+			//키보드 입력 정지 & 마우스 포인터 활성화
+			Cast<ACraftingStarPC>(GetController())->SetInputMode(FInputModeGameAndUI());
+			DisableInput(Cast<ACraftingStarPC>(GetController()));
+			Cast<ACraftingStarPC>(GetController())->SetShowMouseCursor(true);
+		}
+		else {
+			//키보드 입력 가능 & 마우스 포인터 비활성화
+			Cast<ACraftingStarPC>(GetController())->SetInputMode(FInputModeGameOnly());
+			EnableInput(Cast<ACraftingStarPC>(GetController()));
+			Cast<ACraftingStarPC>(GetController())->SetShowMouseCursor(false);
+		}
 	}
-	else {
-		//키보드 입력 가능 & 마우스 포인터 비활성화
-		Cast<ACraftingStarPC>(GetController())->SetInputMode(FInputModeGameOnly());
-		EnableInput(Cast<ACraftingStarPC>(GetController()));
-		Cast<ACraftingStarPC>(GetController())->SetShowMouseCursor(false);
-	}
-
 }
 
 void ACraftingStarCharacter::OnResetVR()

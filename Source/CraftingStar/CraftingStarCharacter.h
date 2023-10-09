@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Blueprint/UserWidget.h"
+#include "CustomEnum.h"
 #include "CraftingStarCharacter.generated.h"
 
 
@@ -31,6 +32,7 @@ class ACraftingStarCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = UI, meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UUserWidget> GameWidget;
 
+
 	//팔레트
 	class UUserWidget* PaletteWidgetRef;
 	FTimerHandle HoldTimerHandle;
@@ -50,9 +52,16 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseLookUpRate;
 
+	
+
+
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
 
 	/** Resets HMD orientation in VR. */
 	void OnResetVR();
@@ -112,5 +121,11 @@ public:
 	//월드맵도 마찬가지
 	UFUNCTION(BlueprintCallable)
 	void StopWorldMap();
+
+	//게임 데이터 업데이트
+	UFUNCTION(BlueprintCallable)
+		void UpdatePlayerAbility(EPlayerAbility playerAbility);
+	UFUNCTION(BlueprintCallable)
+		void UpdatePlayerGMState(EPlayerGMState playerGMState);
 };
 

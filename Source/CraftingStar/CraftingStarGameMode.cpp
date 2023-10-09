@@ -12,6 +12,24 @@ ACraftingStarGameMode::ACraftingStarGameMode()
 	if (PlayerPawnBPClass.Class != NULL)
 	{
 		DefaultPawnClass = PlayerPawnBPClass.Class;
+		CharClass = PlayerPawnBPClass.Class;
 	}
+
+	SpawnLoc = FVector(165.f, 0.f, 124.f);
+	SpawnRot = FRotator(0.f, 0.f, 0.f);
+}
+
+void ACraftingStarGameMode::PostLogin(APlayerController* newPlayer)
+{
+	Super::PostLogin(newPlayer);
+
+	/*
+	if (ACraftingStarCharacter* Character = GetWorld()->SpawnActor<ACraftingStarCharacter>(CharClass,SpawnLoc,SpawnRot)) {
+		if (ACraftingStarPC* Controller = Cast<ACraftingStarPC>(newPlayer))
+		{
+			Controller->Possess(Character);
+		}
+	} */
+	
 }
 

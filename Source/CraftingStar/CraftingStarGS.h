@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameState.h"
+#include "CustomEnum.h"
 #include "CustomStruct.h"
 #include "CraftingStarGS.generated.h"
 
@@ -17,4 +18,5 @@ class CRAFTINGSTAR_API ACraftingStarGS : public AGameState
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FProgressData ProgressData;
+	
 };
