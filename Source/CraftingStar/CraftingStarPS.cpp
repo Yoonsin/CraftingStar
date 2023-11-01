@@ -6,10 +6,11 @@
 #include "UtilityFunction.h"
 #include "Net/UnrealNetwork.h"
 #include "Kismet/GameplayStatics.h"
+#include "CraftingStarCharacter.h"
 
 ACraftingStarPS::ACraftingStarPS()
 {
-
+	//bReplicates = true;
 }
 
 void ACraftingStarPS::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
@@ -18,19 +19,25 @@ void ACraftingStarPS::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& Ou
 	DOREPLIFETIME(ACraftingStarPS, NowAbility);
 	DOREPLIFETIME(ACraftingStarPS, NowState);
 	DOREPLIFETIME(ACraftingStarPS, Health);
+	DOREPLIFETIME(ACraftingStarPS, PlayerData);
 }
 
 // Called when the game starts or when spawned
 void ACraftingStarPS::BeginPlay()
 {
 	Super::BeginPlay();
+
+	//this->SetReplicates(true);
+	//bAlwaysRelevant = true;
+
 	PlayerData.Mode = EPlayerRole::EDark;
 	PlayerData.PlayerName = FString("DefalultName");
 	
-	//false·Î ÇÏ¸é ÆÈ·¹Æ® ´É·Â ÀüºÎ ¸·È÷µµ·Ï ¼³Á¤
-	PlayerData.AbleAbility.Init(true, (int)EPlayerAbility::ENone+1);
+	//ì›ë˜ëŠ” ì „ë¶€ falseì´ì§€ë§Œ ë””ë²„ê·¸ë¥¼ ìœ„í•´ ì„œë²„ë¡œ ë°”ê¿”ì¤Œ
+	//PlayerData.AbleAbility.Init(false, (int)EPlayerAbility::ENone+1);
 	
-	//¿ì¼± »çÃâ°ú ¿°µ¿·Â ´É·Â¸¸ °¡´ÉÇÏµµ·Ï ¼³Á¤
+	
+	//ï¿½ì¼± ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½É·Â¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ïµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	//PlayerData.AbleAbility[(int)EPlayerAbility::EBlast] = true;
 	//PlayerData.AbleAbility[(int)EPlayerAbility::ETelekinesis] = true;
 
@@ -53,4 +60,36 @@ void ACraftingStarPS::RequestHealth_Implementation(float Damage)
 	else Health -= Damage;
 
 }
+
+void ACraftingStarPS::RequestSave_Implementation()
+{
+	
+	if (UUtilityFunction::IsHost(Cast<AController>(GetOwner())))
+	{
+		//í˜¸ìŠ¤íŠ¸
+		//ìºë¦­í„° ìœ„ì¹˜ ì—…ë°ì´íŠ¸
+		ACraftingStarGS* CraftingStarGS = Cast<ACraftingStarGS>(UGameplayStatics::GetGameState(this));
+		ACraftingStarCharacter* CraftingStarCharacter = Cast<ACraftingStarCharacter>(Cast<AController>(GetOwner())->GetPawn());
+		CraftingStarGS->ProgressData.HostPlayerPos = CraftingStarCharacter->GetTransform();
+	}
+	else {
+		//ê²ŒìŠ¤íŠ¸
+		
+		//ì„œë²„í•œí…Œ ë°ì´í„° ì—…ë°ì´íŠ¸ ìš”ì²­
+		RequestClientUpdate(PlayerData);
+	}
+}
+
+void ACraftingStarPS::RequestClientUpdate_Implementation(FPlayerData playerData)
+{
+	//ìºë¦­í„° ìœ„ì¹˜ ì—…ë°ì´íŠ¸
+	ACraftingStarGS* CraftingStarGS = Cast<ACraftingStarGS>(UGameplayStatics::GetGameState(this));
+	ACraftingStarCharacter* CraftingStarCharacter = Cast<ACraftingStarCharacter>(Cast<AController>(GetOwner())->GetPawn());
+	CraftingStarGS->ProgressData.GuestPlayerPos = CraftingStarCharacter->GetTransform();
+
+	//PS ì—…ë°ì´íŠ¸
+	PlayerData = playerData;
+}
+
+
 

@@ -27,7 +27,7 @@ public:
 
 };
 
-//ÇÃ·¹ÀÌ¾î ´É·Â Á¤º¸
+//ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½É·ï¿½ ï¿½ï¿½ï¿½ï¿½
 USTRUCT(Atomic, BlueprintType)
 struct FAbilityStruct
 {
@@ -41,7 +41,7 @@ public:
 		EPlayerAbility Ability;
 };
 
-//ÇÃ·¹ÀÌ¾î µ¥ÀÌÅÍ
+//ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 USTRUCT(Atomic, BlueprintType)
 struct FPlayerData
 {
@@ -55,7 +55,7 @@ public:
 		TArray<bool> AbleAbility;
 };
 
-//ÁøÇàµµ µ¥ÀÌÅÍ
+//ï¿½ï¿½ï¿½àµµ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 USTRUCT(Atomic, BlueprintType)
 struct FProgressData
 {

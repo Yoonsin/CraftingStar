@@ -33,12 +33,12 @@ class ACraftingStarCharacter : public ACharacter
 	TSubclassOf<UUserWidget> GameWidget;
 
 
-	//ÆÈ·¹Æ®
+	//ï¿½È·ï¿½Æ®
 	class UUserWidget* PaletteWidgetRef;
 	FTimerHandle HoldTimerHandle;
 	float PaletteCnt;
 
-	//¿ùµå¸Ê
+	//ï¿½ï¿½ï¿½ï¿½ï¿½
 	class UUserWidget* WorldMapWidgetRef;
 
 public:
@@ -90,17 +90,17 @@ protected:
 	/** Handler for when a touch input stops. */
 	void TouchStopped(ETouchIndex::Type FingerIndex, FVector Location);
 
-	//ÆÈ·¹Æ®
+	//ï¿½È·ï¿½Æ®
 	void Palette(); 
 	void RepeatingFunction();
 
-	//¿ùµå¸Ê
+	//ï¿½ï¿½ï¿½ï¿½ï¿½
 	void WorldMap();
 
-	//»óÈ£ÀÛ¿ë
+	//ï¿½ï¿½È£ï¿½Û¿ï¿½
 	void Interaction();
 
-	//ÀÔ·Â ÀÏ½ÃÁ¤Áö
+	//ï¿½Ô·ï¿½ ï¿½Ï½ï¿½ï¿½ï¿½ï¿½ï¿½
 	void SetPause(bool isPaused);
 
 protected:
@@ -114,15 +114,15 @@ public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
-	//ÆÈ·¹Æ® À§Á¬ ºí·çÇÁ¸°Æ®¿¡ È£ÃâÇØ¾ßÇØ¼­ Public + BlueprintCallable ¼³Á¤ 
+	//ï¿½È·ï¿½Æ® ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ È£ï¿½ï¿½ï¿½Ø¾ï¿½ï¿½Ø¼ï¿½ Public + BlueprintCallable ï¿½ï¿½ï¿½ï¿½ 
 	UFUNCTION(BlueprintCallable)
 	void StopPalette();
 
-	//¿ùµå¸Êµµ ¸¶Âù°¡Áö
+	//ï¿½ï¿½ï¿½ï¿½Êµï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	UFUNCTION(BlueprintCallable)
 	void StopWorldMap();
 
-	//°ÔÀÓ µ¥ÀÌÅÍ ¾÷µ¥ÀÌÆ®
+	//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
 	UFUNCTION(BlueprintCallable)
 		void UpdatePlayerAbility(EPlayerAbility playerAbility);
 	UFUNCTION(BlueprintCallable)

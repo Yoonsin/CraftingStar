@@ -25,7 +25,7 @@ public:
 
 };
 
-//ÇÃ·¹ÀÌ¾î ´É·Â
+//ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½É·ï¿½
 UENUM(BlueprintType)
 enum class EPlayerAbility : uint8
 {
@@ -37,7 +37,7 @@ enum class EPlayerAbility : uint8
 
 };
 
-//ÇÃ·¹ÀÌ¾î »óÅÂ 
+//ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ï¿½ 
 UENUM(BlueprintType)
 enum class EPlayerGMState : uint8
 {
@@ -49,7 +49,7 @@ enum class EPlayerGMState : uint8
 	EInteraction UMETA(DisplayNmae = "Interaction"),
 };
 
-//ÇÃ·¹ÀÌ¾î ¿ªÇÒ
+//ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ï¿½
 UENUM(BlueprintType)
 enum class EPlayerRole : uint8
 {
@@ -58,7 +58,7 @@ enum class EPlayerRole : uint8
 };
 
 
-//¸Ê ÀÌ¸§
+//ï¿½ï¿½ ï¿½Ì¸ï¿½
 UENUM(BlueprintType)
 enum class EMapName : uint8
 {

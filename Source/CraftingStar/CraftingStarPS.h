@@ -22,13 +22,17 @@ protected:
 public:
 	ACraftingStarPS();
 
-	//Å¬¶óÀÌ¾ðÆ®->¼­¹ö / ÇöÀç NowAbility¸¦ ¼­¹öÂÊ¿¡ ¾Ë·ÁÁÖ´Â ÇÔ¼ö
+	//Å¬ï¿½ï¿½ï¿½Ì¾ï¿½Æ®->ï¿½ï¿½ï¿½ï¿½ / ï¿½ï¿½ï¿½ï¿½ NowAbilityï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ê¿ï¿½ ï¿½Ë·ï¿½ï¿½Ö´ï¿½ ï¿½Ô¼ï¿½
 	UFUNCTION(BlueprintCallable, Server, Reliable)
 		void RequestPlayerAbility(EPlayerAbility playerAbility);
 	UFUNCTION(BlueprintCallable, Server, Reliable)
 		void RequestPlayerGMState(EPlayerGMState playerGmState);
 	UFUNCTION(BlueprintCallable, Server, Reliable)
 		void RequestHealth(float Damage);
+	UFUNCTION(BlueprintCallable, NetMulticast, Reliable)
+		void RequestSave();
+	UFUNCTION(BlueprintCallable, Server, Reliable)
+		void RequestClientUpdate(FPlayerData playerData);
 
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
 	  EPlayerAbility NowAbility = EPlayerAbility::ENone;

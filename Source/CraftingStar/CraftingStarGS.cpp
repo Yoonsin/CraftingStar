@@ -3,3 +3,10 @@
 #include "Net/UnrealNetwork.h"
 #include "CraftingStarGS.h"
 
+
+void ACraftingStarGS::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(ACraftingStarGS, ProgressData);
+
+}

@@ -3,7 +3,11 @@
 #include "CraftingStarGameMode.h"
 #include "CraftingStarCharacter.h"
 #include "CraftingStarPC.h"
+#include "CraftingStarGS.h"
+#include "Misc/OutputDeviceNull.h"
+#include "Kismet/GameplayStatics.h"
 #include "UObject/ConstructorHelpers.h"
+#include "Engine/Engine.h" 
 
 ACraftingStarGameMode::ACraftingStarGameMode()
 {
@@ -23,13 +27,57 @@ void ACraftingStarGameMode::PostLogin(APlayerController* newPlayer)
 {
 	Super::PostLogin(newPlayer);
 
-	/*
-	if (ACraftingStarCharacter* Character = GetWorld()->SpawnActor<ACraftingStarCharacter>(CharClass,SpawnLoc,SpawnRot)) {
-		if (ACraftingStarPC* Controller = Cast<ACraftingStarPC>(newPlayer))
-		{
-			Controller->Possess(Character);
+	ACraftingStarGS* CraftingStarGS = Cast<ACraftingStarGS>(UGameplayStatics::GetGameState(this));
+	if (CraftingStarGS != nullptr) {
+		if (CraftingStarGS->PlayerArray.Num() == 2) {
+
+			//3초 딜레이 후 로드(바로 로드하면 PlayerState가 생성되지 않을 수도 있음)
+			FTimerHandle DelayTimerHandle;
+			float DelayTime = 3.0f;
+
+			GetWorld()->GetTimerManager().SetTimer(DelayTimerHandle, FTimerDelegate::CreateLambda([&]()
+				{
+					//블루프린트 함수를 C++로 호출해야함
+					auto GameInstance = UGameplayStatics::GetGameInstance(GetWorld());
+					UFunction* Function = GameInstance->GetClass()->FindFunctionByName(FName("Load"));
+
+
+					if (Function == nullptr)
+					{
+						return;
+					}
+
+					struct FLocalParameters{};
+					FLocalParameters Parameter;
+
+					GameInstance->ProcessEvent(Function,&Parameter);
+
+
+					// TimerHandle 초기화
+					GetWorld()->GetTimerManager().ClearTimer(DelayTimerHandle);
+				}), DelayTime, false);
+			
 		}
-	} */
-	
+	}
+}
+
+void  ACraftingStarGameMode::InitGame()
+{
+	switch (NowMapName)
+	{
+	case EMapName::EWorldMap:
+		break;
+	case EMapName::EKeyStar:		
+		if (ProgressLevel == 0) {
+			//튜토리얼 시작
+			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("Tutorial Start")));
+		}
+		else if (ProgressLevel == 1) {
+
+		}
+		break;
+	default:
+		break;
+	}
 }
 

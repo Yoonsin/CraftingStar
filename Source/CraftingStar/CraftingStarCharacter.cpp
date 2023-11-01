@@ -69,7 +69,7 @@ void ACraftingStarCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	//GameWB »ý¼º
+	//GameWB     
 	CreateWidget(GetWorld(), GameWidget)->AddToViewport();
 }
 
@@ -99,21 +99,21 @@ void ACraftingStarCharacter::SetupPlayerInputComponent(class UInputComponent* Pl
 	// VR headset functionality
 	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &ACraftingStarCharacter::OnResetVR);
 
-	//ÆÈ·¹Æ®
+	// È· Æ®
 	PlayerInputComponent->BindAction("Palette", IE_Pressed, this, &ACraftingStarCharacter::Palette);
 	PlayerInputComponent->BindAction("Palette", IE_Released, this, &ACraftingStarCharacter::StopPalette);
-	//¿ùµå¸Ê
+	//     
 	PlayerInputComponent->BindAction("WorldMap", IE_Pressed, this, &ACraftingStarCharacter::WorldMap);
 	PlayerInputComponent->BindAction("WorldMap", IE_Released, this, &ACraftingStarCharacter::StopWorldMap);
 
-	//»óÈ£ÀÛ¿ë
+	//  È£ Û¿ 
 	PlayerInputComponent->BindAction("Interaction", IE_Pressed, this, &ACraftingStarCharacter::Interaction);
 }
 
 
 void ACraftingStarCharacter::Tick(float DeltaTime)
 {
-	//ÀÏÁ¤ ÇÁ·¹ÀÓ¸¶´Ù ÇöÀç ´É·Â µ¥ÀÌÅÍ ¼­¹öÂÊ¿¡ ¾÷µ¥ÀÌÆ®
+	//          Ó¸          É·              Ê¿        Æ®
 	Super::Tick(DeltaTime);
 
 }
@@ -138,20 +138,20 @@ void ACraftingStarCharacter::UpdatePlayerGMState(EPlayerGMState playerGMState) {
 
 
 void ACraftingStarCharacter::Palette() {
-	//Å¸ÀÌ¸Ó ½ÇÇà (0.1ÃÊ´ç 1È¸¾¿ ÇÔ¼ö È£Ãâ)
+	//Å¸ Ì¸       (0.1 Ê´  1È¸    Ô¼  È£  )
 	GetWorldTimerManager().SetTimer(HoldTimerHandle, this, &ACraftingStarCharacter::RepeatingFunction, 0.1f, true);
 }
 
 void ACraftingStarCharacter::StopPalette() {
-	//¸¸¾à ¾ÆÁ÷ Å¸ÀÌ¸Ó°¡ À¯È¿ÇÏ¸é Å¸ÀÌ¸Ó ¸®¼Â
+	//          Å¸ Ì¸Ó°    È¿ Ï¸  Å¸ Ì¸      
 	if (GetWorldTimerManager().IsTimerActive(HoldTimerHandle)) {
 		GetWorldTimerManager().ClearTimer(HoldTimerHandle);
 		PaletteCnt = 0.0f;
 	}
 
-	//¸¸¾à ´É·Â ÁØºñ°í ÆÈ·¹Æ®°¡ »ý¼ºµÇÁö ¾Ê¾ÒÀ¸¸é
-	if (PaletteWidgetRef == NULL && Cast<ACraftingStarPS>(GetPlayerState())->NowState == EPlayerGMState::EAbilityReady) {
-		//±âº»»óÅÂ·Î µ¹¾Æ°¡°í ¹Ù·Î Á¾·á
+	//      É·   Øº    È· Æ®             Ê¾     
+	if (PaletteWidgetRef == NULL && GetPlayerState() != nullptr && Cast<ACraftingStarPS>(GetPlayerState())->NowState == EPlayerGMState::EAbilityReady) {
+		// âº»   Â·     Æ°     Ù·      
 		auto controller = GetController();
 		UpdatePlayerGMState(EPlayerGMState::EIdle);
 		//Cast<ACraftingStarPS>(GetPlayerState())->NowState = EPlayerGMState::EIdle;
@@ -159,16 +159,16 @@ void ACraftingStarCharacter::StopPalette() {
 		return;
 	}
 
-	//»óÅÂ ´É·Â ÁØºñ¸ðµå·Î ÀüÈ¯
-	if (Cast<ACraftingStarPS>(GetPlayerState())->NowAbility != EPlayerAbility::ENone) UpdatePlayerGMState(EPlayerGMState::EAbilityReady);
+	//      É·   Øº       È¯
+	if (GetPlayerState() != nullptr && Cast<ACraftingStarPS>(GetPlayerState())->NowAbility != EPlayerAbility::ENone) UpdatePlayerGMState(EPlayerGMState::EAbilityReady);
 
-	//¸¸¾à ÆÈ·¹Æ® UI°¡ »ý¼ºµÆ´Ù¸é 
+	//      È· Æ® UI        Æ´Ù¸  
 	if (PaletteWidgetRef != NULL) {
-		//ÆÈ·¹Æ® »èÁ¦
+		// È· Æ®     
 		PaletteWidgetRef->RemoveFromParent();
 		PaletteWidgetRef = NULL;
 
-		//Å°º¸µå ÀÔ·Â °¡´É & ¸¶¿ì½º Æ÷ÀÎÅÍ ºñÈ°¼ºÈ­
+		//Å°      Ô·       &    ì½º          È°  È­
 		SetPause(false);
 	}
 
@@ -178,31 +178,31 @@ void ACraftingStarCharacter::RepeatingFunction() {
 	
 	//UE_LOG(LogTemp, Log, TEXT("GetTimeElapsed : %f"), PaletteCnt);
 	if (PaletteCnt >= 0.2f) {
-		//0.2ÃÊ ÀÌ»ó È¦µåÇÏ¸é ÆÈ·¹Æ® »ý¼º
+		//0.2    Ì»  È¦   Ï¸   È· Æ®     
 		PaletteCnt = 0.0f;
 		GetWorldTimerManager().ClearTimer(HoldTimerHandle);		
 		PaletteWidgetRef = CreateWidget(GetWorld(), PaletteWidget);
 		PaletteWidgetRef->AddToViewport();
+		
 
-		//Å°º¸µå ÀÔ·Â Á¤Áö & ¸¶¿ì½º Æ÷ÀÎÅÍ È°¼ºÈ­
+		//Å°      Ô·       &    ì½º        È°  È­
 		SetPause(true);
-
 		return;
 	}
 	PaletteCnt += 0.1f;
 }
 
 void ACraftingStarCharacter::WorldMap() {
-	//¿ùµå¸Ê »ý¼º
+	//          
 	WorldMapWidgetRef = CreateWidget(GetWorld(), WorldMapWidget);
 	WorldMapWidgetRef->AddToViewport();
 	SetPause(true);
 }
 
 void ACraftingStarCharacter::StopWorldMap() {
-	//¸¸¾à ÆÈ·¹Æ® UI°¡ »ý¼ºµÆ´Ù¸é 
+	//      È· Æ® UI        Æ´Ù¸  
 	if (WorldMapWidgetRef != NULL) {
-		//ÆÈ·¹Æ® »èÁ¦
+		// È· Æ®     
 		WorldMapWidgetRef->RemoveFromParent();
 		WorldMapWidgetRef = NULL;
 		SetPause(false);
@@ -216,13 +216,13 @@ void ACraftingStarCharacter::Interaction() {
 void  ACraftingStarCharacter::SetPause(bool isPaused) {
 	if (Cast<ACraftingStarPC>(GetController()) != nullptr) {
 		if (isPaused) {
-			//Å°º¸µå ÀÔ·Â Á¤Áö & ¸¶¿ì½º Æ÷ÀÎÅÍ È°¼ºÈ­
+			//Å°      Ô·       &    ì½º        È°  È­
 			Cast<ACraftingStarPC>(GetController())->SetInputMode(FInputModeGameAndUI());
 			DisableInput(Cast<ACraftingStarPC>(GetController()));
 			Cast<ACraftingStarPC>(GetController())->SetShowMouseCursor(true);
 		}
 		else {
-			//Å°º¸µå ÀÔ·Â °¡´É & ¸¶¿ì½º Æ÷ÀÎÅÍ ºñÈ°¼ºÈ­
+			//Å°      Ô·       &    ì½º          È°  È­
 			Cast<ACraftingStarPC>(GetController())->SetInputMode(FInputModeGameOnly());
 			EnableInput(Cast<ACraftingStarPC>(GetController()));
 			Cast<ACraftingStarPC>(GetController())->SetShowMouseCursor(false);
