@@ -106,6 +106,9 @@ void ACraftingStarCharacter::SetupPlayerInputComponent(class UInputComponent* Pl
 	PlayerInputComponent->BindAction("WorldMap", IE_Pressed, this, &ACraftingStarCharacter::WorldMap);
 	PlayerInputComponent->BindAction("WorldMap", IE_Released, this, &ACraftingStarCharacter::StopWorldMap);
 
+	PlayerInputComponent->BindAction("SystemMenu", IE_Pressed, this, &ACraftingStarCharacter::SystemMenu);
+	PlayerInputComponent->BindAction("SystemMenu", IE_Released, this, &ACraftingStarCharacter::StopSystemMenu);
+
 	//  ȣ ۿ 
 	PlayerInputComponent->BindAction("Interaction", IE_Pressed, this, &ACraftingStarCharacter::Interaction);
 }
@@ -122,8 +125,11 @@ void ACraftingStarCharacter::UpdatePlayerAbility(EPlayerAbility playerAbility) {
 
 	auto playerState = Cast<ACraftingStarPS>(GetPlayerState());
 
-	if (playerState != nullptr)
+	if (playerState != nullptr) {
+		playerState->NowAbility = playerAbility;
 		playerState->RequestPlayerAbility(playerAbility);
+	}
+		
 	  
 }
 
@@ -131,15 +137,18 @@ void ACraftingStarCharacter::UpdatePlayerGMState(EPlayerGMState playerGMState) {
 
 	auto playerState = Cast<ACraftingStarPS>(GetPlayerState());
 
-	if (playerState != nullptr)
+	if (playerState != nullptr) {
+		playerState->NowState = playerGMState;
 		playerState->RequestPlayerGMState(playerGMState);
+	}
+		
 
 }
 
 
 void ACraftingStarCharacter::Palette() {
 	//Ÿ ̸       (0.1 ʴ  1ȸ    Լ  ȣ  )
-	GetWorldTimerManager().SetTimer(HoldTimerHandle, this, &ACraftingStarCharacter::RepeatingFunction, 0.1f, true);
+	GetWorldTimerManager().SetTimer(HoldTimerHandle, this, &ACraftingStarCharacter::RepeatingFunction, 0.01f, true);
 }
 
 void ACraftingStarCharacter::StopPalette() {
@@ -177,26 +186,30 @@ void ACraftingStarCharacter::StopPalette() {
 void ACraftingStarCharacter::RepeatingFunction() {
 	
 	//UE_LOG(LogTemp, Log, TEXT("GetTimeElapsed : %f"), PaletteCnt);
-	if (PaletteCnt >= 0.2f) {
+	if (PaletteCnt >= 0.05f) {
 		//0.2    ̻  Ȧ   ϸ   ȷ Ʈ     
 		PaletteCnt = 0.0f;
 		GetWorldTimerManager().ClearTimer(HoldTimerHandle);		
-		PaletteWidgetRef = CreateWidget(GetWorld(), PaletteWidget);
-		PaletteWidgetRef->AddToViewport();
-		
 
+		if (PaletteWidgetRef == NULL) {
+			PaletteWidgetRef = CreateWidget(GetWorld(), PaletteWidget);
+			PaletteWidgetRef->AddToViewport();
+		}
+		
 		//Ű      Է       &    콺        Ȱ  ȭ
 		SetPause(true);
 		return;
 	}
-	PaletteCnt += 0.1f;
+	PaletteCnt += 0.01f;
 }
 
 void ACraftingStarCharacter::WorldMap() {
-	//          
-	WorldMapWidgetRef = CreateWidget(GetWorld(), WorldMapWidget);
-	WorldMapWidgetRef->AddToViewport();
-	SetPause(true);
+	if (WorldMapWidgetRef == NULL) {
+		WorldMapWidgetRef = CreateWidget(GetWorld(), WorldMapWidget);
+		WorldMapWidgetRef->AddToViewport();
+		SetPause(true);
+	}
+	
 }
 
 void ACraftingStarCharacter::StopWorldMap() {
@@ -208,6 +221,24 @@ void ACraftingStarCharacter::StopWorldMap() {
 		SetPause(false);
 	}
 }
+
+void ACraftingStarCharacter::SystemMenu() {
+	if (SystemMenuWidgetRef == NULL) {
+		SystemMenuWidgetRef = CreateWidget(GetWorld(), SystemMenuWidget);
+		SystemMenuWidgetRef->AddToViewport();
+		SetPause(true);
+	}
+}
+
+void ACraftingStarCharacter::StopSystemMenu() {
+	if (SystemMenuWidgetRef != NULL) {
+		// ȷ Ʈ     
+		SystemMenuWidgetRef->RemoveFromParent();
+		SystemMenuWidgetRef = NULL;
+		SetPause(false);
+	}
+}
+
 
 void ACraftingStarCharacter::Interaction() {
 

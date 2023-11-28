@@ -25,6 +25,8 @@ public:
 
 private:
 	virtual void PostLogin(APlayerController* newPlayer) override;
+	virtual void Logout(AController* Exiting) override;
+
 	TSubclassOf<ACraftingStarCharacter> CharClass;
 
 	FVector SpawnLoc;

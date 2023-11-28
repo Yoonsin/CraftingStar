@@ -8,6 +8,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Engine/Engine.h" 
+#include "UtilityFunction.h"
 
 ACraftingStarGameMode::ACraftingStarGameMode()
 {
@@ -79,5 +80,19 @@ void  ACraftingStarGameMode::InitGame()
 	default:
 		break;
 	}
+}
+
+void  ACraftingStarGameMode::Logout(AController* Exiting)
+{
+	Super::Logout(Exiting);
+
+	//게임 종료시 누가 나갔는지 확인
+	if (UUtilityFunction::IsHost(Exiting)) {
+		UE_LOG(LogTemp, Log, TEXT("Host Logout"));
+	}
+	else {
+		UE_LOG(LogTemp, Log, TEXT("Guest Logout"));
+	}
+	
 }
 

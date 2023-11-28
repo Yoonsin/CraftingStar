@@ -32,6 +32,9 @@ class ACraftingStarCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = UI, meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UUserWidget> GameWidget;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = UI, meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UUserWidget> SystemMenuWidget;
+
 
 	//�ȷ�Ʈ
 	class UUserWidget* PaletteWidgetRef;
@@ -40,6 +43,7 @@ class ACraftingStarCharacter : public ACharacter
 
 	//�����
 	class UUserWidget* WorldMapWidgetRef;
+	class UUserWidget* SystemMenuWidgetRef;
 
 public:
 	ACraftingStarCharacter();
@@ -96,6 +100,7 @@ protected:
 
 	//�����
 	void WorldMap();
+	void SystemMenu();
 
 	//��ȣ�ۿ�
 	void Interaction();
@@ -121,6 +126,9 @@ public:
 	//����ʵ� ��������
 	UFUNCTION(BlueprintCallable)
 	void StopWorldMap();
+
+	UFUNCTION(BlueprintCallable)
+	void StopSystemMenu();
 
 	//���� ������ ������Ʈ
 	UFUNCTION(BlueprintCallable)
