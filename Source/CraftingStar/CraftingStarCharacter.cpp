@@ -108,6 +108,10 @@ void ACraftingStarCharacter::SetupPlayerInputComponent(class UInputComponent* Pl
 
 	//  ȣ ۿ 
 	PlayerInputComponent->BindAction("Interaction", IE_Pressed, this, &ACraftingStarCharacter::Interaction);
+
+	// for using Ability. key: E.
+	PlayerInputComponent->BindAction("Ability", IE_Pressed, this, &ACraftingStarCharacter::ActivateAbility);
+	PlayerInputComponent->BindAction("Ability", IE_Released, this, &ACraftingStarCharacter::DeactivateAbility);
 }
 
 
@@ -211,6 +215,44 @@ void ACraftingStarCharacter::StopWorldMap() {
 
 void ACraftingStarCharacter::Interaction() {
 
+}
+
+// Input Ability
+void ACraftingStarCharacter::ActivateAbility() {
+	if (AbilityMontage) {
+		// Play Animation
+		bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(AbilityMontage);
+		if (!bIsMontagePlaying) {
+			GetMesh()->GetAnimInstance()->Montage_Play(AbilityMontage, 1.0f);
+		}
+		// Activate Ability
+		EPlayerAbility nowAbility = Cast<ACraftingStarPS>(GetPlayerState())->NowAbility;
+		if (nowAbility != EPlayerAbility::ENone) {
+			// Laser(EBlast)
+			if (nowAbility == EPlayerAbility::EBlast) {
+				// 테스트
+				GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Activate Laser"));
+			}
+		}
+	}
+}
+void ACraftingStarCharacter::DeactivateAbility() {
+	if (DeactiveAbilityMontage) {
+		// Play Animation
+		bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(DeactiveAbilityMontage);
+		if (!bIsMontagePlaying) {
+			GetMesh()->GetAnimInstance()->Montage_Play(DeactiveAbilityMontage, 1.0f);
+			GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("느아악"));
+		}
+		// Activate Ability
+		EPlayerAbility nowAbility = Cast<ACraftingStarPS>(GetPlayerState())->NowAbility;
+		if (nowAbility != EPlayerAbility::ENone) {
+			// Laser(EBlast)
+			if (nowAbility == EPlayerAbility::EBlast) {
+				GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Deactivate Laser"));
+			}
+		}
+	}
 }
 
 void  ACraftingStarCharacter::SetPause(bool isPaused) {

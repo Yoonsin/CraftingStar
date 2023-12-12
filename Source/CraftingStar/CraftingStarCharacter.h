@@ -100,6 +100,14 @@ protected:
 	//��ȣ�ۿ�
 	void Interaction();
 
+	// Ability
+	void ActivateAbility();
+	void DeactivateAbility();
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = AnimMontage)
+	class UAnimMontage* AbilityMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = AnimMontage)
+	class UAnimMontage* DeactiveAbilityMontage;
+
 	//�Է� �Ͻ�����
 	void SetPause(bool isPaused);
 
