@@ -16,8 +16,15 @@ class CRAFTINGSTAR_API ACraftingStarGS : public AGameState
 {
 	GENERATED_BODY()
 public:
+	ACraftingStarGS();
+
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
 	FProgressData ProgressData;
 	
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
+		int KeyNum;
+
+	UFUNCTION(BlueprintCallable, Server, Reliable)
+	void UpdateProgressLevel(int level);
 	
 };
