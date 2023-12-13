@@ -71,6 +71,7 @@ void ACraftingStarPS::RequestSave_Implementation()
 		ACraftingStarGS* CraftingStarGS = Cast<ACraftingStarGS>(UGameplayStatics::GetGameState(this));
 		ACraftingStarCharacter* CraftingStarCharacter = Cast<ACraftingStarCharacter>(Cast<AController>(GetOwner())->GetPawn());
 		CraftingStarGS->ProgressData.HostPlayerPos = CraftingStarCharacter->GetTransform();
+
 	}
 	else {
 		//게스트

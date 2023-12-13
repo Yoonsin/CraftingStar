@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "Blueprint/UserWidget.h"
 #include "CustomEnum.h"
+#include "Net/UnrealNetwork.h"
 #include "CraftingStarCharacter.generated.h"
 
 
@@ -104,6 +105,19 @@ protected:
 
 	//��ȣ�ۿ�
 	void Interaction();
+
+	// Ability
+	void ActivateAbility();
+	void DeactivateAbility();
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = AnimMontage)
+	class UAnimMontage* AbilityMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = AnimMontage)
+	class UAnimMontage* DeactiveAbilityMontage;
+	// Anim Replicate
+	UFUNCTION(Server, Reliable, WithValidation, Category = "CraftingStar Character")
+	void ServerAbility(bool abilityState);
+	UFUNCTION(NetMulticast, Unreliable, Category = "CraftingStar Character")
+	void MulticastAbility(bool abilityState);
 
 	//�Է� �Ͻ�����
 	void SetPause(bool isPaused);
