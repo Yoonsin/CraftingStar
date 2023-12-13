@@ -16,6 +16,11 @@
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "CraftingStarGameMode.h"
+#include "DrawDebugHelpers.h"
+#include "NiagaraSystem.h"
+#include "NiagaraFunctionLibrary.h" 
+#include "NiagaraComponent.h"
+
 
 //////////////////////////////////////////////////////////////////////////
 // ACraftingStarCharacter
@@ -23,7 +28,7 @@
 ACraftingStarCharacter::ACraftingStarCharacter()
 {
 	// Set size for collision capsule
-	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
+	GetCapsuleComponent()->InitCapsuleSize(42.f, 75.0f);
 
 	// set our turn rates for input
 	BaseTurnRate = 45.f;
@@ -40,6 +45,85 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 	GetCharacterMovement()->RotationRate = FRotator(0.0f,  540.0f, 0.0f); // ...at this rotation rate
 	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 0.2f;
+
+	ConstructorHelpers::FObjectFinder<USkeletalMesh> BodySM(TEXT("SkeletalMesh'/Game/Assets/BaseContent/RPGTinyHeroWavePolyart/Mesh/BodyPart/Body10_SK.Body10_SK'"));
+	if ( BodySM.Succeeded() ) {
+		GetMesh()->SetSkeletalMesh(BodySM.Object);
+	}
+
+	// Character Mesh
+	HeadMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Head"));
+	ConstructorHelpers::FObjectFinder<UStaticMesh> HeadSM(TEXT("StaticMesh'/Game/Assets/BaseContent/RPGTinyHeroWavePolyart/Mesh/HeadPart/Head02_Female_SM.Head02_Female_SM'"));
+	if ( HeadSM.Succeeded() ) {
+		HeadMesh->SetStaticMesh(HeadSM.Object);
+	}
+	HeadMesh->SetupAttachment(GetMesh() , FName(TEXT("Head")));
+	HeadMesh->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
+	HeadMesh->SetRelativeRotation(FRotator(-90.0f , 0.0f , 0.0f));
+	
+	HairAndHatMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("HairAndHatMesh"));
+	ConstructorHelpers::FObjectFinder<UStaticMesh> HairAndHatSM(TEXT("StaticMesh'/Game/Assets/BaseContent/RPGTinyHeroWavePolyart/Mesh/HeadPart/Hair08_SM.Hair08_SM'"));
+	if ( HairAndHatSM.Succeeded() ) {
+		HairAndHatMesh->SetStaticMesh(HairAndHatSM.Object);
+	}
+	HairAndHatMesh->SetupAttachment(GetMesh(), FName(TEXT("Head")));
+	HairAndHatMesh->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
+	HairAndHatMesh->SetRelativeRotation(FRotator(-90.0f , 0.0f , 0.0f));
+
+	EyesMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Eyes"));
+	ConstructorHelpers::FObjectFinder<UStaticMesh> EyesSM(TEXT("StaticMesh'/Game/Assets/BaseContent/RPGTinyHeroWavePolyart/Mesh/HeadPart/Eye08_SM.Eye08_SM'"));
+	if ( EyesSM.Succeeded() ) {
+		EyesMesh->SetStaticMesh(EyesSM.Object);
+	}
+	EyesMesh->SetupAttachment(GetMesh(), FName(TEXT("Head")));
+	EyesMesh->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
+	EyesMesh->SetRelativeRotation(FRotator(-90.0f , 0.0f , 0.0f));
+
+	MouthMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mouth"));
+	ConstructorHelpers::FObjectFinder<UStaticMesh> MouthSM(TEXT("StaticMesh'/Game/Assets/BaseContent/RPGTinyHeroWavePolyart/Mesh/HeadPart/Mouth02_SM.Mouth02_SM'"));
+	if ( MouthSM.Succeeded() ) {
+		MouthMesh->SetStaticMesh(MouthSM.Object);
+	}
+	MouthMesh->SetupAttachment(GetMesh(), FName(TEXT("Head")));
+	MouthMesh->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
+	MouthMesh->SetRelativeRotation(FRotator(-90.0f , 0.0f , 0.0f));
+
+	CloakMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Cloak"));
+	ConstructorHelpers::FObjectFinder<USkeletalMesh> CloakSM(TEXT("SkeletalMesh'/Game/Assets/BaseContent/RPGTinyHeroWavePolyart/Mesh/BodyPart/Cloak02_SK.Cloak02_SK'"));
+	if ( CloakSM.Succeeded() ) {
+		CloakMesh->SetSkeletalMesh(CloakSM.Object);
+	}
+	CloakMesh->SetupAttachment(GetMesh(), FName(TEXT("CloakBone02")));
+	CloakMesh->SetRelativeLocation(FVector(40.0f , 20.0f , 0.0f));
+	CloakMesh->SetRelativeRotation(FRotator(90.0f , 0.0f , 0.0f));
+
+	Weapon_rMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Weapon_R"));
+	ConstructorHelpers::FObjectFinder<UStaticMesh> WandSM(TEXT("StaticMesh'/Game/Assets/BaseContent/RPGTinyHeroWavePolyart/Mesh/Weapon/Wand04_SM.Wand04_SM'"));
+	if ( WandSM.Succeeded() ) {
+		Weapon_rMesh->SetStaticMesh(WandSM.Object);
+	}
+	Weapon_rMesh->SetupAttachment(GetMesh(), FName(TEXT("Weapon_R")));
+	Weapon_rMesh->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
+	Weapon_rMesh->SetRelativeRotation(FRotator(0.0f , 0.0f , 0.0f));
+
+	// Magic Wand LineTrace Start Point
+	SpawnLocSource = CreateDefaultSubobject<USceneComponent>(TEXT("SpawnLoc Source"));
+	SpawnLocSource->SetupAttachment(Weapon_rMesh, FName(TEXT("SpawnLoc")));
+
+	// Ability: Laser Niagara System
+	LaserBody = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Laser Body"));
+	ConstructorHelpers::FObjectFinder<UNiagaraSystem> LaserBodyAsset(TEXT("NiagaraSystem'/Game/Assets/Effects/Laser/NS_Laser.NS_Laser'"));
+	if ( LaserBodyAsset.Succeeded() ) {
+		LaserBody->SetAsset(LaserBodyAsset.Object);
+	}
+	LaserBody->SetupAttachment(Weapon_rMesh , FName(TEXT("SpawnLoc")));
+
+	LaserImpact = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Laser Impact"));
+	ConstructorHelpers::FObjectFinder<UNiagaraSystem> LaserImpactAsset(TEXT("NiagaraSystem'/Game/Assets/Effects/Laser/NS_LaserImpact.NS_LaserImpact'"));
+	if ( LaserBodyAsset.Succeeded() ) {
+		LaserImpact->SetAsset(LaserImpactAsset.Object);
+	}
+	LaserImpact->SetupAttachment(Weapon_rMesh , FName(TEXT("SpawnLoc")));
 
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
@@ -60,8 +144,6 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
-
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -73,8 +155,10 @@ void ACraftingStarCharacter::BeginPlay()
 	
 	//GameWB     
 	CreateWidget(GetWorld(), GameWidget)->AddToViewport();
-}
 
+	LaserBody->SetVisibility(false);
+	LaserImpact->SetVisibility(false);
+}
 
 void ACraftingStarCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
@@ -124,6 +208,22 @@ void ACraftingStarCharacter::Tick(float DeltaTime)
 {
 	//          Ӹ          ɷ              ʿ        Ʈ
 	Super::Tick(DeltaTime);
+
+	if ( KeepAbility ) {
+		// Activate Ability
+		EPlayerAbility nowAbility = Cast<ACraftingStarPS>(GetPlayerState())->NowAbility;
+		if ( nowAbility != EPlayerAbility::ENone ) {
+			// Laser(EBlast)
+			if ( nowAbility == EPlayerAbility::EBlast ) {
+				// 테스트
+				// Activate Laser
+				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Activate Laser"));
+				// Execute Laser
+				ACraftingStarCharacter::WandLineTrace(10000);
+
+			}
+		}
+	}
 
 }
 
@@ -250,6 +350,47 @@ void ACraftingStarCharacter::Interaction() {
 
 }
 
+// Magic Wand Line Trace for Ability
+bool ACraftingStarCharacter::WandLineTrace(float distance) const {
+
+	/* Set LineTrace */
+
+	// Result oof LineTrace
+	FHitResult Hit;
+
+	// Ability Spawn Loc Socket Transform
+	FVector SpawnLocation = this->Weapon_rMesh->GetSocketLocation(FName("SpawnLoc"));
+	// Start point and End point of LineTrace
+	FVector Start = SpawnLocation;
+	FVector End = SpawnLocation + ( GetActorForwardVector() * distance );
+
+	// Trace Channel: Custom Trace Channel - AbilitySpawn
+	ECollisionChannel Channel = ECollisionChannel::ECC_GameTraceChannel1;
+	
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+
+	/* Execute LineTrace */
+	GetWorld()->LineTraceSingleByChannel(Hit , Start , End , Channel, QueryParams);
+	// Visualize LineTrace
+	DrawDebugLine(GetWorld() , Start , End , FColor::Green);
+
+	// Set the End of Laser Body
+	if ( Hit.bBlockingHit ) {
+		LaserBody->SetVectorParameter(FName(TEXT("LaserEnd")) , Hit.Location);
+	}
+	else {
+		LaserBody->SetVectorParameter(FName(TEXT("LaserEnd")) , End);
+	}
+	
+	// Show Laser
+	LaserBody->SetVisibility(true);
+	LaserImpact->SetVisibility(Hit.bBlockingHit);
+	LaserImpact->SetWorldLocation(Hit.Location);
+
+	return !Hit.bBlockingHit;
+}
+
 // Ability Animaition Replicate
 bool ACraftingStarCharacter::ServerAbility_Validate(bool abilityState) {
 	return true;
@@ -268,32 +409,22 @@ void ACraftingStarCharacter::MulticastAbility_Implementation(bool abilityState) 
 
 // Input Ability
 void ACraftingStarCharacter::ActivateAbility() {
-	if (AbilityMontage) {
+	KeepAbility = true;
+	if ( AbilityMontage ) {
 		// Play Animation
 		bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(AbilityMontage);
 		if ( !bIsMontagePlaying ) {
 			ServerAbility(true);	// request ability animation on server
 		}
-
-		// Activate Ability
-		EPlayerAbility nowAbility = Cast<ACraftingStarPS>(GetPlayerState())->NowAbility;
-		if (nowAbility != EPlayerAbility::ENone) {
-			// Laser(EBlast)
-			if (nowAbility == EPlayerAbility::EBlast) {
-				// 테스트
-				// Activate Laser
-				GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Activate Laser"));
-			}
-		}
 	}
 }
 void ACraftingStarCharacter::DeactivateAbility() {
+	KeepAbility = false;
 	if (DeactiveAbilityMontage) {
 		// Play Animation
 		bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(DeactiveAbilityMontage);
 		if (!bIsMontagePlaying) {
 			ServerAbility(false);	// request ability animation on server
-			GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("느아악"));
 		}
 		// Activate Ability
 		EPlayerAbility nowAbility = Cast<ACraftingStarPS>(GetPlayerState())->NowAbility;
@@ -302,6 +433,9 @@ void ACraftingStarCharacter::DeactivateAbility() {
 			if (nowAbility == EPlayerAbility::EBlast) {
 				// Deactivate Laser
 				GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Deactivate Laser"));
+				// Hid Laser
+				LaserBody->SetVisibility(false);
+				LaserImpact->SetVisibility(false);
 			}
 		}
 	}
@@ -347,19 +481,23 @@ void ACraftingStarCharacter::TouchStopped(ETouchIndex::Type FingerIndex, FVector
 
 void ACraftingStarCharacter::TurnAtRate(float Rate)
 {
-	// calculate delta for this frame from the rate information
-	AddControllerYawInput(Rate * BaseTurnRate * GetWorld()->GetDeltaSeconds());
+	if ( !KeepAbility ) {
+		// calculate delta for this frame from the rate information
+		AddControllerYawInput(Rate * BaseTurnRate * GetWorld()->GetDeltaSeconds());
+	}
 }
 
 void ACraftingStarCharacter::LookUpAtRate(float Rate)
 {
-	// calculate delta for this frame from the rate information
-	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
+	if ( !KeepAbility ) {
+		// calculate delta for this frame from the rate information
+		AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
+	}
 }
 
 void ACraftingStarCharacter::MoveForward(float Value)
 {
-	if ((Controller != nullptr) && (Value != 0.0f))
+	if ((Controller != nullptr) && (Value != 0.0f) && !KeepAbility)
 	{
 		// find out which way is forward
 		const FRotator Rotation = Controller->GetControlRotation();
@@ -373,7 +511,7 @@ void ACraftingStarCharacter::MoveForward(float Value)
 
 void ACraftingStarCharacter::MoveRight(float Value)
 {
-	if ( (Controller != nullptr) && (Value != 0.0f) )
+	if ( (Controller != nullptr) && (Value != 0.0f) && !KeepAbility )
 	{
 		// find out which way is right
 		const FRotator Rotation = Controller->GetControlRotation();
