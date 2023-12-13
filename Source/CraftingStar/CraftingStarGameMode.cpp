@@ -20,8 +20,8 @@ ACraftingStarGameMode::ACraftingStarGameMode()
 		CharClass = PlayerPawnBPClass.Class;
 	}
 
-	SpawnLoc = FVector(165.f, 0.f, 124.f);
-	SpawnRot = FRotator(0.f, 0.f, 0.f);
+	//SpawnLoc = FVector(165.f, 0.f, 124.f);
+	//SpawnRot = FRotator(0.f, 0.f, 0.f);
 }
 
 void ACraftingStarGameMode::PostLogin(APlayerController* newPlayer)
