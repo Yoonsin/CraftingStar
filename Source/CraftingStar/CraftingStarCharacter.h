@@ -162,8 +162,12 @@ private:
 	// Set LineTrace Start Loc
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Ability, meta = (AllowPrivateAccess = "true"))
 	class USceneComponent* SpawnLocSource;
+	// Laser: Niagara Component
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = "Laser", meta = ( AllowPrivateAccess = "true" ))
+	class UNiagaraComponent* LaserBody;
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = "Laser" , meta = ( AllowPrivateAccess = "true" ))
+	class UNiagaraComponent* LaserImpact;
 
-	// NiagaraComponent
-	UPROPERTY(EditDefaultsOnly, Category = "Laser")
-	class UNiagaraSystem* NS_LaserBody;
+	bool KeepAbility;
+	bool canUseAbility;
 };
