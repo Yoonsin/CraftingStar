@@ -217,20 +217,38 @@ void ACraftingStarCharacter::Interaction() {
 
 }
 
+// Ability Animaition Replicate
+bool ACraftingStarCharacter::ServerAbility_Validate(bool abilityState) {
+	return true;
+}
+void ACraftingStarCharacter::ServerAbility_Implementation(bool abilityState) {
+	MulticastAbility(abilityState);
+}
+void ACraftingStarCharacter::MulticastAbility_Implementation(bool abilityState) {
+	if ( abilityState ) {
+		GetMesh()->GetAnimInstance()->Montage_Play(AbilityMontage , 1.0f);
+	}
+	else {
+		GetMesh()->GetAnimInstance()->Montage_Play(DeactiveAbilityMontage , 1.0f);
+	}
+}
+
 // Input Ability
 void ACraftingStarCharacter::ActivateAbility() {
 	if (AbilityMontage) {
 		// Play Animation
 		bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(AbilityMontage);
-		if (!bIsMontagePlaying) {
-			GetMesh()->GetAnimInstance()->Montage_Play(AbilityMontage, 1.0f);
+		if ( !bIsMontagePlaying ) {
+			ServerAbility(true);	// request ability animation on server
 		}
+
 		// Activate Ability
 		EPlayerAbility nowAbility = Cast<ACraftingStarPS>(GetPlayerState())->NowAbility;
 		if (nowAbility != EPlayerAbility::ENone) {
 			// Laser(EBlast)
 			if (nowAbility == EPlayerAbility::EBlast) {
 				// 테스트
+				// Activate Laser
 				GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Activate Laser"));
 			}
 		}
@@ -241,7 +259,7 @@ void ACraftingStarCharacter::DeactivateAbility() {
 		// Play Animation
 		bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(DeactiveAbilityMontage);
 		if (!bIsMontagePlaying) {
-			GetMesh()->GetAnimInstance()->Montage_Play(DeactiveAbilityMontage, 1.0f);
+			ServerAbility(false);	// request ability animation on server
 			GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("느아악"));
 		}
 		// Activate Ability
@@ -249,6 +267,7 @@ void ACraftingStarCharacter::DeactivateAbility() {
 		if (nowAbility != EPlayerAbility::ENone) {
 			// Laser(EBlast)
 			if (nowAbility == EPlayerAbility::EBlast) {
+				// Deactivate Laser
 				GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Deactivate Laser"));
 			}
 		}
