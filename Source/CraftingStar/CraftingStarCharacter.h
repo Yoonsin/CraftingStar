@@ -9,7 +9,6 @@
 #include "Net/UnrealNetwork.h"
 #include "CraftingStarCharacter.generated.h"
 
-
 UCLASS(config=Game)
 class ACraftingStarCharacter : public ACharacter
 {
@@ -141,5 +140,30 @@ public:
 		void UpdatePlayerAbility(EPlayerAbility playerAbility);
 	UFUNCTION(BlueprintCallable)
 		void UpdatePlayerGMState(EPlayerGMState playerGMState);
-};
 
+	// LineTrace: Set Wand Ability Vector
+	bool WandLineTrace(float distance) const;
+
+private:
+	// Cahracter Mesh
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	class UStaticMeshComponent* HeadMesh;
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	class UStaticMeshComponent* HairAndHatMesh;
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	class UStaticMeshComponent* EyesMesh;
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	class UStaticMeshComponent* MouthMesh;
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	class USkeletalMeshComponent* CloakMesh;
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	class UStaticMeshComponent* Weapon_rMesh;
+
+	// Set LineTrace Start Loc
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Ability, meta = (AllowPrivateAccess = "true"))
+	class USceneComponent* SpawnLocSource;
+
+	// NiagaraComponent
+	UPROPERTY(EditDefaultsOnly, Category = "Laser")
+	class UNiagaraSystem* NS_LaserBody;
+};
