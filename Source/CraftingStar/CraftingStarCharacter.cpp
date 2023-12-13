@@ -15,6 +15,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
+#include "CraftingStarGameMode.h"
 
 //////////////////////////////////////////////////////////////////////////
 // ACraftingStarCharacter
@@ -322,4 +323,49 @@ void ACraftingStarCharacter::MoveRight(float Value)
 		// add movement in that direction
 		AddMovementInput(Direction, Value);
 	}
+}
+
+
+//게임 플레이도중 플레이어가 사라짐
+void ACraftingStarCharacter::Destroyed()
+{
+	Super::Destroyed();
+
+	//게임 모드에서 OnPlayerDied 이벤트에 바인딩한 예 
+	if (UWorld* World = GetWorld())
+	{
+		if (ACraftingStarGameMode* GameMode = Cast<ACraftingStarGameMode>(World->GetAuthGameMode()))
+		{
+			GameMode->GetOnPlayerDied().Broadcast(this);
+		}
+	}
+}
+
+//리스폰 게임플레이 요청
+void ACraftingStarCharacter::CallRespawnPlayer_Implementation()
+{
+	//폰 컨트롤러에 대한 레퍼런스 구하기
+	AController* CortollerRef = GetController();
+
+	//위치 변경
+	if (UWorld* World = GetWorld())
+	{
+		if (ACraftingStarGameMode* GameMode = Cast<ACraftingStarGameMode>(World->GetAuthGameMode()))
+		{
+			GameMode->RespawnPlayer(this);
+		}
+	}
+
+	//플레이어 삭제 이벤트
+	//플레이어 소멸.  
+	//Destroy();
+
+	////월드와 월드의 게임 모드가 RestartPlayer 함수를 호출하도록 함.
+	//if (UWorld* World = GetWorld())
+	//{
+	//	if (ACraftingStarGameMode* GameMode = Cast<ACraftingStarGameMode>(World->GetAuthGameMode()))
+	//	{
+	//		GameMode->RestartPlayer(CortollerRef);
+	//	}
+	//}
 }

@@ -108,6 +108,14 @@ protected:
 	//�Է� �Ͻ�����
 	void SetPause(bool isPaused);
 
+
+	//게임플레이 중 액터가 소멸되었을 때 호출.
+	virtual void Destroyed();
+
+	UFUNCTION(BlueprintCallable, Server, Reliable)
+	//플레이어 캐릭터를 재시작할 게임 모드 클래스 호출.
+	void CallRespawnPlayer();
+
 protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
