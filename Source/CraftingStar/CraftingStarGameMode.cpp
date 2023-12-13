@@ -8,7 +8,9 @@
 #include "Kismet/GameplayStatics.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Engine/Engine.h" 
+#include "GameFramework/PlayerStart.h"
 #include "UtilityFunction.h"
+#include "Math/Vector.h"
 
 ACraftingStarGameMode::ACraftingStarGameMode()
 {
@@ -96,3 +98,66 @@ void  ACraftingStarGameMode::Logout(AController* Exiting)
 	
 }
 
+
+void ACraftingStarGameMode::BeginPlay()
+{
+	Super::BeginPlay();
+
+	//PlayerDied 델리게이트를 게임 모드의 PlayerDied 함수에 바인딩.
+	if (!OnPlayerDied.IsBound())
+	{
+		OnPlayerDied.AddDynamic(this, &ACraftingStarGameMode::PlayerDied);
+	}
+}
+
+void ACraftingStarGameMode::RestartPlayer(AController* NewPlayer) {
+	Super::RestartPlayer(NewPlayer);
+
+	////플레이어 스폰
+	//FVector Location = FoundActors[NearsIdx]->GetActorLocation();
+	//FRotator Rotation{ 0.0f, 0.0f, 0.0f };
+	//FActorSpawnParameters PlayerSpawnParameters{};
+	//PlayerSpawnParameters.Owner = this;
+
+	////플레이어 컨트롤러 소유설정
+	//APawn* Player_Character = GetWorld()->SpawnActor<APawn>(DefaultPawnClass, Location, Rotation, PlayerSpawnParameters);
+	//GetWorld()->GetFirstPlayerController()->Possess(Player_Character);
+}
+
+
+
+
+void ACraftingStarGameMode::RespawnPlayer(ACharacter* NewPlayer)
+{
+	SpawnLoc = NewPlayer->GetActorLocation();
+	
+	//모든 플레이어 스타트 배열을 순회
+	//플레이어랑 제일 가까운 곳을 설정
+	TArray<AActor*> FoundActors;
+	float closestDist = 20000000.0f;
+	int NearsIdx = 0;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerStart::StaticClass(), FoundActors);
+
+	for (int i = 0; i < FoundActors.Num(); i++) {
+		if (closestDist > FVector::Distance(FoundActors[i]->GetActorLocation(), SpawnLoc)) {
+			closestDist = FVector::Distance(FoundActors[i]->GetActorLocation(), SpawnLoc);
+			NearsIdx = i;
+			
+		}
+	}
+
+	//플레이어 위치 변경
+	NewPlayer->SetActorLocation(FoundActors[NearsIdx]->GetActorLocation());
+
+}
+
+
+
+void ACraftingStarGameMode::PlayerDied(ACharacter* Character)
+{
+	//캐릭터의 플레이어 컨트롤러에 대한 레퍼런스 구하기
+	AController* CharacterController = Character->GetController();
+	RestartPlayer(CharacterController);
+
+
+}
