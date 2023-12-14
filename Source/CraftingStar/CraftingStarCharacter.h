@@ -117,6 +117,7 @@ protected:
 	void ServerAbility(bool abilityState);
 	UFUNCTION(NetMulticast, Unreliable, Category = "CraftingStar Character")
 	void MulticastAbility(bool abilityState);
+	//Laser
 
 	//�Է� �Ͻ�����
 	void SetPause(bool isPaused);
@@ -186,4 +187,5 @@ private:
 
 	bool KeepAbility;
 	bool canUseAbility;
+	bool isLaserHit;
 };
