@@ -317,8 +317,26 @@ void ACraftingStarCharacter::Interaction() {
 
 }
 
+// Laser Niagara System Replicate
+
+bool ACraftingStarCharacter::ServerLaser_Validate(UNiagaraComponent* NiagaraComp , bool isBody , FVector end , FLinearColor color) {
+	return true;
+}
+void ACraftingStarCharacter::ServerLaser_Implementation(UNiagaraComponent* NiagaraComp , bool isBody , FVector end , FLinearColor color) {
+	MulticastLaser(NiagaraComp, isBody, end , color);
+}
+void ACraftingStarCharacter::MulticastLaser_Implementation(UNiagaraComponent* NiagaraComp , bool isBody , FVector end , FLinearColor color) {
+	if ( isBody ) {
+		NiagaraComp->SetVectorParameter(FName(TEXT("LaserEnd")) , end);
+	}
+	else {
+		NiagaraComp->SetWorldLocation(end);
+	}
+	NiagaraComp->SetNiagaraVariableLinearColor("Color" , color);
+}
+
 // Magic Wand Line Trace for Ability
-bool ACraftingStarCharacter::WandLineTrace(float distance) const {
+bool ACraftingStarCharacter::WandLineTrace(float distance) {
 
 	/* Set LineTrace */
 
@@ -344,31 +362,36 @@ bool ACraftingStarCharacter::WandLineTrace(float distance) const {
 
 	// Set the End of Laser Body
 	if ( Hit.bBlockingHit ) {
-		LaserBody->SetVectorParameter(FName(TEXT("LaserEnd")) , Hit.Location);
+		if ( Cast<ACraftingStarPS>(GetPlayerState())->PlayerData.Mode == EPlayerRole::EDark ) {
+			ServerLaser(LaserBody , true , Hit.Location, FLinearColor::Black);
+		}
+		else if ( Cast<ACraftingStarPS>(GetPlayerState())->PlayerData.Mode == EPlayerRole::ELight ) {
+			ServerLaser(LaserBody , true , Hit.Location , FLinearColor::White);
+		}
 	}
 	else {
-		LaserBody->SetVectorParameter(FName(TEXT("LaserEnd")) , End);
+		if ( Cast<ACraftingStarPS>(GetPlayerState())->PlayerData.Mode == EPlayerRole::EDark ) {
+			ServerLaser(LaserBody , true , End , FLinearColor::Black);
+		}
+		else if ( Cast<ACraftingStarPS>(GetPlayerState())->PlayerData.Mode == EPlayerRole::ELight ) {
+			ServerLaser(LaserBody , true , End , FLinearColor::White);
+		}
+	}
+	if ( Cast<ACraftingStarPS>(GetPlayerState())->PlayerData.Mode == EPlayerRole::EDark ) {
+		ServerLaser(LaserImpact , true , Hit.Location , FLinearColor::Black);
+	}
+	else if ( Cast<ACraftingStarPS>(GetPlayerState())->PlayerData.Mode == EPlayerRole::ELight ) {
+		ServerLaser(LaserImpact , true , Hit.Location , FLinearColor::White);
 	}
 
 	// Interactive with hit Actor
 	if ( AInteractiveColorCube* hitActor = Cast<AInteractiveColorCube>(Hit.GetActor()) ) {
 		hitActor->InteractiveFunc();
 	}
-
-	if ( Cast<ACraftingStarPS>(GetPlayerState())->PlayerData.Mode == EPlayerRole::EDark ) {
-		// Set Color of Laser
-		LaserBody->SetNiagaraVariableLinearColor("Color" , FLinearColor::Black);
-		LaserImpact->SetNiagaraVariableLinearColor("Color" , FLinearColor::Black);
-	} else if ( Cast<ACraftingStarPS>(GetPlayerState())->PlayerData.Mode == EPlayerRole::ELight ) {
-		// Set Color of Laser
-		LaserBody->SetNiagaraVariableLinearColor("Color" , FLinearColor::White);
-		LaserImpact->SetNiagaraVariableLinearColor("Color" , FLinearColor::White);
-	}
 	
 	// Show Laser
 	LaserBody->SetVisibility(true);
 	LaserImpact->SetVisibility(Hit.bBlockingHit);
-	LaserImpact->SetWorldLocation(Hit.Location);
 
 	return !Hit.bBlockingHit;
 }

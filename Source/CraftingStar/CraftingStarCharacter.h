@@ -52,10 +52,6 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseLookUpRate;
 
-	
-
-
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -112,7 +108,17 @@ protected:
 	void ServerAbility(bool abilityState);
 	UFUNCTION(NetMulticast, Unreliable, Category = "CraftingStar Character")
 	void MulticastAbility(bool abilityState);
+
+	// Laser: Niagara Component
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = "Laser" , meta = ( AllowPrivateAccess = "true" ))
+	class UNiagaraComponent* LaserBody;
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = "Laser" , meta = ( AllowPrivateAccess = "true" ))
+	class UNiagaraComponent* LaserImpact;
 	//Laser
+	UFUNCTION(Server , Reliable , WithValidation , Category = "CraftingStar Character")
+	void ServerLaser(UNiagaraComponent* NiagaraComp , bool isBody , FVector end , FLinearColor color);
+	UFUNCTION(NetMulticast , Unreliable , Category = "CraftingStar Character")
+	void MulticastLaser(UNiagaraComponent* NiagaraComp , bool isBody , FVector end , FLinearColor color);
 
 	//�Է� �Ͻ�����
 	void SetPause(bool isPaused);
@@ -143,7 +149,7 @@ public:
 		void UpdatePlayerGMState(EPlayerGMState playerGMState);
 
 	// LineTrace: Set Wand Ability Vector
-	bool WandLineTrace(float distance) const;
+	bool WandLineTrace(float distance);
 
 private:
 	// Cahracter Mesh
@@ -163,11 +169,6 @@ private:
 	// Set LineTrace Start Loc
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Ability, meta = (AllowPrivateAccess = "true"))
 	class USceneComponent* SpawnLocSource;
-	// Laser: Niagara Component
-	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = "Laser", meta = ( AllowPrivateAccess = "true" ))
-	class UNiagaraComponent* LaserBody;
-	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = "Laser" , meta = ( AllowPrivateAccess = "true" ))
-	class UNiagaraComponent* LaserImpact;
 
 	bool KeepAbility;
 	bool canUseAbility;
