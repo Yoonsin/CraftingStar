@@ -19,6 +19,8 @@
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h" 
 #include "NiagaraComponent.h"
+#include "InteractiveColorCube.h"
+// have to change InteractiveColorCube.h to InteractiveActor.h
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -211,8 +213,6 @@ void ACraftingStarCharacter::Tick(float DeltaTime)
 			// Laser(EBlast)
 			if ( nowAbility == EPlayerAbility::EBlast ) {
 				// 테스트
-				// Activate Laser
-				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Activate Laser"));
 				// Execute Laser
 				ACraftingStarCharacter::WandLineTrace(10000);
 
@@ -349,6 +349,21 @@ bool ACraftingStarCharacter::WandLineTrace(float distance) const {
 	else {
 		LaserBody->SetVectorParameter(FName(TEXT("LaserEnd")) , End);
 	}
+
+	// Interactive with hit Actor
+	if ( AInteractiveColorCube* hitActor = Cast<AInteractiveColorCube>(Hit.GetActor()) ) {
+		hitActor->InteractiveFunc();
+	}
+
+	if ( Cast<ACraftingStarPS>(GetPlayerState())->PlayerData.Mode == EPlayerRole::EDark ) {
+		// Set Color of Laser
+		LaserBody->SetNiagaraVariableLinearColor("Color" , FLinearColor::Black);
+		LaserImpact->SetNiagaraVariableLinearColor("Color" , FLinearColor::Black);
+	} else if ( Cast<ACraftingStarPS>(GetPlayerState())->PlayerData.Mode == EPlayerRole::ELight ) {
+		// Set Color of Laser
+		LaserBody->SetNiagaraVariableLinearColor("Color" , FLinearColor::White);
+		LaserImpact->SetNiagaraVariableLinearColor("Color" , FLinearColor::White);
+	}
 	
 	// Show Laser
 	LaserBody->SetVisibility(true);
@@ -398,9 +413,7 @@ void ACraftingStarCharacter::DeactivateAbility() {
 		if (nowAbility != EPlayerAbility::ENone) {
 			// Laser(EBlast)
 			if (nowAbility == EPlayerAbility::EBlast) {
-				// Deactivate Laser
-				GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Deactivate Laser"));
-				// Hid Laser
+				// Hide Laser
 				LaserBody->SetVisibility(false);
 				LaserImpact->SetVisibility(false);
 			}
