@@ -34,13 +34,13 @@ void ACraftingStarGameMode::PostLogin(APlayerController* newPlayer)
 	if (CraftingStarGS != nullptr) {
 		if (CraftingStarGS->PlayerArray.Num() == 2) {
 
-			//3ÃÊ µô·¹ÀÌ ÈÄ ·Îµå(¹Ù·Î ·ÎµåÇÏ¸é PlayerState°¡ »ý¼ºµÇÁö ¾ÊÀ» ¼öµµ ÀÖÀ½)
+			//3ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Îµï¿½(ï¿½Ù·ï¿½ ï¿½Îµï¿½ï¿½Ï¸ï¿½ PlayerStateï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
 			FTimerHandle DelayTimerHandle;
 			float DelayTime = 3.0f;
 
 			GetWorld()->GetTimerManager().SetTimer(DelayTimerHandle, FTimerDelegate::CreateLambda([&]()
 				{
-					//ºí·çÇÁ¸°Æ® ÇÔ¼ö¸¦ C++·Î È£ÃâÇØ¾ßÇÔ
+					//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½Ô¼ï¿½ï¿½ï¿½ C++ï¿½ï¿½ È£ï¿½ï¿½ï¿½Ø¾ï¿½ï¿½ï¿½
 					auto GameInstance = UGameplayStatics::GetGameInstance(GetWorld());
 					UFunction* Function = GameInstance->GetClass()->FindFunctionByName(FName("Load"));
 
@@ -56,7 +56,7 @@ void ACraftingStarGameMode::PostLogin(APlayerController* newPlayer)
 					GameInstance->ProcessEvent(Function,&Parameter);
 
 
-					// TimerHandle ÃÊ±âÈ­
+					// TimerHandle ï¿½Ê±ï¿½È­
 					GetWorld()->GetTimerManager().ClearTimer(DelayTimerHandle);
 				}), DelayTime, false);
 			
@@ -72,7 +72,7 @@ void  ACraftingStarGameMode::InitGame()
 		break;
 	case EMapName::EKeyStar:		
 		if (ProgressLevel == 0) {
-			//Æ©Åä¸®¾ó ½ÃÀÛ
+			//Æ©ï¿½ä¸®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("Tutorial Start")));
 		}
 		else if (ProgressLevel == 1) {
@@ -88,7 +88,7 @@ void  ACraftingStarGameMode::Logout(AController* Exiting)
 {
 	Super::Logout(Exiting);
 
-	//°ÔÀÓ Á¾·á½Ã ´©°¡ ³ª°¬´ÂÁö È®ÀÎ
+	//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È®ï¿½ï¿½
 	if (UUtilityFunction::IsHost(Exiting)) {
 		UE_LOG(LogTemp, Log, TEXT("Host Logout"));
 	}
@@ -103,7 +103,7 @@ void ACraftingStarGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 
-	//PlayerDied µ¨¸®°ÔÀÌÆ®¸¦ °ÔÀÓ ¸ðµåÀÇ PlayerDied ÇÔ¼ö¿¡ ¹ÙÀÎµù.
+	//PlayerDied ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ PlayerDied ï¿½Ô¼ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Îµï¿½.
 	if (!OnPlayerDied.IsBound())
 	{
 		OnPlayerDied.AddDynamic(this, &ACraftingStarGameMode::PlayerDied);
@@ -113,13 +113,13 @@ void ACraftingStarGameMode::BeginPlay()
 void ACraftingStarGameMode::RestartPlayer(AController* NewPlayer) {
 	Super::RestartPlayer(NewPlayer);
 
-	////ÇÃ·¹ÀÌ¾î ½ºÆù
+	////ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ï¿½
 	//FVector Location = FoundActors[NearsIdx]->GetActorLocation();
 	//FRotator Rotation{ 0.0f, 0.0f, 0.0f };
 	//FActorSpawnParameters PlayerSpawnParameters{};
 	//PlayerSpawnParameters.Owner = this;
 
-	////ÇÃ·¹ÀÌ¾î ÄÁÆ®·Ñ·¯ ¼ÒÀ¯¼³Á¤
+	////ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½Æ®ï¿½Ñ·ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	//APawn* Player_Character = GetWorld()->SpawnActor<APawn>(DefaultPawnClass, Location, Rotation, PlayerSpawnParameters);
 	//GetWorld()->GetFirstPlayerController()->Possess(Player_Character);
 }
@@ -131,8 +131,8 @@ void ACraftingStarGameMode::RespawnPlayer(ACharacter* NewPlayer)
 {
 	SpawnLoc = NewPlayer->GetActorLocation();
 	
-	//¸ðµç ÇÃ·¹ÀÌ¾î ½ºÅ¸Æ® ¹è¿­À» ¼øÈ¸
-	//ÇÃ·¹ÀÌ¾î¶û Á¦ÀÏ °¡±î¿î °÷À» ¼³Á¤
+	//ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½Å¸Æ® ï¿½è¿­ï¿½ï¿½ ï¿½ï¿½È¸
+	//ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	TArray<AActor*> FoundActors;
 	float closestDist = 20000000.0f;
 	int NearsIdx = 0;
@@ -146,7 +146,7 @@ void ACraftingStarGameMode::RespawnPlayer(ACharacter* NewPlayer)
 		}
 	}
 
-	//ÇÃ·¹ÀÌ¾î À§Ä¡ º¯°æ
+	//ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½
 	NewPlayer->SetActorLocation(FoundActors[NearsIdx]->GetActorLocation());
 
 }
@@ -155,7 +155,7 @@ void ACraftingStarGameMode::RespawnPlayer(ACharacter* NewPlayer)
 
 void ACraftingStarGameMode::PlayerDied(ACharacter* Character)
 {
-	//Ä³¸¯ÅÍÀÇ ÇÃ·¹ÀÌ¾î ÄÁÆ®·Ñ·¯¿¡ ´ëÇÑ ·¹ÆÛ·±½º ±¸ÇÏ±â
+	//Ä³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½Æ®ï¿½Ñ·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Û·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ï±ï¿½
 	AController* CharacterController = Character->GetController();
 	RestartPlayer(CharacterController);
 

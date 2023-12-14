@@ -217,7 +217,7 @@ void ACraftingStarCharacter::Tick(float DeltaTime)
 			if ( nowAbility == EPlayerAbility::EBlast ) {
 				// 테스트
 				// Activate Laser
-				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Activate Laser"));
+				//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Activate Laser"));
 				// Execute Laser
 				ACraftingStarCharacter::WandLineTrace(10000);
 
@@ -432,7 +432,7 @@ void ACraftingStarCharacter::DeactivateAbility() {
 			// Laser(EBlast)
 			if (nowAbility == EPlayerAbility::EBlast) {
 				// Deactivate Laser
-				GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Deactivate Laser"));
+				//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Deactivate Laser"));
 				// Hid Laser
 				LaserBody->SetVisibility(false);
 				LaserImpact->SetVisibility(false);

@@ -25,7 +25,7 @@ public:
 
 	const FOnPlayerDiedSignature& GetOnPlayerDied() const { return OnPlayerDied; }
 
-	//ÇÃ·¹ÀÌ¾îÀÇ ÆùÀ» ½ºÆù ½Ãµµ.
+	//ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ãµï¿½.
 	void RespawnPlayer(ACharacter* NewPlayer);
 
 	virtual void RestartPlayer(AController* NewPlayer) override;
@@ -34,11 +34,11 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	//ÇÃ·¹ÀÌ¾î Ä³¸¯ÅÍ°¡ Á×À¸¸é È£Ãâ.
+	//ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ Ä³ï¿½ï¿½ï¿½Í°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È£ï¿½ï¿½.
 	UFUNCTION()
 		virtual void PlayerDied(ACharacter* Character);
 
-	//µ¨¸®°ÔÀÌÆ®¸¦ ¹ÙÀÎµùÇÒ ½Ã±×´ÏÃ³. 
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½Îµï¿½ï¿½ï¿½ ï¿½Ã±×´ï¿½Ã³. 
 	UPROPERTY()
 		FOnPlayerDiedSignature OnPlayerDied;
 
