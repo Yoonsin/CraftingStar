@@ -70,7 +70,7 @@ void  ACraftingStarGameMode::InitGame()
 	{
 	case EMapName::EWorldMap:
 		break;
-	case EMapName::EKeyStar:	
+	case EMapName::EKeyStar:		
 		if (ProgressLevel == 0) {
 			//Ʃ�丮�� ����
 			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("Tutorial Start")));
