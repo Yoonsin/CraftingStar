@@ -3,11 +3,6 @@
 
 #include "CraftingStarPC.h"
 
-ACraftingStarPC::ACraftingStarPC() {
-	bEnableMouseOverEvents = true;																						
-}
-
-
 void ACraftingStarPC::BeginPlayingState() {
 
 	Super::BeginPlayingState();

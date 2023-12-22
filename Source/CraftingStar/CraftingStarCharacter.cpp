@@ -15,7 +15,6 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
-#include "CraftingStarGameMode.h"
 #include "DrawDebugHelpers.h"
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h" 
@@ -41,10 +40,9 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
 
-	
 	// Configure character movement
 	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
-	GetCharacterMovement()->RotationRate = FRotator(0.0f,  540.0f, 0.0f); // ...at this rotation rate
+	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f); // ...at this rotation rate
 	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 0.2f;
 
@@ -194,9 +192,6 @@ void ACraftingStarCharacter::SetupPlayerInputComponent(class UInputComponent* Pl
 	PlayerInputComponent->BindAction("WorldMap", IE_Pressed, this, &ACraftingStarCharacter::WorldMap);
 	PlayerInputComponent->BindAction("WorldMap", IE_Released, this, &ACraftingStarCharacter::StopWorldMap);
 
-	PlayerInputComponent->BindAction("SystemMenu", IE_Pressed, this, &ACraftingStarCharacter::SystemMenu);
-	PlayerInputComponent->BindAction("SystemMenu", IE_Released, this, &ACraftingStarCharacter::StopSystemMenu);
-
 	//  ȣ ۿ 
 	PlayerInputComponent->BindAction("Interaction", IE_Pressed, this, &ACraftingStarCharacter::Interaction);
 
@@ -231,11 +226,8 @@ void ACraftingStarCharacter::UpdatePlayerAbility(EPlayerAbility playerAbility) {
 
 	auto playerState = Cast<ACraftingStarPS>(GetPlayerState());
 
-	if (playerState != nullptr) {
-		playerState->NowAbility = playerAbility;
+	if (playerState != nullptr)
 		playerState->RequestPlayerAbility(playerAbility);
-	}
-		
 	  
 }
 
@@ -243,18 +235,15 @@ void ACraftingStarCharacter::UpdatePlayerGMState(EPlayerGMState playerGMState) {
 
 	auto playerState = Cast<ACraftingStarPS>(GetPlayerState());
 
-	if (playerState != nullptr) {
-		playerState->NowState = playerGMState;
+	if (playerState != nullptr)
 		playerState->RequestPlayerGMState(playerGMState);
-	}
-		
 
 }
 
 
 void ACraftingStarCharacter::Palette() {
 	//Ÿ ̸       (0.1 ʴ  1ȸ    Լ  ȣ  )
-	GetWorldTimerManager().SetTimer(HoldTimerHandle, this, &ACraftingStarCharacter::RepeatingFunction, 0.01f, true);
+	GetWorldTimerManager().SetTimer(HoldTimerHandle, this, &ACraftingStarCharacter::RepeatingFunction, 0.1f, true);
 }
 
 void ACraftingStarCharacter::StopPalette() {
@@ -292,30 +281,26 @@ void ACraftingStarCharacter::StopPalette() {
 void ACraftingStarCharacter::RepeatingFunction() {
 	
 	//UE_LOG(LogTemp, Log, TEXT("GetTimeElapsed : %f"), PaletteCnt);
-	if (PaletteCnt >= 0.05f) {
+	if (PaletteCnt >= 0.2f) {
 		//0.2    ̻  Ȧ   ϸ   ȷ Ʈ     
 		PaletteCnt = 0.0f;
 		GetWorldTimerManager().ClearTimer(HoldTimerHandle);		
-
-		if (PaletteWidgetRef == NULL) {
-			PaletteWidgetRef = CreateWidget(GetWorld(), PaletteWidget);
-			PaletteWidgetRef->AddToViewport();
-		}
+		PaletteWidgetRef = CreateWidget(GetWorld(), PaletteWidget);
+		PaletteWidgetRef->AddToViewport();
 		
+
 		//Ű      Է       &    콺        Ȱ  ȭ
 		SetPause(true);
 		return;
 	}
-	PaletteCnt += 0.01f;
+	PaletteCnt += 0.1f;
 }
 
 void ACraftingStarCharacter::WorldMap() {
-	if (WorldMapWidgetRef == NULL) {
-		WorldMapWidgetRef = CreateWidget(GetWorld(), WorldMapWidget);
-		WorldMapWidgetRef->AddToViewport();
-		SetPause(true);
-	}
-	
+	//          
+	WorldMapWidgetRef = CreateWidget(GetWorld(), WorldMapWidget);
+	WorldMapWidgetRef->AddToViewport();
+	SetPause(true);
 }
 
 void ACraftingStarCharacter::StopWorldMap() {
@@ -327,24 +312,6 @@ void ACraftingStarCharacter::StopWorldMap() {
 		SetPause(false);
 	}
 }
-
-void ACraftingStarCharacter::SystemMenu() {
-	if (SystemMenuWidgetRef == NULL) {
-		SystemMenuWidgetRef = CreateWidget(GetWorld(), SystemMenuWidget);
-		SystemMenuWidgetRef->AddToViewport();
-		SetPause(true);
-	}
-}
-
-void ACraftingStarCharacter::StopSystemMenu() {
-	if (SystemMenuWidgetRef != NULL) {
-		// ȷ Ʈ     
-		SystemMenuWidgetRef->RemoveFromParent();
-		SystemMenuWidgetRef = NULL;
-		SetPause(false);
-	}
-}
-
 
 void ACraftingStarCharacter::Interaction() {
 
@@ -558,49 +525,4 @@ void ACraftingStarCharacter::MoveRight(float Value)
 		// add movement in that direction
 		AddMovementInput(Direction, Value);
 	}
-}
-
-
-//게임 플레이도중 플레이어가 사라짐
-void ACraftingStarCharacter::Destroyed()
-{
-	Super::Destroyed();
-
-	//게임 모드에서 OnPlayerDied 이벤트에 바인딩한 예 
-	if (UWorld* World = GetWorld())
-	{
-		if (ACraftingStarGameMode* GameMode = Cast<ACraftingStarGameMode>(World->GetAuthGameMode()))
-		{
-			GameMode->GetOnPlayerDied().Broadcast(this);
-		}
-	}
-}
-
-//리스폰 게임플레이 요청
-void ACraftingStarCharacter::CallRespawnPlayer_Implementation()
-{
-	//폰 컨트롤러에 대한 레퍼런스 구하기
-	AController* CortollerRef = GetController();
-
-	//위치 변경
-	if (UWorld* World = GetWorld())
-	{
-		if (ACraftingStarGameMode* GameMode = Cast<ACraftingStarGameMode>(World->GetAuthGameMode()))
-		{
-			GameMode->RespawnPlayer(this);
-		}
-	}
-
-	//플레이어 삭제 이벤트
-	//플레이어 소멸.  
-	//Destroy();
-
-	////월드와 월드의 게임 모드가 RestartPlayer 함수를 호출하도록 함.
-	//if (UWorld* World = GetWorld())
-	//{
-	//	if (ACraftingStarGameMode* GameMode = Cast<ACraftingStarGameMode>(World->GetAuthGameMode()))
-	//	{
-	//		GameMode->RestartPlayer(CortollerRef);
-	//	}
-	//}
 }
