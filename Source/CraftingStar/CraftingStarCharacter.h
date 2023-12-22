@@ -22,6 +22,7 @@ class ACraftingStarCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
 
+
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = UI, meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UUserWidget> PaletteWidget;
@@ -117,6 +118,17 @@ protected:
 	void ServerAbility(bool abilityState);
 	UFUNCTION(NetMulticast, Unreliable, Category = "CraftingStar Character")
 	void MulticastAbility(bool abilityState);
+
+	// Laser: Niagara Component
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = "Laser" , meta = ( AllowPrivateAccess = "true" ))
+	class UNiagaraComponent* LaserBody;
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = "Laser" , meta = ( AllowPrivateAccess = "true" ))
+	class UNiagaraComponent* LaserImpact;
+	//Laser
+	UFUNCTION(Server , Reliable , WithValidation , Category = "CraftingStar Character")
+	void ServerLaser(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color);
+	UFUNCTION(NetMulticast , Unreliable , Category = "CraftingStar Character")
+	void MulticastLaser(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color);
 
 	//�Է� �Ͻ�����
 	void SetPause(bool isPaused);
