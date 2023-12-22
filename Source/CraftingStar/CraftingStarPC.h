@@ -16,6 +16,7 @@ class CRAFTINGSTAR_API ACraftingStarPC : public APlayerController
 	GENERATED_BODY()
 
 	virtual void BeginPlayingState();
+	ACraftingStarPC();
 public:
 
 

@@ -32,6 +32,9 @@ class ACraftingStarCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = UI, meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UUserWidget> GameWidget;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = UI, meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UUserWidget> SystemMenuWidget;
+
 
 	//�ȷ�Ʈ
 	class UUserWidget* PaletteWidgetRef;
@@ -40,6 +43,7 @@ class ACraftingStarCharacter : public ACharacter
 
 	//�����
 	class UUserWidget* WorldMapWidgetRef;
+	class UUserWidget* SystemMenuWidgetRef;
 
 public:
 	ACraftingStarCharacter();
@@ -92,6 +96,7 @@ protected:
 
 	//�����
 	void WorldMap();
+	void SystemMenu();
 
 	//��ȣ�ۿ�
 	void Interaction();
@@ -123,6 +128,14 @@ protected:
 	//�Է� �Ͻ�����
 	void SetPause(bool isPaused);
 
+
+	//게임플레이 중 액터가 소멸되었을 때 호출.
+	virtual void Destroyed();
+
+	UFUNCTION(BlueprintCallable, Server, Reliable)
+	//플레이어 캐릭터를 재시작할 게임 모드 클래스 호출.
+	void CallRespawnPlayer();
+
 protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -141,6 +154,9 @@ public:
 	//����ʵ� ��������
 	UFUNCTION(BlueprintCallable)
 	void StopWorldMap();
+
+	UFUNCTION(BlueprintCallable)
+	void StopSystemMenu();
 
 	//���� ������ ������Ʈ
 	UFUNCTION(BlueprintCallable)
