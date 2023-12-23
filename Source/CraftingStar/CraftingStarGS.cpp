@@ -19,6 +19,6 @@ void  ACraftingStarGS::UpdateProgressLevel_Implementation(int level)
 {
 	ProgressData.ProgressLevel = level;
 
-	//°ÔÀÓ¸ðµå °ªÀÇ ProgressLevelµµ ¾÷µ¥ÀÌÆ®
+	//ï¿½ï¿½ï¿½Ó¸ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ProgressLevelï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
 	
 }
