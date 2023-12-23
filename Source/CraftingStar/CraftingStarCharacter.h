@@ -6,8 +6,8 @@
 #include "GameFramework/Character.h"
 #include "Blueprint/UserWidget.h"
 #include "CustomEnum.h"
+#include "Net/UnrealNetwork.h"
 #include "CraftingStarCharacter.generated.h"
-
 
 UCLASS(config=Game)
 class ACraftingStarCharacter : public ACharacter
@@ -105,6 +105,19 @@ protected:
 	//��ȣ�ۿ�
 	void Interaction();
 
+	// Ability
+	void ActivateAbility();
+	void DeactivateAbility();
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = AnimMontage)
+	class UAnimMontage* AbilityMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = AnimMontage)
+	class UAnimMontage* DeactiveAbilityMontage;
+	// Anim Replicate
+	UFUNCTION(Server, Reliable, WithValidation, Category = "CraftingStar Character")
+	void ServerAbility(bool abilityState);
+	UFUNCTION(NetMulticast, Unreliable, Category = "CraftingStar Character")
+	void MulticastAbility(bool abilityState);
+
 	//�Է� �Ͻ�����
 	void SetPause(bool isPaused);
 
@@ -143,5 +156,34 @@ public:
 		void UpdatePlayerAbility(EPlayerAbility playerAbility);
 	UFUNCTION(BlueprintCallable)
 		void UpdatePlayerGMState(EPlayerGMState playerGMState);
-};
 
+	// LineTrace: Set Wand Ability Vector
+	bool WandLineTrace(float distance) const;
+
+private:
+	// Cahracter Mesh
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	class UStaticMeshComponent* HeadMesh;
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	class UStaticMeshComponent* HairAndHatMesh;
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	class UStaticMeshComponent* EyesMesh;
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	class UStaticMeshComponent* MouthMesh;
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	class USkeletalMeshComponent* CloakMesh;
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	class UStaticMeshComponent* Weapon_rMesh;
+
+	// Set LineTrace Start Loc
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Ability, meta = (AllowPrivateAccess = "true"))
+	class USceneComponent* SpawnLocSource;
+	// Laser: Niagara Component
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = "Laser", meta = ( AllowPrivateAccess = "true" ))
+	class UNiagaraComponent* LaserBody;
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = "Laser" , meta = ( AllowPrivateAccess = "true" ))
+	class UNiagaraComponent* LaserImpact;
+
+	bool KeepAbility;
+	bool canUseAbility;
+};

@@ -11,8 +11,15 @@
 			"AdditionalDependencies": [
 				"Engine",
 				"UMGEditor",
-				"UMG"
+				"UMG",
+				"Niagara"
 			]
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "NiagaraExtras",
+			"Enabled": true
 		}
 	]
 }
