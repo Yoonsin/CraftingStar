@@ -6,8 +6,8 @@
 #include "GameFramework/Character.h"
 #include "Blueprint/UserWidget.h"
 #include "CustomEnum.h"
+#include "Net/UnrealNetwork.h"
 #include "CraftingStarCharacter.generated.h"
-
 
 UCLASS(config=Game)
 class ACraftingStarCharacter : public ACharacter
@@ -22,6 +22,7 @@ class ACraftingStarCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
 
+
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = UI, meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UUserWidget> PaletteWidget;
@@ -32,9 +33,6 @@ class ACraftingStarCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = UI, meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UUserWidget> GameWidget;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = UI, meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<UUserWidget> SystemMenuWidget;
-
 
 	//�ȷ�Ʈ
 	class UUserWidget* PaletteWidgetRef;
@@ -43,7 +41,6 @@ class ACraftingStarCharacter : public ACharacter
 
 	//�����
 	class UUserWidget* WorldMapWidgetRef;
-	class UUserWidget* SystemMenuWidgetRef;
 
 public:
 	ACraftingStarCharacter();
@@ -55,10 +52,6 @@ public:
 	/** Base look up/down rate, in deg/sec. Other scaling may affect final rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseLookUpRate;
-
-	
-
-
 
 protected:
 	// Called when the game starts or when spawned
@@ -100,21 +93,36 @@ protected:
 
 	//�����
 	void WorldMap();
-	void SystemMenu();
 
 	//��ȣ�ۿ�
 	void Interaction();
 
+	// Ability
+	void ActivateAbility();
+	void DeactivateAbility();
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = AnimMontage)
+	class UAnimMontage* AbilityMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = AnimMontage)
+	class UAnimMontage* DeactiveAbilityMontage;
+	// Anim Replicate
+	UFUNCTION(Server, Reliable, WithValidation, Category = "CraftingStar Character")
+	void ServerAbility(bool abilityState);
+	UFUNCTION(NetMulticast, Unreliable, Category = "CraftingStar Character")
+	void MulticastAbility(bool abilityState);
+
+	// Laser: Niagara Component
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = "Laser" , meta = ( AllowPrivateAccess = "true" ))
+	class UNiagaraComponent* LaserBody;
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = "Laser" , meta = ( AllowPrivateAccess = "true" ))
+	class UNiagaraComponent* LaserImpact;
+	//Laser
+	UFUNCTION(Server , Reliable , WithValidation , Category = "CraftingStar Character")
+	void ServerLaser(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color);
+	UFUNCTION(NetMulticast , Unreliable , Category = "CraftingStar Character")
+	void MulticastLaser(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color);
+
 	//�Է� �Ͻ�����
 	void SetPause(bool isPaused);
-
-
-	//게임플레이 중 액터가 소멸되었을 때 호출.
-	virtual void Destroyed();
-
-	UFUNCTION(BlueprintCallable, Server, Reliable)
-	//플레이어 캐릭터를 재시작할 게임 모드 클래스 호출.
-	void CallRespawnPlayer();
 
 protected:
 	// APawn interface
@@ -135,13 +143,35 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void StopWorldMap();
 
-	UFUNCTION(BlueprintCallable)
-	void StopSystemMenu();
-
 	//���� ������ ������Ʈ
 	UFUNCTION(BlueprintCallable)
 		void UpdatePlayerAbility(EPlayerAbility playerAbility);
 	UFUNCTION(BlueprintCallable)
 		void UpdatePlayerGMState(EPlayerGMState playerGMState);
-};
 
+	// LineTrace: Set Wand Ability Vector
+	bool WandLineTrace(float distance);
+
+private:
+	// Cahracter Mesh
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	class UStaticMeshComponent* HeadMesh;
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	class UStaticMeshComponent* HairAndHatMesh;
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	class UStaticMeshComponent* EyesMesh;
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	class UStaticMeshComponent* MouthMesh;
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	class USkeletalMeshComponent* CloakMesh;
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	class UStaticMeshComponent* Weapon_rMesh;
+
+	// Set LineTrace Start Loc
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Ability, meta = (AllowPrivateAccess = "true"))
+	class USceneComponent* SpawnLocSource;
+
+	bool KeepAbility;
+	bool canUseAbility;
+	bool isLaserHit;
+};

@@ -8,9 +8,6 @@
 #include "Kismet/GameplayStatics.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Engine/Engine.h" 
-#include "GameFramework/PlayerStart.h"
-#include "UtilityFunction.h"
-#include "Math/Vector.h"
 
 ACraftingStarGameMode::ACraftingStarGameMode()
 {
@@ -22,8 +19,8 @@ ACraftingStarGameMode::ACraftingStarGameMode()
 		CharClass = PlayerPawnBPClass.Class;
 	}
 
-	//SpawnLoc = FVector(165.f, 0.f, 124.f);
-	//SpawnRot = FRotator(0.f, 0.f, 0.f);
+	SpawnLoc = FVector(165.f, 0.f, 124.f);
+	SpawnRot = FRotator(0.f, 0.f, 0.f);
 }
 
 void ACraftingStarGameMode::PostLogin(APlayerController* newPlayer)
@@ -70,7 +67,7 @@ void  ACraftingStarGameMode::InitGame()
 	{
 	case EMapName::EWorldMap:
 		break;
-	case EMapName::EKeyStar:	
+	case EMapName::EKeyStar:		
 		if (ProgressLevel == 0) {
 			//Ʃ�丮�� ����
 			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("Tutorial Start")));

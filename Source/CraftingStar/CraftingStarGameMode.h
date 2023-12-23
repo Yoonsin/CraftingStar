@@ -7,7 +7,7 @@
 #include "CraftingStarCharacter.h"
 #include "CustomEnum.h"
 #include "CraftingStarGameMode.generated.h"
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerDiedSignature, ACharacter*, Character);
+
 UCLASS()
 class ACraftingStarGameMode : public AGameMode
 {
@@ -44,8 +44,6 @@ protected:
 
 private:
 	virtual void PostLogin(APlayerController* newPlayer) override;
-	virtual void Logout(AController* Exiting) override;
-
 	TSubclassOf<ACraftingStarCharacter> CharClass;
 
 	FVector SpawnLoc;
