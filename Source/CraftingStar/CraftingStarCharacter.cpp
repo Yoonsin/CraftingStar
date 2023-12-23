@@ -116,14 +116,14 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 
 	// Ability: Laser Niagara System
 	LaserBody = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Laser Body"));
-	ConstructorHelpers::FObjectFinder<UNiagaraSystem> LaserBodyAsset(TEXT("NiagaraSystem'/Game/Assets/Effects/Laser/NS_Laser.NS_Laser'"));
+	ConstructorHelpers::FObjectFinder<UNiagaraSystem> LaserBodyAsset(TEXT("NiagaraSystem'/Game/Effects/Laser/NS_Laser.NS_Laser'"));
 	if ( LaserBodyAsset.Succeeded() ) {
 		LaserBody->SetAsset(LaserBodyAsset.Object);
 	}
 	LaserBody->SetupAttachment(Weapon_rMesh , FName(TEXT("SpawnLoc")));
 
 	LaserImpact = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Laser Impact"));
-	ConstructorHelpers::FObjectFinder<UNiagaraSystem> LaserImpactAsset(TEXT("NiagaraSystem'/Game/Assets/Effects/Laser/NS_LaserImpact.NS_LaserImpact'"));
+	ConstructorHelpers::FObjectFinder<UNiagaraSystem> LaserImpactAsset(TEXT("NiagaraSystem'/Game/Effects/Laser/NS_LaserImpact.NS_LaserImpact'"));
 	if ( LaserBodyAsset.Succeeded() ) {
 		LaserImpact->SetAsset(LaserImpactAsset.Object);
 	}
