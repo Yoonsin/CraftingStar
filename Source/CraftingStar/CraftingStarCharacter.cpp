@@ -20,6 +20,7 @@
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h" 
 #include "NiagaraComponent.h"
+#include "LightSensingObject.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -185,17 +186,17 @@ void ACraftingStarCharacter::SetupPlayerInputComponent(class UInputComponent* Pl
 	// VR headset functionality
 	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &ACraftingStarCharacter::OnResetVR);
 
-	// ȷ Ʈ
+	// 팔레트
 	PlayerInputComponent->BindAction("Palette", IE_Pressed, this, &ACraftingStarCharacter::Palette);
 	PlayerInputComponent->BindAction("Palette", IE_Released, this, &ACraftingStarCharacter::StopPalette);
-	//     
+	//월드맵
 	PlayerInputComponent->BindAction("WorldMap", IE_Pressed, this, &ACraftingStarCharacter::WorldMap);
 	PlayerInputComponent->BindAction("WorldMap", IE_Released, this, &ACraftingStarCharacter::StopWorldMap);
 
 	PlayerInputComponent->BindAction("SystemMenu", IE_Pressed, this, &ACraftingStarCharacter::SystemMenu);
 	PlayerInputComponent->BindAction("SystemMenu", IE_Released, this, &ACraftingStarCharacter::StopSystemMenu);
 
-	//  ȣ ۿ 
+	//상호작용
 	PlayerInputComponent->BindAction("Interaction", IE_Pressed, this, &ACraftingStarCharacter::Interaction);
 
 	// for using Ability. key: E.
@@ -263,6 +264,7 @@ void ACraftingStarCharacter::StopPalette() {
 		GetWorldTimerManager().ClearTimer(HoldTimerHandle);
 		PaletteCnt = 0.0f;
 	}
+
 
 	//      ɷ   غ    ȷ Ʈ             ʾ     
 	if (PaletteWidgetRef == NULL && GetPlayerState() != nullptr && Cast<ACraftingStarPS>(GetPlayerState())->NowState == EPlayerGMState::EAbilityReady) {
@@ -378,6 +380,13 @@ bool ACraftingStarCharacter::WandLineTrace(float distance) const {
 	// Set the End of Laser Body
 	if ( Hit.bBlockingHit ) {
 		LaserBody->SetVectorParameter(FName(TEXT("LaserEnd")) , Hit.Location);
+
+		//Here Ejection Abillity Interaction
+		auto target = Cast<ALightSensingObject>(Hit.Actor);
+		if ( target )
+		{
+			target->React(Hit.Location);
+		}
 	}
 	else {
 		LaserBody->SetVectorParameter(FName(TEXT("LaserEnd")) , End);

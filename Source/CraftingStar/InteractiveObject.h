@@ -11,8 +11,8 @@ class CRAFTINGSTAR_API AInteractiveObject : public AActor
 {
 	GENERATED_BODY()
 	
-private:
-	UPROPERTY(EditAnywhere)
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class UStaticMeshComponent* mesh;
 	UPROPERTY(EditAnywhere)
 	class UBoxComponent* box;
