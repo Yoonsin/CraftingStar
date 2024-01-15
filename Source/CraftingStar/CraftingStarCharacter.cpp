@@ -410,8 +410,10 @@ void ACraftingStarCharacter::ServerAbility_Implementation(bool abilityState) {
 void ACraftingStarCharacter::MulticastAbility_Implementation(bool abilityState) {
 	if ( abilityState ) {
 		GetMesh()->GetAnimInstance()->Montage_Play(AbilityMontage , 1.0f);
+		bUseControllerRotationYaw = true;	// Rotate the player based on the controller
 	}
 	else {
+		bUseControllerRotationYaw = false;	// Rotate the player based on the controller
 		GetMesh()->GetAnimInstance()->Montage_Play(DeactiveAbilityMontage , 1.0f);
 		// Activate Ability
 		EPlayerAbility nowAbility = Cast<ACraftingStarPS>(GetPlayerState())->NowAbility;
