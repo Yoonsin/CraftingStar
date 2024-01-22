@@ -10,8 +10,8 @@
 			"LoadingPhase": "Default",
 			"AdditionalDependencies": [
 				"Engine",
-				"UMGEditor",
 				"UMG",
+                                "UMGEditor",
 				"Niagara"
 			]
 		}
