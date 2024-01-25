@@ -196,8 +196,8 @@ void ACraftingStarCharacter::SetupPlayerInputComponent(class UInputComponent* Pl
 	PlayerInputComponent->BindAction("WorldMap", IE_Pressed, this, &ACraftingStarCharacter::WorldMap);
 	PlayerInputComponent->BindAction("WorldMap", IE_Released, this, &ACraftingStarCharacter::StopWorldMap);
 
-	PlayerInputComponent->BindAction("SystemMenu", IE_Pressed, this, &ACraftingStarCharacter::SystemMenu);
-	PlayerInputComponent->BindAction("SystemMenu", IE_Released, this, &ACraftingStarCharacter::StopSystemMenu);
+	//PlayerInputComponent->BindAction("SystemMenu", IE_Pressed, this, &ACraftingStarCharacter::SystemMenu);
+	//PlayerInputComponent->BindAction("SystemMenu", IE_Released, this, &ACraftingStarCharacter::StopSystemMenu);
 
 	//상호작용
 	PlayerInputComponent->BindAction("Interaction", IE_Pressed, this, &ACraftingStarCharacter::Interaction);
@@ -378,19 +378,22 @@ bool ACraftingStarCharacter::WandLineTrace(float distance) {
 	if ( Hit.bBlockingHit ) {
 		LaserBody->SetVectorParameter(FName(TEXT("LaserEnd")) , Hit.Location);
 
+		if ( Cast<ACraftingStarPS>(GetPlayerState())->PlayerData.Mode == EPlayerRole::EDark ) {
+			ServerLaser(LaserBody , true , Hit.bBlockingHit , Hit.Location , FLinearColor::Black);
+		}
+		else if ( Cast<ACraftingStarPS>(GetPlayerState())->PlayerData.Mode == EPlayerRole::ELight ) {
+			ServerLaser(LaserBody , true , Hit.bBlockingHit , Hit.Location , FLinearColor::White);
+		}
+
 		//Here Ejection Abillity Interaction
 		auto target = Cast<ILightSensingInterface>(Hit.Actor);
 		if ( target )
 		{
 			//빛 대상
 			//ILightSensingInterface를 상속받은 얘의 React 함수를 호출받는 방법.
-			target->Execute_React(Hit.Actor.Get(), UUtilityFunction::IsHost(this->GetController()) , Hit.Location);
-		if ( Cast<ACraftingStarPS>(GetPlayerState())->PlayerData.Mode == EPlayerRole::EDark ) {
-			ServerLaser(LaserBody , true , Hit.bBlockingHit , Hit.Location, FLinearColor::Black);
+			target->Execute_React(Hit.Actor.Get() , UUtilityFunction::IsHost(this->GetController()) , Hit.Location);
 		}
-		else if ( Cast<ACraftingStarPS>(GetPlayerState())->PlayerData.Mode == EPlayerRole::ELight ) {
-			ServerLaser(LaserBody , true , Hit.bBlockingHit , Hit.Location , FLinearColor::White);
-		}
+		
 	}
 	else {
 		if ( Cast<ACraftingStarPS>(GetPlayerState())->PlayerData.Mode == EPlayerRole::EDark ) {

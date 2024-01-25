@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "InteractiveColorCube.generated.h"
+#include "InteractiveObject.generated.h"
 
 UCLASS()
 class CRAFTINGSTAR_API AInteractiveObject : public AActor
@@ -19,20 +19,20 @@ protected:
 	
 public:	
 	// Sets default values for this actor's properties
-	AInteractiveColorCube();
+	AInteractiveObject();
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
-	class UStaticMeshComponent* CubeMesh;
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	//오브젝트가 작동하기 위한 내부구현
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void Perform(); //오브젝트가 작동하기 위한 내부구현
+	void Perform(); 
 	virtual void Perform_Implementation();
 
 	int InteractiveFunc();
