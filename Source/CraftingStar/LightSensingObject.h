@@ -4,28 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "InteractiveObject.h"
+#include "LightSensingInterface.h"
 #include "LightSensingObject.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class CRAFTINGSTAR_API ALightSensingObject : public AInteractiveObject
+class CRAFTINGSTAR_API ALightSensingObject : public AInteractiveObject, public ILightSensingInterface
 {
 	GENERATED_BODY()
 	
 public:
 	virtual void Perform_Implementation() override;
-
-	/// <summary>
-	/// 빛에 의해 반응했을 때 나오는 함수
-	/// </summary>
-	/// <param name="Location">빛을 받은 위치</param>
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void React(FVector Location);
-	/// <summary>
-	/// 빛에 의해 반응했을 때 나오는 함수
-	/// </summary>
-	/// <param name="Location">빛을 받은 위치</param>
-	virtual void React_Implementation(FVector Location);
+	virtual void React_Implementation(bool bLightCharacter, FVector Location) override;
 };

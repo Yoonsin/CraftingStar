@@ -30,7 +30,6 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	
 	void Perform(); //오브젝트가 작동하기 위한 내부구현
 	virtual void Perform_Implementation();
 

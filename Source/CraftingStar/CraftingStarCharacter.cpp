@@ -21,6 +21,7 @@
 #include "NiagaraFunctionLibrary.h" 
 #include "NiagaraComponent.h"
 #include "LightSensingObject.h"
+#include "UtilityFunction.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -382,10 +383,12 @@ bool ACraftingStarCharacter::WandLineTrace(float distance) const {
 		LaserBody->SetVectorParameter(FName(TEXT("LaserEnd")) , Hit.Location);
 
 		//Here Ejection Abillity Interaction
-		auto target = Cast<ALightSensingObject>(Hit.Actor);
+		auto target = Cast<ILightSensingInterface>(Hit.Actor);
 		if ( target )
 		{
-			target->React(Hit.Location);
+			//빛 대상
+			//ILightSensingInterface를 상속받은 얘의 React 함수를 호출받는 방법.
+			target->Execute_React(Hit.Actor.Get(), UUtilityFunction::IsHost(this->GetController()) , Hit.Location);
 		}
 	}
 	else {
