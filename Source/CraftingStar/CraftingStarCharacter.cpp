@@ -360,10 +360,10 @@ void ACraftingStarCharacter::Interaction() {
 bool ACraftingStarCharacter::ServerLaser_Validate(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color) {
 	return true;
 }
-void ACraftingStarCharacter::ServerLaser_Implementation(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color) {
+void ACraftingStarCharacter::ServerLaser_Implementation(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color) const {
 	MulticastLaser(NiagaraComp, isBody, isHit, end , color);
 }
-void ACraftingStarCharacter::MulticastLaser_Implementation(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color) {
+void ACraftingStarCharacter::MulticastLaser_Implementation(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color) const {
 	if ( isBody ) {
 		// Set End point
 		NiagaraComp->SetVectorParameter(FName(TEXT("LaserEnd")) , end);

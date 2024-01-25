@@ -126,9 +126,9 @@ protected:
 	class UNiagaraComponent* LaserImpact;
 	//Laser
 	UFUNCTION(Server , Reliable , WithValidation , Category = "CraftingStar Character")
-	void ServerLaser(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color);
+	void ServerLaser(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color) const;
 	UFUNCTION(NetMulticast , Unreliable , Category = "CraftingStar Character")
-	void MulticastLaser(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color);
+	void MulticastLaser(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color) const;
 
 	//�Է� �Ͻ�����
 	void SetPause(bool isPaused);
@@ -191,10 +191,7 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Ability, meta = (AllowPrivateAccess = "true"))
 	class USceneComponent* SpawnLocSource;
 	// Laser: Niagara Component
-	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = "Laser", meta = ( AllowPrivateAccess = "true" ))
-	class UNiagaraComponent* LaserBody;
-	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = "Laser" , meta = ( AllowPrivateAccess = "true" ))
-	class UNiagaraComponent* LaserImpact;
+
 
 	bool KeepAbility;
 	bool canUseAbility;
