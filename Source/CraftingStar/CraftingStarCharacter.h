@@ -22,6 +22,7 @@ class ACraftingStarCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
 
+
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = UI, meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UUserWidget> PaletteWidget;
@@ -32,9 +33,6 @@ class ACraftingStarCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = UI, meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UUserWidget> GameWidget;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = UI, meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<UUserWidget> SystemMenuWidget;
-
 
 	//�ȷ�Ʈ
 	class UUserWidget* PaletteWidgetRef;
@@ -43,7 +41,6 @@ class ACraftingStarCharacter : public ACharacter
 
 	//�����
 	class UUserWidget* WorldMapWidgetRef;
-	class UUserWidget* SystemMenuWidgetRef;
 
 public:
 	ACraftingStarCharacter();
@@ -55,10 +52,6 @@ public:
 	/** Base look up/down rate, in deg/sec. Other scaling may affect final rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseLookUpRate;
-
-	
-
-
 
 protected:
 	// Called when the game starts or when spawned
@@ -100,7 +93,6 @@ protected:
 
 	//�����
 	void WorldMap();
-	void SystemMenu();
 
 	//��ȣ�ۿ�
 	void Interaction();
@@ -118,16 +110,19 @@ protected:
 	UFUNCTION(NetMulticast, Unreliable, Category = "CraftingStar Character")
 	void MulticastAbility(bool abilityState);
 
+	// Laser: Niagara Component
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = "Laser" , meta = ( AllowPrivateAccess = "true" ))
+	class UNiagaraComponent* LaserBody;
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = "Laser" , meta = ( AllowPrivateAccess = "true" ))
+	class UNiagaraComponent* LaserImpact;
+	//Laser
+	UFUNCTION(Server , Reliable , WithValidation , Category = "CraftingStar Character")
+	void ServerLaser(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color);
+	UFUNCTION(NetMulticast , Unreliable , Category = "CraftingStar Character")
+	void MulticastLaser(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color);
+
 	//�Է� �Ͻ�����
 	void SetPause(bool isPaused);
-
-
-	//게임플레이 중 액터가 소멸되었을 때 호출.
-	virtual void Destroyed();
-
-	UFUNCTION(BlueprintCallable, Server, Reliable)
-	//플레이어 캐릭터를 재시작할 게임 모드 클래스 호출.
-	void CallRespawnPlayer();
 
 protected:
 	// APawn interface
@@ -148,9 +143,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void StopWorldMap();
 
-	UFUNCTION(BlueprintCallable)
-	void StopSystemMenu();
-
 	//���� ������ ������Ʈ
 	UFUNCTION(BlueprintCallable)
 		void UpdatePlayerAbility(EPlayerAbility playerAbility);
@@ -158,7 +150,7 @@ public:
 		void UpdatePlayerGMState(EPlayerGMState playerGMState);
 
 	// LineTrace: Set Wand Ability Vector
-	bool WandLineTrace(float distance) const;
+	bool WandLineTrace(float distance);
 
 private:
 	// Cahracter Mesh
@@ -178,12 +170,8 @@ private:
 	// Set LineTrace Start Loc
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Ability, meta = (AllowPrivateAccess = "true"))
 	class USceneComponent* SpawnLocSource;
-	// Laser: Niagara Component
-	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = "Laser", meta = ( AllowPrivateAccess = "true" ))
-	class UNiagaraComponent* LaserBody;
-	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = "Laser" , meta = ( AllowPrivateAccess = "true" ))
-	class UNiagaraComponent* LaserImpact;
 
 	bool KeepAbility;
 	bool canUseAbility;
+	bool isLaserHit;
 };
