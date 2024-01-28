@@ -380,7 +380,7 @@ void ACraftingStarCharacter::MulticastLaser_Implementation(UNiagaraComponent* Ni
 }
 
 // Magic Wand Line Trace for Ability
-bool ACraftingStarCharacter::WandLineTrace(float distance) const {
+bool ACraftingStarCharacter::WandLineTrace(float distance){
 
 	/* Set LineTrace */
 
@@ -428,14 +428,7 @@ bool ACraftingStarCharacter::WandLineTrace(float distance) const {
 		ServerLaser(LaserImpact , false , Hit.bBlockingHit , Hit.Location , FLinearColor::White);
 	}
 
-		//Here Ejection Abillity Interaction
-		auto target = Cast<ILightSensingInterface>(Hit.Actor);
-	if ( target )
-	{
-		//빛 대상
-		//ILightSensingInterface를 상속받은 얘의 React 함수를 호출받는 방법.
-		target->Execute_React(Hit.Actor.Get(), UUtilityFunction::IsHost(this->GetController()) , Hit.Location);
-	}
+	LightAct(Hit.Actor.Get() , Hit.Location);
 
 	return !Hit.bBlockingHit;
 }
@@ -618,4 +611,38 @@ void ACraftingStarCharacter::CallRespawnPlayer_Implementation()
 	//		GameMode->RestartPlayer(CortollerRef);
 	//	}
 	//}
+}
+
+
+void ACraftingStarCharacter::LightAct(AActor* target , FVector Location )
+{
+	if ( HasAuthority() )
+	{
+		MulticastLightAct(target , Location);
+	}
+	else
+	{
+		ServerLightAct(target , Location);
+	}
+	
+}
+
+void ACraftingStarCharacter::ServerLightAct_Implementation(AActor* target , FVector Location)
+{
+	MulticastLightAct(target , Location);
+
+	UE_LOG(LogTemp , Display , TEXT("Hmm"));
+}
+
+void ACraftingStarCharacter::MulticastLightAct_Implementation(AActor* target , FVector Location)
+{
+	//Here Ejection Abillity Interaction
+	auto targetSense = Cast<ILightSensingInterface>(target);
+	if ( targetSense )
+	{
+		//빛 대상
+		//ILightSensingInterface를 상속받은 얘의 React 함수를 호출받는 방법.
+		targetSense->Execute_React(target , UUtilityFunction::IsHost(this->GetController()) , Location);
+		UE_LOG(LogTemp , Display , TEXT("Hmm"));
+	}
 }

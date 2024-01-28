@@ -130,6 +130,14 @@ protected:
 	UFUNCTION(NetMulticast , Unreliable , Category = "CraftingStar Character")
 	void MulticastLaser(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color) const;
 
+public:
+	//레이저가 닿은 부분에서 호출하게 한다.
+	void LightAct(AActor* target , FVector Location);
+	UFUNCTION(Server, Reliable)
+	void ServerLightAct(AActor* target , FVector Location);
+	UFUNCTION(NetMulticast , Reliable)
+	void MulticastLightAct(AActor* target , FVector Location);
+
 	//�Է� �Ͻ�����
 	void SetPause(bool isPaused);
 
@@ -170,7 +178,7 @@ public:
 		void UpdatePlayerGMState(EPlayerGMState playerGMState);
 
 	// LineTrace: Set Wand Ability Vector
-	bool WandLineTrace(float distance) const;
+	bool WandLineTrace(float distance);
 
 private:
 	// Cahracter Mesh
