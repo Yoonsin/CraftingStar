@@ -134,9 +134,9 @@ public:
 	//레이저가 닿은 부분에서 호출하게 한다.
 	void LightAct(AActor* target , FVector Location);
 	UFUNCTION(Server, Reliable)
-	void ServerLightAct(AActor* target , FVector Location);
+	void ServerLightAct(AActor* target , FVector Location, bool isHost);
 	UFUNCTION(NetMulticast , Reliable)
-	void MulticastLightAct(AActor* target , FVector Location);
+	void MulticastLightAct(AActor* target , FVector Location, bool isHost);
 
 	//�Է� �Ͻ�����
 	void SetPause(bool isPaused);

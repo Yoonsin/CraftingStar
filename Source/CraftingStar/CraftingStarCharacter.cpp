@@ -618,23 +618,21 @@ void ACraftingStarCharacter::LightAct(AActor* target , FVector Location )
 {
 	if ( HasAuthority() )
 	{
-		MulticastLightAct(target , Location);
+		MulticastLightAct(target , Location, true);
 	}
 	else
 	{
-		ServerLightAct(target , Location);
+		ServerLightAct(target , Location, false);
 	}
 	
 }
 
-void ACraftingStarCharacter::ServerLightAct_Implementation(AActor* target , FVector Location)
+void ACraftingStarCharacter::ServerLightAct_Implementation(AActor* target , FVector Location, bool isHost)
 {
-	MulticastLightAct(target , Location);
-
-	UE_LOG(LogTemp , Display , TEXT("Hmm"));
+	MulticastLightAct(target , Location, isHost);
 }
 
-void ACraftingStarCharacter::MulticastLightAct_Implementation(AActor* target , FVector Location)
+void ACraftingStarCharacter::MulticastLightAct_Implementation(AActor* target , FVector Location, bool isHost)
 {
 	//Here Ejection Abillity Interaction
 	auto targetSense = Cast<ILightSensingInterface>(target);
@@ -642,7 +640,6 @@ void ACraftingStarCharacter::MulticastLightAct_Implementation(AActor* target , F
 	{
 		//빛 대상
 		//ILightSensingInterface를 상속받은 얘의 React 함수를 호출받는 방법.
-		targetSense->Execute_React(target , UUtilityFunction::IsHost(this->GetController()) , Location);
-		UE_LOG(LogTemp , Display , TEXT("Hmm"));
+		targetSense->Execute_React(target , isHost , Location);
 	}
 }
