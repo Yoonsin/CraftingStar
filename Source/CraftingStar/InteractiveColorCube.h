@@ -14,6 +14,8 @@ class CRAFTINGSTAR_API AInteractiveColorCube : public AActor
 public:	
 	// Sets default values for this actor's properties
 	AInteractiveColorCube();
+	UPROPERTY(EditAnywhere , BlueprintReadWrite , Category = Manipulation)
+	bool canBeManipulated = false;
 
 protected:
 	// Called when the game starts or when spawned

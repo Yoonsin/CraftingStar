@@ -210,11 +210,16 @@ void ACraftingStarCharacter::Tick(float DeltaTime)
 
 	if ( KeepAbility ) {
 		// Activate Ability
-		EPlayerAbility nowAbility = Cast<ACraftingStarPS>(GetPlayerState())->NowAbility;
+		nowAbility = Cast<ACraftingStarPS>(GetPlayerState())->NowAbility;
 		if ( nowAbility != EPlayerAbility::ENone ) {
-			// Laser(EBlast)
+			// Ejection (EBlast)
 			if ( nowAbility == EPlayerAbility::EBlast ) {
-				// 테스트
+				// Execute Laser
+				ACraftingStarCharacter::WandLineTrace(10000);
+
+			}
+			// Manipulation (ETelekinesis)
+			if ( nowAbility == EPlayerAbility::ETelekinesis ) {
 				// Execute Laser
 				ACraftingStarCharacter::WandLineTrace(10000);
 
@@ -394,7 +399,9 @@ bool ACraftingStarCharacter::WandLineTrace(float distance) {
 
 	// Interactive with hit Actor
 	if ( AInteractiveColorCube* hitActor = Cast<AInteractiveColorCube>(Hit.GetActor()) ) {
-		hitActor->InteractiveFunc();
+		if ( nowAbility == EPlayerAbility::EBlast ) {
+			hitActor->InteractiveFunc();
+		}
 	}
 
 	return !Hit.bBlockingHit;
@@ -416,7 +423,7 @@ void ACraftingStarCharacter::MulticastAbility_Implementation(bool abilityState) 
 		bUseControllerRotationYaw = false;	// Rotate the player based on the controller
 		GetMesh()->GetAnimInstance()->Montage_Play(DeactiveAbilityMontage , 1.0f);
 		// Activate Ability
-		EPlayerAbility nowAbility = Cast<ACraftingStarPS>(GetPlayerState())->NowAbility;
+		nowAbility = Cast<ACraftingStarPS>(GetPlayerState())->NowAbility;
 		if ( nowAbility != EPlayerAbility::ENone ) {
 			// Laser(EBlast)
 			if ( nowAbility == EPlayerAbility::EBlast ) {
@@ -428,11 +435,13 @@ void ACraftingStarCharacter::MulticastAbility_Implementation(bool abilityState) 
 	}
 }
 
-// Input Ability
+// Input Ability (Key:E)
 void ACraftingStarCharacter::ActivateAbility() {
 	KeepAbility = true;
 	CameraBoom->SetRelativeLocation(FVector(0.0f , 100.0f , 100.0f));
-	CameraBoom->bUsePawnControlRotation = false; // Does not rotate the arm based on the controller
+	if ( nowAbility == EPlayerAbility::EBlast ) {
+		CameraBoom->bUsePawnControlRotation = false; // Does not rotate the arm based on the controller
+	}
 	if ( AbilityMontage ) {
 		// Play Animation
 		bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(AbilityMontage);
@@ -443,6 +452,7 @@ void ACraftingStarCharacter::ActivateAbility() {
 }
 void ACraftingStarCharacter::DeactivateAbility() {
 	KeepAbility = false;
+	nowAbility = EPlayerAbility::ENone;
 	CameraBoom->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
 	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 	if (DeactiveAbilityMontage) {
