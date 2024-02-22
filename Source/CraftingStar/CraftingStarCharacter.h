@@ -33,6 +33,9 @@ class ACraftingStarCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = UI, meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UUserWidget> GameWidget;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = UI, meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UUserWidget> SystemMenuWidget;
+
 
 	//�ȷ�Ʈ
 	class UUserWidget* PaletteWidgetRef;
@@ -41,9 +44,7 @@ class ACraftingStarCharacter : public ACharacter
 
 	//�����
 	class UUserWidget* WorldMapWidgetRef;
-
-	/* Ability */
-	EPlayerAbility nowAbility = EPlayerAbility::ENone;
+	class UUserWidget* SystemMenuWidgetRef;
 
 public:
 	ACraftingStarCharacter();
@@ -55,6 +56,10 @@ public:
 	/** Base look up/down rate, in deg/sec. Other scaling may affect final rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseLookUpRate;
+
+	
+
+
 
 protected:
 	// Called when the game starts or when spawned
@@ -96,6 +101,7 @@ protected:
 
 	//�����
 	void WorldMap();
+	void SystemMenu();
 
 	//��ȣ�ۿ�
 	void Interaction();
@@ -120,12 +126,28 @@ protected:
 	class UNiagaraComponent* LaserImpact;
 	//Laser
 	UFUNCTION(Server , Reliable , WithValidation , Category = "CraftingStar Character")
-	void ServerLaser(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color);
+	void ServerLaser(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color) const;
 	UFUNCTION(NetMulticast , Unreliable , Category = "CraftingStar Character")
-	void MulticastLaser(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color);
+	void MulticastLaser(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color) const;
+
+public:
+	//레이저가 닿은 부분에서 호출하게 한다.
+	void LightAct(AActor* target , FVector Location);
+	UFUNCTION(Server, Reliable)
+	void ServerLightAct(AActor* target , FVector Location, bool isHost);
+	UFUNCTION(NetMulticast , Reliable)
+	void MulticastLightAct(AActor* target , FVector Location, bool isHost);
 
 	//�Է� �Ͻ�����
 	void SetPause(bool isPaused);
+
+
+	//게임플레이 중 액터가 소멸되었을 때 호출.
+	virtual void Destroyed();
+
+	UFUNCTION(BlueprintCallable, Server, Reliable)
+	//플레이어 캐릭터를 재시작할 게임 모드 클래스 호출.
+	void CallRespawnPlayer();
 
 protected:
 	// APawn interface
@@ -145,6 +167,9 @@ public:
 	//����ʵ� ��������
 	UFUNCTION(BlueprintCallable)
 	void StopWorldMap();
+
+	UFUNCTION(BlueprintCallable)
+	void StopSystemMenu();
 
 	//���� ������ ������Ʈ
 	UFUNCTION(BlueprintCallable)
@@ -173,8 +198,9 @@ private:
 	// Set LineTrace Start Loc
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Ability, meta = (AllowPrivateAccess = "true"))
 	class USceneComponent* SpawnLocSource;
+	// Laser: Niagara Component
+
 
 	bool KeepAbility;
 	bool canUseAbility;
-	bool isLaserHit;
 };
