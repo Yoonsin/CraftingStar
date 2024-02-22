@@ -22,6 +22,7 @@
 #include "NiagaraComponent.h"
 #include "LightSensingObject.h"
 #include "UtilityFunction.h"
+#include "WeaponComponent.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -101,11 +102,19 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 	CloakMesh->SetRelativeLocation(FVector(40.0f , 20.0f , 0.0f));
 	CloakMesh->SetRelativeRotation(FRotator(90.0f , 0.0f , 0.0f));
 
-	Weapon_rMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Weapon_R"));
+	Weapon_rMesh = CreateDefaultSubobject<UWeaponComponent>(TEXT("Weapon_R"));
 	ConstructorHelpers::FObjectFinder<UStaticMesh> WandSM(TEXT("StaticMesh'/Game/Assets/BaseContent/RPGTinyHeroWavePolyart/Mesh/Weapon/Wand04_SM.Wand04_SM'"));
 	if ( WandSM.Succeeded() ) {
 		Weapon_rMesh->SetStaticMesh(WandSM.Object);
+		Weapon_rMesh->SetWandWeapon(WandSM.Object);
 	}
+
+	ConstructorHelpers::FObjectFinder<UStaticMesh> TwoHandedWeaponSM(TEXT("StaticMesh'/Game/Assets/BaseContent/RPGTinyHeroWavePolyart/Mesh/Weapon/THS02_Sword_SM.THS02_Sword_SM'"));
+	if ( TwoHandedWeaponSM.Succeeded() )
+	{
+		Weapon_rMesh->SetTwoHandedWeapon(TwoHandedWeaponSM.Object);
+	}
+
 	Weapon_rMesh->SetupAttachment(GetMesh(), FName(TEXT("Weapon_R")));
 	Weapon_rMesh->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
 	Weapon_rMesh->SetRelativeRotation(FRotator(0.0f , 0.0f , 0.0f));
@@ -128,6 +137,8 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 		LaserImpact->SetAsset(LaserImpactAsset.Object);
 	}
 	LaserImpact->SetupAttachment(Weapon_rMesh , FName(TEXT("SpawnLoc")));
+
+
 
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
@@ -360,10 +371,10 @@ void ACraftingStarCharacter::Interaction() {
 bool ACraftingStarCharacter::ServerLaser_Validate(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color) {
 	return true;
 }
-void ACraftingStarCharacter::ServerLaser_Implementation(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color) const {
+void ACraftingStarCharacter::ServerLaser_Implementation(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color) {
 	MulticastLaser(NiagaraComp, isBody, isHit, end , color);
 }
-void ACraftingStarCharacter::MulticastLaser_Implementation(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color) const {
+void ACraftingStarCharacter::MulticastLaser_Implementation(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color) {
 	if ( isBody ) {
 		// Set End point
 		NiagaraComp->SetVectorParameter(FName(TEXT("LaserEnd")) , end);
@@ -461,30 +472,50 @@ void ACraftingStarCharacter::MulticastAbility_Implementation(bool abilityState) 
 	}
 }
 
+
 // Input Ability
 void ACraftingStarCharacter::ActivateAbility() {
-	KeepAbility = true;
-	CameraBoom->SetRelativeLocation(FVector(0.0f , 100.0f , 100.0f));
-	CameraBoom->bUsePawnControlRotation = false; // Does not rotate the arm based on the controller
-	if ( AbilityMontage ) {
-		// Play Animation
-		bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(AbilityMontage);
-		if ( !bIsMontagePlaying ) {
-			ServerAbility(true);	// request ability animation on server
+
+	auto CurAbility = Cast<ACraftingStarPS>(GetPlayerState())->NowAbility;
+
+	if ( CurAbility == EPlayerAbility::EBlast )
+	{
+		KeepAbility = true;
+		CameraBoom->SetRelativeLocation(FVector(0.0f , 100.0f , 100.0f));
+		CameraBoom->bUsePawnControlRotation = false; // Does not rotate the arm based on the controller
+		if ( AbilityMontage ) {
+			// Play Animation
+			bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(AbilityMontage);
+			if ( !bIsMontagePlaying ) {
+				ServerAbility(true);	// request ability animation on server
+			}
 		}
 	}
+	
+	if ( CurAbility == EPlayerAbility::EAbility_dummy1 )
+	{
+		UseProjection();
+	}
+
+	
 }
 void ACraftingStarCharacter::DeactivateAbility() {
-	KeepAbility = false;
-	CameraBoom->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
-	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
-	if (DeactiveAbilityMontage) {
-		// Play Animation
-		bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(DeactiveAbilityMontage);
-		if (!bIsMontagePlaying) {
-			ServerAbility(false);	// request ability animation on server
+
+	auto CurAbility = Cast<ACraftingStarPS>(GetPlayerState())->NowAbility;
+	if ( CurAbility == EPlayerAbility::EBlast )
+	{
+		KeepAbility = false;
+		CameraBoom->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
+		CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
+		if ( DeactiveAbilityMontage ) {
+			// Play Animation
+			bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(DeactiveAbilityMontage);
+			if ( !bIsMontagePlaying ) {
+				ServerAbility(false);	// request ability animation on server
+			}
 		}
 	}
+	
 }
 
 void  ACraftingStarCharacter::SetPause(bool isPaused) {
@@ -642,4 +673,30 @@ void ACraftingStarCharacter::MulticastLightAct_Implementation(AActor* target , F
 		//ILightSensingInterface를 상속받은 얘의 React 함수를 호출받는 방법.
 		targetSense->Execute_React(target , isHost , Location);
 	}
+}
+
+void ACraftingStarCharacter::UseProjection()
+{
+	ServerUseProjection();
+}
+
+void ACraftingStarCharacter::ServerUseProjection_Implementation()
+{
+	MulticastUseProjection();
+}
+
+void ACraftingStarCharacter::MulticastUseProjection_Implementation()
+{
+	if ( ProjectionTwoHandedMontage )
+	{
+		Weapon_rMesh->WeaponChange();
+		Weapon_rMesh->bCanDamage = true;
+		GetMesh()->GetAnimInstance()->Montage_Play(ProjectionTwoHandedMontage);
+		
+		// NEED
+		//Weapon_rMesh->bCanDamage = false
+		// END Notify
+	}	
+	
+		
 }

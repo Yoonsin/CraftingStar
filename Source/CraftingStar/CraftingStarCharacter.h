@@ -113,6 +113,9 @@ protected:
 	class UAnimMontage* AbilityMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = AnimMontage)
 	class UAnimMontage* DeactiveAbilityMontage;
+	UPROPERTY(EditDefaultsOnly , BlueprintReadOnly , Category = AnimMontage)
+	class UAnimMontage* ProjectionTwoHandedMontage;
+	
 	// Anim Replicate
 	UFUNCTION(Server, Reliable, WithValidation, Category = "CraftingStar Character")
 	void ServerAbility(bool abilityState);
@@ -126,9 +129,18 @@ protected:
 	class UNiagaraComponent* LaserImpact;
 	//Laser
 	UFUNCTION(Server , Reliable , WithValidation , Category = "CraftingStar Character")
-	void ServerLaser(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color) const;
+	void ServerLaser(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color);
 	UFUNCTION(NetMulticast , Unreliable , Category = "CraftingStar Character")
-	void MulticastLaser(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color) const;
+	void MulticastLaser(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color);
+
+
+	//Ability Projection 능력 "투영"
+	void UseProjection();
+	UFUNCTION(Server, Reliable)
+	void ServerUseProjection();
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastUseProjection();
+
 
 public:
 	//레이저가 닿은 부분에서 호출하게 한다.
@@ -159,6 +171,8 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+	FORCEINLINE class UWeaponComponent* GetWeaponComponent() const { return Weapon_rMesh; }
 
 	//�ȷ�Ʈ ���� �������Ʈ�� ȣ���ؾ��ؼ� Public + BlueprintCallable ���� 
 	UFUNCTION(BlueprintCallable)
@@ -192,8 +206,8 @@ private:
 	class UStaticMeshComponent* MouthMesh;
 	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
 	class USkeletalMeshComponent* CloakMesh;
-	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
-	class UStaticMeshComponent* Weapon_rMesh;
+	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	class UWeaponComponent* Weapon_rMesh;
 
 	// Set LineTrace Start Loc
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Ability, meta = (AllowPrivateAccess = "true"))
@@ -203,4 +217,5 @@ private:
 
 	bool KeepAbility;
 	bool canUseAbility;
+
 };
