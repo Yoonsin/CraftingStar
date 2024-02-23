@@ -46,6 +46,9 @@ class ACraftingStarCharacter : public ACharacter
 	class UUserWidget* WorldMapWidgetRef;
 	class UUserWidget* SystemMenuWidgetRef;
 
+	/* Ability */
+	EPlayerAbility nowAbility = EPlayerAbility::ENone;
+
 public:
 	ACraftingStarCharacter();
 

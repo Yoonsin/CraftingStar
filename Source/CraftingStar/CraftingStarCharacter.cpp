@@ -62,8 +62,6 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 	HeadMesh->SetupAttachment(GetMesh() , FName(TEXT("Head")));
 	HeadMesh->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
 	HeadMesh->SetRelativeRotation(FRotator(-90.0f , 0.0f , 0.0f));
-	HeadMesh->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
-	HeadMesh->SetRelativeRotation(FRotator(-90.0f , 0.0f , 0.0f));
 	
 	HairAndHatMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("HairAndHatMesh"));
 	ConstructorHelpers::FObjectFinder<UStaticMesh> HairAndHatSM(TEXT("StaticMesh'/Game/Assets/BaseContent/RPGTinyHeroWavePolyart/Mesh/HeadPart/Hair08_SM.Hair08_SM'"));
@@ -215,16 +213,18 @@ void ACraftingStarCharacter::Tick(float DeltaTime)
 
 	if ( KeepAbility ) {
 		// Activate Ability
-		EPlayerAbility nowAbility = Cast<ACraftingStarPS>(GetPlayerState())->NowAbility;
+		nowAbility = Cast<ACraftingStarPS>(GetPlayerState())->NowAbility;
 		if ( nowAbility != EPlayerAbility::ENone ) {
-			// Laser(EBlast)
+			// Ejection (EBlast)
 			if ( nowAbility == EPlayerAbility::EBlast ) {
-				// 테스트
-				// Activate Laser
-				//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Activate Laser"));
 				// Execute Laser
 				ACraftingStarCharacter::WandLineTrace(10000);
 
+			}
+			// Manipulation (ETelekinesis)
+			if ( nowAbility == EPlayerAbility::ETelekinesis ) {
+				// Execute Laser
+				ACraftingStarCharacter::WandLineTrace(10000);
 			}
 		}
 	}
@@ -352,7 +352,6 @@ void ACraftingStarCharacter::StopSystemMenu() {
 
 
 void ACraftingStarCharacter::Interaction() {
-
 }
 
 // Laser Niagara System Replicate
@@ -449,23 +448,31 @@ void ACraftingStarCharacter::MulticastAbility_Implementation(bool abilityState) 
 		bUseControllerRotationYaw = false;	// Rotate the player based on the controller
 		GetMesh()->GetAnimInstance()->Montage_Play(DeactiveAbilityMontage , 1.0f);
 		// Activate Ability
-		EPlayerAbility nowAbility = Cast<ACraftingStarPS>(GetPlayerState())->NowAbility;
+		nowAbility = Cast<ACraftingStarPS>(GetPlayerState())->NowAbility;
 		if ( nowAbility != EPlayerAbility::ENone ) {
-			// Laser(EBlast)
+			// Ejection (EBlast)
 			if ( nowAbility == EPlayerAbility::EBlast ) {
+				//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Blue , TEXT("hide ejection"));
 				// Hide Laser
 				LaserBody->SetVisibility(false);
 				LaserImpact->SetVisibility(false);
+			}
+			// Manipulation (ETelekinesis)
+			if ( nowAbility == EPlayerAbility::ETelekinesis ) {
+				
+
 			}
 		}
 	}
 }
 
-// Input Ability
+// Input Ability (Key:E)
 void ACraftingStarCharacter::ActivateAbility() {
 	KeepAbility = true;
 	CameraBoom->SetRelativeLocation(FVector(0.0f , 100.0f , 100.0f));
-	CameraBoom->bUsePawnControlRotation = false; // Does not rotate the arm based on the controller
+	if ( nowAbility == EPlayerAbility::EBlast ) {
+		CameraBoom->bUsePawnControlRotation = false; // Does not rotate the arm based on the controller
+	}
 	if ( AbilityMontage ) {
 		// Play Animation
 		bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(AbilityMontage);
@@ -476,6 +483,7 @@ void ACraftingStarCharacter::ActivateAbility() {
 }
 void ACraftingStarCharacter::DeactivateAbility() {
 	KeepAbility = false;
+	nowAbility = EPlayerAbility::ENone;
 	CameraBoom->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
 	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 	if (DeactiveAbilityMontage) {
