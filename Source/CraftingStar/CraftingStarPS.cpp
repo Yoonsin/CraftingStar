@@ -16,8 +16,8 @@ ACraftingStarPS::ACraftingStarPS()
 void ACraftingStarPS::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME(ACraftingStarPS, NowAbility);
-	DOREPLIFETIME(ACraftingStarPS, NowState);
+	DOREPLIFETIME(ACraftingStarPS, NowDisplayAbility);
+	DOREPLIFETIME(ACraftingStarPS, NowDisplayState);
 	DOREPLIFETIME(ACraftingStarPS, Health);
 	DOREPLIFETIME(ACraftingStarPS, PlayerData);
 }
@@ -46,12 +46,12 @@ void ACraftingStarPS::BeginPlay()
 
 void ACraftingStarPS::RequestPlayerAbility_Implementation(EPlayerAbility playerAbility)
 {
-	NowAbility = playerAbility;
+	NowDisplayAbility = playerAbility;
 }
 
 void ACraftingStarPS::RequestPlayerGMState_Implementation(EPlayerGMState playerGMState)
 {
-	NowState = playerGMState;
+	NowDisplayState = playerGMState;
 }
 
 void ACraftingStarPS::RequestHealth_Implementation(float Damage)
