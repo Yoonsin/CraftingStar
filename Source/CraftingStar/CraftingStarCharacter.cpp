@@ -23,6 +23,7 @@
 #include "LightSensingObject.h"
 #include "UtilityFunction.h"
 #include "WeaponComponent.h"
+#include "BowComponent.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -138,6 +139,11 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 	}
 	LaserImpact->SetupAttachment(Weapon_rMesh , FName(TEXT("SpawnLoc")));
 
+	Bow_lMesh = CreateDefaultSubobject<UBowComponent>(TEXT("Projection Bow"));
+	Bow_lMesh->SetupAttachment(GetMesh() , FName(TEXT("Weapon_L")));
+	Bow_lMesh->SetArcher(this);
+	
+
 
 
 	// Create a camera boom (pulls in towards the player if there is a collision)
@@ -216,6 +222,8 @@ void ACraftingStarCharacter::SetupPlayerInputComponent(class UInputComponent* Pl
 	// for using Ability. key: E.
 	PlayerInputComponent->BindAction("Ability", IE_Pressed, this, &ACraftingStarCharacter::ActivateAbility);
 	PlayerInputComponent->BindAction("Ability", IE_Released, this, &ACraftingStarCharacter::DeactivateAbility);
+
+	PlayerInputComponent->BindAction("Ability2" , IE_Pressed , this , &ACraftingStarCharacter::ActivateAbility2);
 }
 
 
@@ -494,7 +502,7 @@ void ACraftingStarCharacter::ActivateAbility() {
 	
 	if ( CurAbility == EPlayerAbility::EAbility_dummy1 )
 	{
-		UseProjection();
+		UseProjectionTwoHanded();
 	}
 
 	
@@ -517,6 +525,19 @@ void ACraftingStarCharacter::DeactivateAbility() {
 	}
 	
 }
+
+void ACraftingStarCharacter::ActivateAbility2() 
+{
+	auto CurAbility = Cast<ACraftingStarPS>(GetPlayerState())->NowAbility;
+
+	if ( CurAbility == EPlayerAbility::EAbility_dummy1 )
+	{
+		UseProjectionBow();
+	}
+}
+
+
+
 
 void  ACraftingStarCharacter::SetPause(bool isPaused) {
 	if (Cast<ACraftingStarPC>(GetController()) != nullptr) {
@@ -675,22 +696,23 @@ void ACraftingStarCharacter::MulticastLightAct_Implementation(AActor* target , F
 	}
 }
 
-void ACraftingStarCharacter::UseProjection()
+void ACraftingStarCharacter::UseProjectionTwoHanded()
 {
-	ServerUseProjection();
+	ServerUseProjectionTwoHanded();
 }
 
-void ACraftingStarCharacter::ServerUseProjection_Implementation()
+void ACraftingStarCharacter::ServerUseProjectionTwoHanded_Implementation()
 {
-	MulticastUseProjection();
+	MulticastUseProjectionTwoHanded();
 }
 
-void ACraftingStarCharacter::MulticastUseProjection_Implementation()
+void ACraftingStarCharacter::MulticastUseProjectionTwoHanded_Implementation()
 {
 	if ( ProjectionTwoHandedMontage )
 	{
 		Weapon_rMesh->WeaponChange();
 		Weapon_rMesh->bCanDamage = true;
+
 		GetMesh()->GetAnimInstance()->Montage_Play(ProjectionTwoHandedMontage);
 		
 		// NEED
@@ -699,4 +721,20 @@ void ACraftingStarCharacter::MulticastUseProjection_Implementation()
 	}	
 	
 		
+}
+
+void ACraftingStarCharacter::UseProjectionBow()
+{
+	ServerUseProjectionBow();
+}
+
+void ACraftingStarCharacter::ServerUseProjectionBow_Implementation()
+{
+	MulticastUseProjectionBow();
+}
+
+void ACraftingStarCharacter::MulticastUseProjectionBow_Implementation()
+{
+	Bow_lMesh->Equip();
+	Bow_lMesh->Shoot();
 }

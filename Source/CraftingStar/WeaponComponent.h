@@ -16,7 +16,9 @@ class CRAFTINGSTAR_API UWeaponComponent : public UStaticMeshComponent
 
 	UWeaponComponent();
 private:
+	UPROPERTY(EditAnywhere)
 	UStaticMesh* WandWeapon;
+	UPROPERTY(EditAnywhere)
 	UStaticMesh* TwoHandedWeapon;
 	
 public:

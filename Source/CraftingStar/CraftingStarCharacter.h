@@ -109,6 +109,8 @@ protected:
 	// Ability
 	void ActivateAbility();
 	void DeactivateAbility();
+	void ActivateAbility2();
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = AnimMontage)
 	class UAnimMontage* AbilityMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = AnimMontage)
@@ -135,11 +137,17 @@ protected:
 
 
 	//Ability Projection 능력 "투영"
-	void UseProjection();
+	void UseProjectionTwoHanded();
 	UFUNCTION(Server, Reliable)
-	void ServerUseProjection();
+	void ServerUseProjectionTwoHanded();
 	UFUNCTION(NetMulticast, Reliable)
-	void MulticastUseProjection();
+	void MulticastUseProjectionTwoHanded();
+
+	void UseProjectionBow();
+	UFUNCTION(Server , Reliable)
+	void ServerUseProjectionBow();
+	UFUNCTION(NetMulticast , Reliable)
+	void MulticastUseProjectionBow();
 
 
 public:
@@ -194,6 +202,7 @@ public:
 	// LineTrace: Set Wand Ability Vector
 	bool WandLineTrace(float distance);
 
+
 private:
 	// Cahracter Mesh
 	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
@@ -208,6 +217,8 @@ private:
 	class USkeletalMeshComponent* CloakMesh;
 	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
 	class UWeaponComponent* Weapon_rMesh;
+	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	class UBowComponent* Bow_lMesh;
 
 	// Set LineTrace Start Loc
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Ability, meta = (AllowPrivateAccess = "true"))
