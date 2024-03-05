@@ -23,7 +23,7 @@ void UBowComponent::Shoot()
 		GetAnimInstance()->Montage_Play(ShootBowMontage);
 	}
 
-	if ( Archer )
+	if ( Archer && ShootArcherMontage )
 	{
 		Archer->GetMesh()->GetAnimInstance()->Montage_Play(ShootArcherMontage);
 	}
