@@ -34,17 +34,10 @@ public:
 	UFUNCTION(BlueprintCallable, Server, Reliable)
 		void RequestClientUpdate(FPlayerData playerData);
 
-	//상대방한테 보여줄 능력과 상태
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
-	  EPlayerAbility NowDisplayAbility = EPlayerAbility::ENone;
+	  EPlayerAbility NowAbility = EPlayerAbility::ENone;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
-	  EPlayerGMState NowDisplayState = EPlayerGMState::EIdle;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		EPlayerAbility NowAbility = EPlayerAbility::ENone;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		EPlayerGMState NowState = EPlayerGMState::EIdle;
-
+	  EPlayerGMState NowState = EPlayerGMState::EIdle;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
 		FPlayerData PlayerData;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
