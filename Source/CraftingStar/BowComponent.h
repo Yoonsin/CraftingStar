@@ -28,9 +28,13 @@ private:
 
 public:
 	void Shoot();
+	void ShootEnd();
+
 	void Equip();
 	void Unequip();
-
+	
+private:
+	
 public:
 	void SetArcher(class ACharacter* Owner);
 };

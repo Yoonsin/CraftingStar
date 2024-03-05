@@ -18,15 +18,22 @@ UBowComponent::UBowComponent()
 
 void UBowComponent::Shoot()
 {
+	Equip();
 	if ( ShootBowMontage )
 	{
-		GetAnimInstance()->Montage_Play(ShootBowMontage);
+		if ( GetAnimInstance() )
+			GetAnimInstance()->Montage_Play(ShootBowMontage);
 	}
 
 	if ( Archer && ShootArcherMontage )
 	{
 		Archer->GetMesh()->GetAnimInstance()->Montage_Play(ShootArcherMontage);
 	}
+}
+
+void UBowComponent::ShootEnd()
+{
+	Unequip();
 }
 
 void UBowComponent::Equip()

@@ -182,6 +182,8 @@ public:
 
 	FORCEINLINE class UWeaponComponent* GetWeaponComponent() const { return Weapon_rMesh; }
 
+	FORCEINLINE class UBowComponent* GetBowComponent() const { return Bow_lMesh; }
+
 	//�ȷ�Ʈ ���� �������Ʈ�� ȣ���ؾ��ؼ� Public + BlueprintCallable ���� 
 	UFUNCTION(BlueprintCallable)
 	void StopPalette();
