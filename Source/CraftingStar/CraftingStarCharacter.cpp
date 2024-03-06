@@ -257,12 +257,12 @@ void ACraftingStarCharacter::Tick(float DeltaTime)
 }
 
 void ACraftingStarCharacter::UpdatePlayerAbility(EPlayerAbility playerAbility) {
-
 	auto playerState = Cast<ACraftingStarPS>(GetPlayerState());
 
-	if (playerState != nullptr) {
+	if ( playerState != nullptr ) {
 		playerState->NowAbility = playerAbility;
 		playerState->RequestPlayerAbility(playerAbility);
+	}
 
 	// update now ability
 	nowAbility = playerAbility;
