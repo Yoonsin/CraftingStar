@@ -15,7 +15,6 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
-#include "CraftingStarGameMode.h"
 #include "DrawDebugHelpers.h"
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h" 
@@ -24,6 +23,8 @@
 #include "UtilityFunction.h"
 #include "WeaponComponent.h"
 #include "BowComponent.h"
+#include "InteractiveColorCube.h"
+// have to change InteractiveColorCube.h to InteractiveActor.h
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -43,10 +44,9 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
 
-	
 	// Configure character movement
 	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
-	GetCharacterMovement()->RotationRate = FRotator(0.0f,  540.0f, 0.0f); // ...at this rotation rate
+	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f); // ...at this rotation rate
 	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 0.2f;
 
@@ -236,13 +236,16 @@ void ACraftingStarCharacter::Tick(float DeltaTime)
 
 	if ( KeepAbility ) {
 		// Activate Ability
-		EPlayerAbility nowAbility = Cast<ACraftingStarPS>(GetPlayerState())->NowAbility;
+		nowAbility = Cast<ACraftingStarPS>(GetPlayerState())->NowAbility;
 		if ( nowAbility != EPlayerAbility::ENone ) {
-			// Laser(EBlast)
+			// Ejection (EBlast)
 			if ( nowAbility == EPlayerAbility::EBlast ) {
-				// 테스트
-				// Activate Laser
-				//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Activate Laser"));
+				// Execute Laser
+				ACraftingStarCharacter::WandLineTrace(10000);
+
+			}
+			// Manipulation (ETelekinesis)
+			if ( nowAbility == EPlayerAbility::ETelekinesis ) {
 				// Execute Laser
 				ACraftingStarCharacter::WandLineTrace(10000);
 
@@ -256,11 +259,8 @@ void ACraftingStarCharacter::UpdatePlayerAbility(EPlayerAbility playerAbility) {
 
 	auto playerState = Cast<ACraftingStarPS>(GetPlayerState());
 
-	if (playerState != nullptr) {
-		playerState->NowAbility = playerAbility;
+	if (playerState != nullptr)
 		playerState->RequestPlayerAbility(playerAbility);
-	}
-		
 	  
 }
 
@@ -268,18 +268,15 @@ void ACraftingStarCharacter::UpdatePlayerGMState(EPlayerGMState playerGMState) {
 
 	auto playerState = Cast<ACraftingStarPS>(GetPlayerState());
 
-	if (playerState != nullptr) {
-		playerState->NowState = playerGMState;
+	if (playerState != nullptr)
 		playerState->RequestPlayerGMState(playerGMState);
-	}
-		
 
 }
 
 
 void ACraftingStarCharacter::Palette() {
 	//Ÿ ̸       (0.1 ʴ  1ȸ    Լ  ȣ  )
-	GetWorldTimerManager().SetTimer(HoldTimerHandle, this, &ACraftingStarCharacter::RepeatingFunction, 0.01f, true);
+	GetWorldTimerManager().SetTimer(HoldTimerHandle, this, &ACraftingStarCharacter::RepeatingFunction, 0.1f, true);
 }
 
 void ACraftingStarCharacter::StopPalette() {
@@ -318,30 +315,26 @@ void ACraftingStarCharacter::StopPalette() {
 void ACraftingStarCharacter::RepeatingFunction() {
 	
 	//UE_LOG(LogTemp, Log, TEXT("GetTimeElapsed : %f"), PaletteCnt);
-	if (PaletteCnt >= 0.05f) {
+	if (PaletteCnt >= 0.2f) {
 		//0.2    ̻  Ȧ   ϸ   ȷ Ʈ     
 		PaletteCnt = 0.0f;
 		GetWorldTimerManager().ClearTimer(HoldTimerHandle);		
-
-		if (PaletteWidgetRef == NULL) {
-			PaletteWidgetRef = CreateWidget(GetWorld(), PaletteWidget);
-			PaletteWidgetRef->AddToViewport();
-		}
+		PaletteWidgetRef = CreateWidget(GetWorld(), PaletteWidget);
+		PaletteWidgetRef->AddToViewport();
 		
+
 		//Ű      Է       &    콺        Ȱ  ȭ
 		SetPause(true);
 		return;
 	}
-	PaletteCnt += 0.01f;
+	PaletteCnt += 0.1f;
 }
 
 void ACraftingStarCharacter::WorldMap() {
-	if (WorldMapWidgetRef == NULL) {
-		WorldMapWidgetRef = CreateWidget(GetWorld(), WorldMapWidget);
-		WorldMapWidgetRef->AddToViewport();
-		SetPause(true);
-	}
-	
+	//          
+	WorldMapWidgetRef = CreateWidget(GetWorld(), WorldMapWidget);
+	WorldMapWidgetRef->AddToViewport();
+	SetPause(true);
 }
 
 void ACraftingStarCharacter::StopWorldMap() {
@@ -353,24 +346,6 @@ void ACraftingStarCharacter::StopWorldMap() {
 		SetPause(false);
 	}
 }
-
-void ACraftingStarCharacter::SystemMenu() {
-	if (SystemMenuWidgetRef == NULL) {
-		SystemMenuWidgetRef = CreateWidget(GetWorld(), SystemMenuWidget);
-		SystemMenuWidgetRef->AddToViewport();
-		SetPause(true);
-	}
-}
-
-void ACraftingStarCharacter::StopSystemMenu() {
-	if (SystemMenuWidgetRef != NULL) {
-		// ȷ Ʈ     
-		SystemMenuWidgetRef->RemoveFromParent();
-		SystemMenuWidgetRef = NULL;
-		SetPause(false);
-	}
-}
-
 
 void ACraftingStarCharacter::Interaction() {
 
@@ -401,7 +376,7 @@ void ACraftingStarCharacter::MulticastLaser_Implementation(UNiagaraComponent* Ni
 }
 
 // Magic Wand Line Trace for Ability
-bool ACraftingStarCharacter::WandLineTrace(float distance){
+bool ACraftingStarCharacter::WandLineTrace(float distance) {
 
 	/* Set LineTrace */
 
