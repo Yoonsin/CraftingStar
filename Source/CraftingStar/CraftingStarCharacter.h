@@ -44,6 +44,7 @@ class ACraftingStarCharacter : public ACharacter
 
 	/* Ability */
 	EPlayerAbility nowAbility = EPlayerAbility::ENone;
+	bool abilityReadyStatus = false;
 
 public:
 	ACraftingStarCharacter();
@@ -99,6 +100,10 @@ protected:
 
 	//��ȣ�ۿ�
 	void Interaction();
+
+	// Mouse Events
+	void MouseLeftPressed();
+	void MouseLeftReleased();
 
 	// Ability
 	void ActivateAbility();
