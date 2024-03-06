@@ -76,3 +76,4 @@ DerivedDataCache/*
 
 # Assets
 Content/Assets/*
+!Content/Assets/Effects/*
