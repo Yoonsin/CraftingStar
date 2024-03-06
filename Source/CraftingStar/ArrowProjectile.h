@@ -19,6 +19,8 @@ private:
 public:	
 	// Sets default values for this actor's properties
 	AArrowProjectile();
+	UFUNCTION()
+	void OnHit(UPrimitiveComponent* HitComp , AActor* OtherActor , UPrimitiveComponent* OtherComp , FVector NormalImpulse , const FHitResult& Hit);
 
 protected:
 	// Called when the game starts or when spawned
