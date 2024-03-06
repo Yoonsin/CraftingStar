@@ -19,6 +19,8 @@ class CRAFTINGSTAR_API UBowComponent : public USkeletalMeshComponent
 private:
 	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = Mesh , meta = ( AllowPrivateAccess = "true" ))
 	USkeletalMesh* BowMesh;
+	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = Mesh , meta = ( AllowPrivateAccess = "true" ))
+	USkeletalMesh* ArrowMesh;
 	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = AnimMontage, meta = ( AllowPrivateAccess = "true" ))
 	class UAnimMontage* ShootBowMontage;
 	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = AnimMontage , meta = ( AllowPrivateAccess = "true" ))
@@ -29,6 +31,8 @@ private:
 public:
 	void Shoot();
 	void ShootEnd();
+
+	void ArrowSpawn();
 
 	void Equip();
 	void Unequip();

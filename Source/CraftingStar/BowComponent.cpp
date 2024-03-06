@@ -50,3 +50,8 @@ void UBowComponent::SetArcher(ACharacter* Owner)
 {
 	Archer = Owner;
 }
+
+void UBowComponent::ArrowSpawn()
+{
+	GetWorld()->SpawnActor<AActor>();
+}
