@@ -46,6 +46,8 @@ class ACraftingStarCharacter : public ACharacter
 	class UUserWidget* WorldMapWidgetRef;
 	class UUserWidget* SystemMenuWidgetRef;
 
+	
+
 public:
 	ACraftingStarCharacter();
 
@@ -169,6 +171,10 @@ public:
 	//플레이어 캐릭터를 재시작할 게임 모드 클래스 호출.
 	void CallRespawnPlayer();
 
+	//Arrow Spawn Loctaion
+	UPROPERTY(EditAnywhere , Category = Bow)
+	FVector ArrowOffset;
+
 protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -183,6 +189,7 @@ public:
 	FORCEINLINE class UWeaponComponent* GetWeaponComponent() const { return Weapon_rMesh; }
 
 	FORCEINLINE class UBowComponent* GetBowComponent() const { return Bow_lMesh; }
+
 
 	//�ȷ�Ʈ ���� �������Ʈ�� ȣ���ؾ��ؼ� Public + BlueprintCallable ���� 
 	UFUNCTION(BlueprintCallable)
@@ -226,6 +233,7 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Ability, meta = (AllowPrivateAccess = "true"))
 	class USceneComponent* SpawnLocSource;
 	// Laser: Niagara Component
+
 
 
 	bool KeepAbility;

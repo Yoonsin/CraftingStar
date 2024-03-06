@@ -3,6 +3,7 @@
 
 #include "BowComponent.h"
 #include "CraftingStarCharacter.h"
+#include "ArrowProjectile.h"
 
 UBowComponent::UBowComponent()
 {
@@ -48,10 +49,17 @@ void UBowComponent::Unequip()
 
 void UBowComponent::SetArcher(ACharacter* Owner)
 {
-	Archer = Owner;
+	Archer = Cast<ACraftingStarCharacter>(Owner);
 }
 
 void UBowComponent::ArrowSpawn()
 {
-	GetWorld()->SpawnActor<AActor>();
+	if ( Archer && ArrowClass )
+	{
+		FRotator SpawnRotation = Archer->GetActorRotation();
+		FVector SpawnLocation = Archer->GetActorLocation() + SpawnRotation.RotateVector(Archer->ArrowOffset);
+		FActorSpawnParameters SpawnParams;
+		GetWorld()->SpawnActor<AArrowProjectile>(ArrowClass , SpawnLocation , SpawnRotation);
+	}
+	
 }
