@@ -139,9 +139,9 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 	}
 	LaserImpact->SetupAttachment(Weapon_rMesh , FName(TEXT("SpawnLoc")));
 
-	Bow_lMesh = CreateDefaultSubobject<UBowComponent>(TEXT("Projection Bow"));
-	Bow_lMesh->SetRelativeRotation(FRotator(90.0f , 90.0f , 0.0f));
+	Bow_lMesh = CreateDefaultSubobject<UBowComponent>(TEXT("Bow Projection"));
 	Bow_lMesh->SetupAttachment(GetMesh() , FName(TEXT("Weapon_L")));
+	Bow_lMesh->SetRelativeRotation(FRotator(90.0f , 0.f , 90.0f));
 	Bow_lMesh->SetArcher(this);
 	Bow_lMesh->Unequip();
 	
