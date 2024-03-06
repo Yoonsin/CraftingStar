@@ -15,12 +15,15 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
+#include "CraftingStarGameMode.h"
 #include "DrawDebugHelpers.h"
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h" 
 #include "NiagaraComponent.h"
-#include "InteractiveColorCube.h"
-// have to change InteractiveColorCube.h to InteractiveActor.h
+#include "LightSensingObject.h"
+#include "UtilityFunction.h"
+#include "WeaponComponent.h"
+#include "BowComponent.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -40,9 +43,10 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
 
+	
 	// Configure character movement
 	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
-	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f); // ...at this rotation rate
+	GetCharacterMovement()->RotationRate = FRotator(0.0f,  540.0f, 0.0f); // ...at this rotation rate
 	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 0.2f;
 
@@ -99,11 +103,19 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 	CloakMesh->SetRelativeLocation(FVector(40.0f , 20.0f , 0.0f));
 	CloakMesh->SetRelativeRotation(FRotator(90.0f , 0.0f , 0.0f));
 
-	Weapon_rMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Weapon_R"));
+	Weapon_rMesh = CreateDefaultSubobject<UWeaponComponent>(TEXT("Weapon_R"));
 	ConstructorHelpers::FObjectFinder<UStaticMesh> WandSM(TEXT("StaticMesh'/Game/Assets/BaseContent/RPGTinyHeroWavePolyart/Mesh/Weapon/Wand04_SM.Wand04_SM'"));
 	if ( WandSM.Succeeded() ) {
 		Weapon_rMesh->SetStaticMesh(WandSM.Object);
+		Weapon_rMesh->SetWandWeapon(WandSM.Object);
 	}
+
+	ConstructorHelpers::FObjectFinder<UStaticMesh> TwoHandedWeaponSM(TEXT("StaticMesh'/Game/Assets/BaseContent/RPGTinyHeroWavePolyart/Mesh/Weapon/THS02_Sword_SM.THS02_Sword_SM'"));
+	if ( TwoHandedWeaponSM.Succeeded() )
+	{
+		Weapon_rMesh->SetTwoHandedWeapon(TwoHandedWeaponSM.Object);
+	}
+
 	Weapon_rMesh->SetupAttachment(GetMesh(), FName(TEXT("Weapon_R")));
 	Weapon_rMesh->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
 	Weapon_rMesh->SetRelativeRotation(FRotator(0.0f , 0.0f , 0.0f));
@@ -126,6 +138,15 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 		LaserImpact->SetAsset(LaserImpactAsset.Object);
 	}
 	LaserImpact->SetupAttachment(Weapon_rMesh , FName(TEXT("SpawnLoc")));
+
+	Bow_lMesh = CreateDefaultSubobject<UBowComponent>(TEXT("Projection Bow"));
+	Bow_lMesh->SetRelativeRotation(FRotator(90.0f , 90.0f , 0.0f));
+	Bow_lMesh->SetupAttachment(GetMesh() , FName(TEXT("Weapon_L")));
+	Bow_lMesh->SetArcher(this);
+	Bow_lMesh->Unequip();
+	
+
+
 
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
@@ -187,19 +208,24 @@ void ACraftingStarCharacter::SetupPlayerInputComponent(class UInputComponent* Pl
 	// VR headset functionality
 	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &ACraftingStarCharacter::OnResetVR);
 
-	// ȷ Ʈ
+	// 팔레트
 	PlayerInputComponent->BindAction("Palette", IE_Pressed, this, &ACraftingStarCharacter::Palette);
 	PlayerInputComponent->BindAction("Palette", IE_Released, this, &ACraftingStarCharacter::StopPalette);
-	//     
+	//월드맵
 	PlayerInputComponent->BindAction("WorldMap", IE_Pressed, this, &ACraftingStarCharacter::WorldMap);
 	PlayerInputComponent->BindAction("WorldMap", IE_Released, this, &ACraftingStarCharacter::StopWorldMap);
 
-	//  ȣ ۿ 
+	PlayerInputComponent->BindAction("SystemMenu", IE_Pressed, this, &ACraftingStarCharacter::SystemMenu);
+	PlayerInputComponent->BindAction("SystemMenu", IE_Released, this, &ACraftingStarCharacter::StopSystemMenu);
+
+	//상호작용
 	PlayerInputComponent->BindAction("Interaction", IE_Pressed, this, &ACraftingStarCharacter::Interaction);
 
 	// for using Ability. key: E.
 	PlayerInputComponent->BindAction("Ability", IE_Pressed, this, &ACraftingStarCharacter::ActivateAbility);
 	PlayerInputComponent->BindAction("Ability", IE_Released, this, &ACraftingStarCharacter::DeactivateAbility);
+
+	PlayerInputComponent->BindAction("Ability2" , IE_Pressed , this , &ACraftingStarCharacter::ActivateAbility2);
 }
 
 
@@ -210,16 +236,13 @@ void ACraftingStarCharacter::Tick(float DeltaTime)
 
 	if ( KeepAbility ) {
 		// Activate Ability
-		nowAbility = Cast<ACraftingStarPS>(GetPlayerState())->NowAbility;
+		EPlayerAbility nowAbility = Cast<ACraftingStarPS>(GetPlayerState())->NowAbility;
 		if ( nowAbility != EPlayerAbility::ENone ) {
-			// Ejection (EBlast)
+			// Laser(EBlast)
 			if ( nowAbility == EPlayerAbility::EBlast ) {
-				// Execute Laser
-				ACraftingStarCharacter::WandLineTrace(10000);
-
-			}
-			// Manipulation (ETelekinesis)
-			if ( nowAbility == EPlayerAbility::ETelekinesis ) {
+				// 테스트
+				// Activate Laser
+				//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Activate Laser"));
 				// Execute Laser
 				ACraftingStarCharacter::WandLineTrace(10000);
 
@@ -233,8 +256,11 @@ void ACraftingStarCharacter::UpdatePlayerAbility(EPlayerAbility playerAbility) {
 
 	auto playerState = Cast<ACraftingStarPS>(GetPlayerState());
 
-	if (playerState != nullptr)
+	if (playerState != nullptr) {
+		playerState->NowAbility = playerAbility;
 		playerState->RequestPlayerAbility(playerAbility);
+	}
+		
 	  
 }
 
@@ -242,15 +268,18 @@ void ACraftingStarCharacter::UpdatePlayerGMState(EPlayerGMState playerGMState) {
 
 	auto playerState = Cast<ACraftingStarPS>(GetPlayerState());
 
-	if (playerState != nullptr)
+	if (playerState != nullptr) {
+		playerState->NowState = playerGMState;
 		playerState->RequestPlayerGMState(playerGMState);
+	}
+		
 
 }
 
 
 void ACraftingStarCharacter::Palette() {
 	//Ÿ ̸       (0.1 ʴ  1ȸ    Լ  ȣ  )
-	GetWorldTimerManager().SetTimer(HoldTimerHandle, this, &ACraftingStarCharacter::RepeatingFunction, 0.1f, true);
+	GetWorldTimerManager().SetTimer(HoldTimerHandle, this, &ACraftingStarCharacter::RepeatingFunction, 0.01f, true);
 }
 
 void ACraftingStarCharacter::StopPalette() {
@@ -259,6 +288,7 @@ void ACraftingStarCharacter::StopPalette() {
 		GetWorldTimerManager().ClearTimer(HoldTimerHandle);
 		PaletteCnt = 0.0f;
 	}
+
 
 	//      ɷ   غ    ȷ Ʈ             ʾ     
 	if (PaletteWidgetRef == NULL && GetPlayerState() != nullptr && Cast<ACraftingStarPS>(GetPlayerState())->NowState == EPlayerGMState::EAbilityReady) {
@@ -288,26 +318,30 @@ void ACraftingStarCharacter::StopPalette() {
 void ACraftingStarCharacter::RepeatingFunction() {
 	
 	//UE_LOG(LogTemp, Log, TEXT("GetTimeElapsed : %f"), PaletteCnt);
-	if (PaletteCnt >= 0.2f) {
+	if (PaletteCnt >= 0.05f) {
 		//0.2    ̻  Ȧ   ϸ   ȷ Ʈ     
 		PaletteCnt = 0.0f;
 		GetWorldTimerManager().ClearTimer(HoldTimerHandle);		
-		PaletteWidgetRef = CreateWidget(GetWorld(), PaletteWidget);
-		PaletteWidgetRef->AddToViewport();
-		
 
+		if (PaletteWidgetRef == NULL) {
+			PaletteWidgetRef = CreateWidget(GetWorld(), PaletteWidget);
+			PaletteWidgetRef->AddToViewport();
+		}
+		
 		//Ű      Է       &    콺        Ȱ  ȭ
 		SetPause(true);
 		return;
 	}
-	PaletteCnt += 0.1f;
+	PaletteCnt += 0.01f;
 }
 
 void ACraftingStarCharacter::WorldMap() {
-	//          
-	WorldMapWidgetRef = CreateWidget(GetWorld(), WorldMapWidget);
-	WorldMapWidgetRef->AddToViewport();
-	SetPause(true);
+	if (WorldMapWidgetRef == NULL) {
+		WorldMapWidgetRef = CreateWidget(GetWorld(), WorldMapWidget);
+		WorldMapWidgetRef->AddToViewport();
+		SetPause(true);
+	}
+	
 }
 
 void ACraftingStarCharacter::StopWorldMap() {
@@ -319,6 +353,24 @@ void ACraftingStarCharacter::StopWorldMap() {
 		SetPause(false);
 	}
 }
+
+void ACraftingStarCharacter::SystemMenu() {
+	if (SystemMenuWidgetRef == NULL) {
+		SystemMenuWidgetRef = CreateWidget(GetWorld(), SystemMenuWidget);
+		SystemMenuWidgetRef->AddToViewport();
+		SetPause(true);
+	}
+}
+
+void ACraftingStarCharacter::StopSystemMenu() {
+	if (SystemMenuWidgetRef != NULL) {
+		// ȷ Ʈ     
+		SystemMenuWidgetRef->RemoveFromParent();
+		SystemMenuWidgetRef = NULL;
+		SetPause(false);
+	}
+}
+
 
 void ACraftingStarCharacter::Interaction() {
 
@@ -349,7 +401,7 @@ void ACraftingStarCharacter::MulticastLaser_Implementation(UNiagaraComponent* Ni
 }
 
 // Magic Wand Line Trace for Ability
-bool ACraftingStarCharacter::WandLineTrace(float distance) {
+bool ACraftingStarCharacter::WandLineTrace(float distance){
 
 	/* Set LineTrace */
 
@@ -397,12 +449,7 @@ bool ACraftingStarCharacter::WandLineTrace(float distance) {
 		ServerLaser(LaserImpact , false , Hit.bBlockingHit , Hit.Location , FLinearColor::White);
 	}
 
-	// Interactive with hit Actor
-	if ( AInteractiveColorCube* hitActor = Cast<AInteractiveColorCube>(Hit.GetActor()) ) {
-		if ( nowAbility == EPlayerAbility::EBlast ) {
-			hitActor->InteractiveFunc();
-		}
-	}
+	LightAct(Hit.Actor.Get() , Hit.Location);
 
 	return !Hit.bBlockingHit;
 }
@@ -423,7 +470,7 @@ void ACraftingStarCharacter::MulticastAbility_Implementation(bool abilityState) 
 		bUseControllerRotationYaw = false;	// Rotate the player based on the controller
 		GetMesh()->GetAnimInstance()->Montage_Play(DeactiveAbilityMontage , 1.0f);
 		// Activate Ability
-		nowAbility = Cast<ACraftingStarPS>(GetPlayerState())->NowAbility;
+		EPlayerAbility nowAbility = Cast<ACraftingStarPS>(GetPlayerState())->NowAbility;
 		if ( nowAbility != EPlayerAbility::ENone ) {
 			// Laser(EBlast)
 			if ( nowAbility == EPlayerAbility::EBlast ) {
@@ -435,34 +482,64 @@ void ACraftingStarCharacter::MulticastAbility_Implementation(bool abilityState) 
 	}
 }
 
-// Input Ability (Key:E)
+
+// Input Ability
 void ACraftingStarCharacter::ActivateAbility() {
-	KeepAbility = true;
-	CameraBoom->SetRelativeLocation(FVector(0.0f , 100.0f , 100.0f));
-	if ( nowAbility == EPlayerAbility::EBlast ) {
+
+	auto CurAbility = Cast<ACraftingStarPS>(GetPlayerState())->NowAbility;
+
+	if ( CurAbility == EPlayerAbility::EBlast )
+	{
+		KeepAbility = true;
+		CameraBoom->SetRelativeLocation(FVector(0.0f , 100.0f , 100.0f));
 		CameraBoom->bUsePawnControlRotation = false; // Does not rotate the arm based on the controller
-	}
-	if ( AbilityMontage ) {
-		// Play Animation
-		bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(AbilityMontage);
-		if ( !bIsMontagePlaying ) {
-			ServerAbility(true);	// request ability animation on server
+		if ( AbilityMontage ) {
+			// Play Animation
+			bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(AbilityMontage);
+			if ( !bIsMontagePlaying ) {
+				ServerAbility(true);	// request ability animation on server
+			}
 		}
 	}
+	
+	if ( CurAbility == EPlayerAbility::EAbility_dummy1 )
+	{
+		UseProjectionTwoHanded();
+	}
+
+	
 }
 void ACraftingStarCharacter::DeactivateAbility() {
-	KeepAbility = false;
-	nowAbility = EPlayerAbility::ENone;
-	CameraBoom->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
-	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
-	if (DeactiveAbilityMontage) {
-		// Play Animation
-		bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(DeactiveAbilityMontage);
-		if (!bIsMontagePlaying) {
-			ServerAbility(false);	// request ability animation on server
+
+	auto CurAbility = Cast<ACraftingStarPS>(GetPlayerState())->NowAbility;
+	if ( CurAbility == EPlayerAbility::EBlast )
+	{
+		KeepAbility = false;
+		CameraBoom->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
+		CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
+		if ( DeactiveAbilityMontage ) {
+			// Play Animation
+			bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(DeactiveAbilityMontage);
+			if ( !bIsMontagePlaying ) {
+				ServerAbility(false);	// request ability animation on server
+			}
 		}
 	}
+	
 }
+
+void ACraftingStarCharacter::ActivateAbility2() 
+{
+	auto CurAbility = Cast<ACraftingStarPS>(GetPlayerState())->NowAbility;
+
+	if ( CurAbility == EPlayerAbility::EAbility_dummy1 )
+	{
+		UseProjectionBow();
+	}
+}
+
+
+
 
 void  ACraftingStarCharacter::SetPause(bool isPaused) {
 	if (Cast<ACraftingStarPC>(GetController()) != nullptr) {
@@ -543,4 +620,123 @@ void ACraftingStarCharacter::MoveRight(float Value)
 		// add movement in that direction
 		AddMovementInput(Direction, Value);
 	}
+}
+
+
+//게임 플레이도중 플레이어가 사라짐
+void ACraftingStarCharacter::Destroyed()
+{
+	Super::Destroyed();
+
+	//게임 모드에서 OnPlayerDied 이벤트에 바인딩한 예 
+	if (UWorld* World = GetWorld())
+	{
+		if (ACraftingStarGameMode* GameMode = Cast<ACraftingStarGameMode>(World->GetAuthGameMode()))
+		{
+			GameMode->GetOnPlayerDied().Broadcast(this);
+		}
+	}
+}
+
+//리스폰 게임플레이 요청
+void ACraftingStarCharacter::CallRespawnPlayer_Implementation()
+{
+	//폰 컨트롤러에 대한 레퍼런스 구하기
+	AController* CortollerRef = GetController();
+
+	//위치 변경
+	if (UWorld* World = GetWorld())
+	{
+		if (ACraftingStarGameMode* GameMode = Cast<ACraftingStarGameMode>(World->GetAuthGameMode()))
+		{
+			GameMode->RespawnPlayer(this);
+		}
+	}
+
+	//플레이어 삭제 이벤트
+	//플레이어 소멸.  
+	//Destroy();
+
+	////월드와 월드의 게임 모드가 RestartPlayer 함수를 호출하도록 함.
+	//if (UWorld* World = GetWorld())
+	//{
+	//	if (ACraftingStarGameMode* GameMode = Cast<ACraftingStarGameMode>(World->GetAuthGameMode()))
+	//	{
+	//		GameMode->RestartPlayer(CortollerRef);
+	//	}
+	//}
+}
+
+
+void ACraftingStarCharacter::LightAct(AActor* target , FVector Location )
+{
+	if ( HasAuthority() )
+	{
+		MulticastLightAct(target , Location, true);
+	}
+	else
+	{
+		ServerLightAct(target , Location, false);
+	}
+	
+}
+
+void ACraftingStarCharacter::ServerLightAct_Implementation(AActor* target , FVector Location, bool isHost)
+{
+	MulticastLightAct(target , Location, isHost);
+}
+
+void ACraftingStarCharacter::MulticastLightAct_Implementation(AActor* target , FVector Location, bool isHost)
+{
+	//Here Ejection Abillity Interaction
+	auto targetSense = Cast<ILightSensingInterface>(target);
+	if ( targetSense )
+	{
+		//빛 대상
+		//ILightSensingInterface를 상속받은 얘의 React 함수를 호출받는 방법.
+		targetSense->Execute_React(target , isHost , Location);
+	}
+}
+
+void ACraftingStarCharacter::UseProjectionTwoHanded()
+{
+	ServerUseProjectionTwoHanded();
+}
+
+void ACraftingStarCharacter::ServerUseProjectionTwoHanded_Implementation()
+{
+	MulticastUseProjectionTwoHanded();
+}
+
+void ACraftingStarCharacter::MulticastUseProjectionTwoHanded_Implementation()
+{
+	if ( ProjectionTwoHandedMontage )
+	{
+		Weapon_rMesh->WeaponChange();
+		Weapon_rMesh->bCanDamage = true;
+
+		GetMesh()->GetAnimInstance()->Montage_Play(ProjectionTwoHandedMontage);
+		
+		// NEED
+		//Weapon_rMesh->bCanDamage = false
+		// END Notify
+	}	
+	
+		
+}
+
+void ACraftingStarCharacter::UseProjectionBow()
+{
+	ServerUseProjectionBow();
+}
+
+void ACraftingStarCharacter::ServerUseProjectionBow_Implementation()
+{
+	MulticastUseProjectionBow();
+}
+
+void ACraftingStarCharacter::MulticastUseProjectionBow_Implementation()
+{
+	Bow_lMesh->Equip();
+	Bow_lMesh->Shoot();
 }
