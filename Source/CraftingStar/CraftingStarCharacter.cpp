@@ -226,6 +226,10 @@ void ACraftingStarCharacter::SetupPlayerInputComponent(class UInputComponent* Pl
 	PlayerInputComponent->BindAction("Ability", IE_Released, this, &ACraftingStarCharacter::DeactivateAbility);
 
 	PlayerInputComponent->BindAction("Ability2" , IE_Pressed , this , &ACraftingStarCharacter::ActivateAbility2);
+
+	// mouse left click
+	PlayerInputComponent->BindAction("Click" , IE_Pressed , this , &ACraftingStarCharacter::MouseLeftPressed);
+	PlayerInputComponent->BindAction("Click" , IE_Released , this , &ACraftingStarCharacter::MouseLeftReleased);
 }
 
 
@@ -234,9 +238,9 @@ void ACraftingStarCharacter::Tick(float DeltaTime)
 	//          Ӹ          ɷ              ʿ        Ʈ
 	Super::Tick(DeltaTime);
 
+	// KeepAbility: using skill. It doesn't mean just ability activated statement.
 	if ( KeepAbility ) {
 		// Activate Ability
-		EPlayerAbility nowAbility = Cast<ACraftingStarPS>(GetPlayerState())->NowAbility;
 		if ( nowAbility != EPlayerAbility::ENone ) {
 			// Laser(EBlast)
 			if ( nowAbility == EPlayerAbility::EBlast ) {
@@ -253,14 +257,15 @@ void ACraftingStarCharacter::Tick(float DeltaTime)
 }
 
 void ACraftingStarCharacter::UpdatePlayerAbility(EPlayerAbility playerAbility) {
-
 	auto playerState = Cast<ACraftingStarPS>(GetPlayerState());
 
-	if (playerState != nullptr) {
+	if ( playerState != nullptr ) {
 		playerState->NowAbility = playerAbility;
 		playerState->RequestPlayerAbility(playerAbility);
 	}
-		
+
+	// update now ability
+	nowAbility = playerAbility;
 	  
 }
 
@@ -313,6 +318,17 @@ void ACraftingStarCharacter::StopPalette() {
 		SetPause(false);
 	}
 
+	// cancel previous skill
+	if ( nowAbility == EPlayerAbility::EBlast ) {
+		if ( KeepAbility )
+			DeactivateAbility();
+	}
+	else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
+		if (abilityReadyStatus )
+			ActivateAbility();
+	}
+	KeepAbility = false;
+	abilityReadyStatus = false;
 }
 
 void ACraftingStarCharacter::RepeatingFunction() {
@@ -463,17 +479,35 @@ void ACraftingStarCharacter::ServerAbility_Implementation(bool abilityState) {
 }
 void ACraftingStarCharacter::MulticastAbility_Implementation(bool abilityState) {
 	if ( abilityState ) {
-		GetMesh()->GetAnimInstance()->Montage_Play(AbilityMontage , 1.0f);
-		bUseControllerRotationYaw = true;	// Rotate the player based on the controller
-	}
-	else {
-		bUseControllerRotationYaw = false;	// Rotate the player based on the controller
-		GetMesh()->GetAnimInstance()->Montage_Play(DeactiveAbilityMontage , 1.0f);
 		// Activate Ability
-		EPlayerAbility nowAbility = Cast<ACraftingStarPS>(GetPlayerState())->NowAbility;
 		if ( nowAbility != EPlayerAbility::ENone ) {
 			// Laser(EBlast)
 			if ( nowAbility == EPlayerAbility::EBlast ) {
+				GetMesh()->GetAnimInstance()->Montage_Play(AbilityMontage , 1.0f);
+				bUseControllerRotationYaw = true;	// Rotate the player based on the controller
+			}
+			// Manipulate(ETelekinesis)
+			else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
+				GetMesh()->GetAnimInstance()->Montage_Play(AbilityMontage , 1.0f);
+				bUseControllerRotationYaw = true;	// Rotate the player based on the controller
+			}
+		}
+	}
+	else {
+		// Deactivate Ability
+		if ( nowAbility != EPlayerAbility::ENone ) {
+			// Laser(EBlast)
+			if ( nowAbility == EPlayerAbility::EBlast ) {
+				bUseControllerRotationYaw = false;	// Rotate the player based on the controller
+				GetMesh()->GetAnimInstance()->Montage_Play(DeactiveAbilityMontage , 1.0f);
+				// Hide Laser
+				LaserBody->SetVisibility(false);
+				LaserImpact->SetVisibility(false);
+			}
+			// Manipulate(ETelekinesis)
+			else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
+				bUseControllerRotationYaw = false;	// Rotate the player based on the controller
+				GetMesh()->GetAnimInstance()->Montage_Play(DeactiveAbilityMontage , 1.0f);
 				// Hide Laser
 				LaserBody->SetVisibility(false);
 				LaserImpact->SetVisibility(false);
@@ -482,14 +516,9 @@ void ACraftingStarCharacter::MulticastAbility_Implementation(bool abilityState) 
 	}
 }
 
-
-// Input Ability
+// Input Ability (Key:E)
 void ACraftingStarCharacter::ActivateAbility() {
-
-	auto CurAbility = Cast<ACraftingStarPS>(GetPlayerState())->NowAbility;
-
-	if ( CurAbility == EPlayerAbility::EBlast )
-	{
+	if ( nowAbility == EPlayerAbility::EBlast ) {
 		KeepAbility = true;
 		CameraBoom->SetRelativeLocation(FVector(0.0f , 100.0f , 100.0f));
 		CameraBoom->bUsePawnControlRotation = false; // Does not rotate the arm based on the controller
@@ -501,20 +530,31 @@ void ACraftingStarCharacter::ActivateAbility() {
 			}
 		}
 	}
-	
-	if ( CurAbility == EPlayerAbility::EAbility_dummy1 )
+	else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
+		if ( !abilityReadyStatus ) {
+			abilityReadyStatus = true;
+
+			CameraBoom->SetRelativeLocation(FVector(0.0f , 100.0f , 100.0f));
+
+			// activate the outline of objects that can be interacted with telekinesis skill
+		}
+		else {
+			CameraBoom->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
+
+			// deactivate the outline of objects that can be interacted with telekinesis skill
+
+			abilityReadyStatus = false;
+		}
+	}
+	else if (nowAbility == EPlayerAbility::EAbility_dummy1)
 	{
 		UseProjectionTwoHanded();
 	}
-
-	
 }
 void ACraftingStarCharacter::DeactivateAbility() {
-
-	auto CurAbility = Cast<ACraftingStarPS>(GetPlayerState())->NowAbility;
-	if ( CurAbility == EPlayerAbility::EBlast )
-	{
+	if ( nowAbility == EPlayerAbility::EBlast ) {
 		KeepAbility = false;
+
 		CameraBoom->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
 		CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 		if ( DeactiveAbilityMontage ) {
@@ -525,21 +565,54 @@ void ACraftingStarCharacter::DeactivateAbility() {
 			}
 		}
 	}
-	
+	else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
+		// blank
+	}
 }
 
-void ACraftingStarCharacter::ActivateAbility2() 
-{
-	auto CurAbility = Cast<ACraftingStarPS>(GetPlayerState())->NowAbility;
+void ACraftingStarCharacter::MouseLeftPressed() {
+	if ( nowAbility != EPlayerAbility::ENone ) {
+		if ( nowAbility == EPlayerAbility::ETelekinesis ) {
+			if ( abilityReadyStatus ) {
+				KeepAbility = true;
 
-	if ( CurAbility == EPlayerAbility::EAbility_dummy1 )
+				if ( AbilityMontage ) {
+					// Play Animation
+					bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(AbilityMontage);
+					if ( !bIsMontagePlaying ) {
+						ServerAbility(true);	// request ability animation on server
+					}
+				}
+			}
+		}
+	}
+}
+
+void ACraftingStarCharacter::MouseLeftReleased() {
+	if ( nowAbility != EPlayerAbility::ENone ) {
+		if ( nowAbility == EPlayerAbility::ETelekinesis ) {
+			if ( abilityReadyStatus ) {
+				KeepAbility = false;
+
+				if ( DeactiveAbilityMontage ) {
+					// Play Animation
+					bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(DeactiveAbilityMontage);
+					if ( !bIsMontagePlaying ) {
+						ServerAbility(false);	// request ability animation on server
+					}
+				}
+			}
+		}
+	}
+}
+
+void ACraftingStarCharacter::ActivateAbility2()
+{
+	if (nowAbility == EPlayerAbility::EAbility_dummy1)
 	{
 		UseProjectionBow();
 	}
 }
-
-
-
 
 void  ACraftingStarCharacter::SetPause(bool isPaused) {
 	if (Cast<ACraftingStarPC>(GetController()) != nullptr) {
@@ -587,15 +660,23 @@ void ACraftingStarCharacter::TurnAtRate(float Rate)
 
 void ACraftingStarCharacter::LookUpAtRate(float Rate)
 {
-	if ( !KeepAbility ) {
-		// calculate delta for this frame from the rate information
-		AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
+	// forbid to look up while keeping using ability
+	if ( nowAbility == EPlayerAbility::EBlast ) {
+		if ( !KeepAbility ) {
+			// calculate delta for this frame from the rate information
+			AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
+		}
 	}
 }
 
 void ACraftingStarCharacter::MoveForward(float Value)
 {
-	if ((Controller != nullptr) && (Value != 0.0f) && !KeepAbility)
+	// forbid to move character while using blast skill
+	if ( nowAbility == EPlayerAbility::EBlast && KeepAbility) {
+		return;
+	}
+
+	if ((Controller != nullptr) && (Value != 0.0f))
 	{
 		// find out which way is forward
 		const FRotator Rotation = Controller->GetControlRotation();
@@ -609,7 +690,12 @@ void ACraftingStarCharacter::MoveForward(float Value)
 
 void ACraftingStarCharacter::MoveRight(float Value)
 {
-	if ( (Controller != nullptr) && (Value != 0.0f) && !KeepAbility )
+	// forbid to move character while using blast skill
+	if ( nowAbility == EPlayerAbility::EBlast && KeepAbility ) {
+		return;
+	}
+
+	if ( (Controller != nullptr) && (Value != 0.0f) )
 	{
 		// find out which way is right
 		const FRotator Rotation = Controller->GetControlRotation();
