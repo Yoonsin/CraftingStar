@@ -47,8 +47,16 @@ class ACraftingStarCharacter : public ACharacter
 	class UUserWidget* SystemMenuWidgetRef;
 
 	/* Ability */
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
 	EPlayerAbility nowAbility = EPlayerAbility::ENone;
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
 	bool abilityReadyStatus = false;
+
+	// Telekinesis
+	AActor* selectedTarget;
+	FVector diff;
+	void Ray();
+	void Telekinesis();
 
 public:
 	ACraftingStarCharacter();

@@ -238,18 +238,23 @@ void ACraftingStarCharacter::Tick(float DeltaTime)
 	//          Ӹ          ɷ              ʿ        Ʈ
 	Super::Tick(DeltaTime);
 
+	//if (nowAbility == EPlayerAbility::ETelekinesis )
+		//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Tele"));
 	// KeepAbility: using skill. It doesn't mean just ability activated statement.
 	if ( KeepAbility ) {
 		// Activate Ability
 		if ( nowAbility != EPlayerAbility::ENone ) {
 			// Laser(EBlast)
 			if ( nowAbility == EPlayerAbility::EBlast ) {
-				// 테스트
 				// Activate Laser
 				//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Activate Laser"));
 				// Execute Laser
 				ACraftingStarCharacter::WandLineTrace(10000);
 
+			}
+			else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
+				//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Tele"));
+				Telekinesis();
 			}
 		}
 	}
@@ -470,6 +475,45 @@ bool ACraftingStarCharacter::WandLineTrace(float distance){
 	return !Hit.bBlockingHit;
 }
 
+// Ray for Telekinesis
+void ACraftingStarCharacter::Ray() {
+	FVector start = CameraBoom->GetComponentLocation();
+	FVector forward = CameraBoom->GetForwardVector();
+	start = FVector(start.X + ( forward.X * 100 ) , start.Y + ( forward.Y * 100 ) , start.Z + ( forward.Z * 100 ));
+	FVector end = start + ( forward * 1000 );
+	FHitResult hit;
+
+	if ( GetWorld() ) {
+		bool actorHit = GetWorld()->LineTraceSingleByChannel(hit , start , end , ECC_Pawn , FCollisionQueryParams() , FCollisionResponseParams());
+		DrawDebugLine(GetWorld() , start , end , FColor::Red , false , 2.f , 0.f , 10.f);
+		if ( actorHit && hit.GetActor() ) {
+			if ( KeepAbility ) {
+				selectedTarget = hit.GetActor();
+				diff = selectedTarget->GetActorLocation() - hit.ImpactPoint;
+			}
+			else {
+				//Duplicate(hit.GetActor());
+			}
+		}
+	}
+}
+
+void ACraftingStarCharacter::Telekinesis() {
+	FVector forward = CameraBoom->GetForwardVector();
+	FVector curLoc = selectedTarget->GetActorLocation();
+	FVector loc = CameraBoom->GetComponentLocation();
+
+	loc += diff;
+
+	float dist = FVector::Distance(loc, curLoc);
+	
+	if ( selectedTarget ) {
+		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("selected"));
+		//selectedTarget->SetActorRelativeLocation(FVector(loc.X + ( forward.X * dist ) , loc.Y + ( forward.Y * dist ) , loc.Z + ( forward.Z * dist )));
+	}
+	
+}
+
 // Ability Animaition Replicate
 bool ACraftingStarCharacter::ServerAbility_Validate(bool abilityState) {
 	return true;
@@ -531,15 +575,22 @@ void ACraftingStarCharacter::ActivateAbility() {
 		}
 	}
 	else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
+		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Tele"));
 		if ( !abilityReadyStatus ) {
+			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Tele ready"));
 			abilityReadyStatus = true;
 
 			CameraBoom->SetRelativeLocation(FVector(0.0f , 100.0f , 100.0f));
+			//CameraBoom->bUsePawnControlRotation = false; // Does not rotate the arm based on the controller
 
 			// activate the outline of objects that can be interacted with telekinesis skill
+			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Tele ready done"));
 		}
 		else {
 			CameraBoom->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
+			//CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
+
+			selectedTarget = NULL;
 
 			// deactivate the outline of objects that can be interacted with telekinesis skill
 
@@ -574,6 +625,7 @@ void ACraftingStarCharacter::MouseLeftPressed() {
 	if ( nowAbility != EPlayerAbility::ENone ) {
 		if ( nowAbility == EPlayerAbility::ETelekinesis ) {
 			if ( abilityReadyStatus ) {
+				Ray();
 				KeepAbility = true;
 
 				if ( AbilityMontage ) {
@@ -593,6 +645,8 @@ void ACraftingStarCharacter::MouseLeftReleased() {
 		if ( nowAbility == EPlayerAbility::ETelekinesis ) {
 			if ( abilityReadyStatus ) {
 				KeepAbility = false;
+
+				selectedTarget = NULL;
 
 				if ( DeactiveAbilityMontage ) {
 					// Play Animation
