@@ -4,6 +4,7 @@
 #include "BowComponent.h"
 #include "CraftingStarCharacter.h"
 #include "ArrowProjectile.h"
+#include "WeaponComponent.h"
 
 UBowComponent::UBowComponent()
 {
@@ -28,12 +29,17 @@ void UBowComponent::Shoot()
 
 	if ( Archer && ShootArcherMontage )
 	{
+		Archer->GetWeaponComponent()->Unequip();
 		Archer->GetMesh()->GetAnimInstance()->Montage_Play(ShootArcherMontage);
 	}
 }
 
 void UBowComponent::ShootEnd()
 {
+	if ( Archer )
+	{
+		Archer->GetWeaponComponent()->EquipWand();
+	}
 	Unequip();
 }
 

@@ -37,13 +37,26 @@ void UWeaponComponent::SetTwoHandedWeapon(UStaticMesh* WeaponMesh)
 	
 }
 
-void UWeaponComponent::WeaponChange()
+void UWeaponComponent::EquipTwoHanded()
 {
 	if ( TwoHandedWeapon )
 	{
 		SetStaticMesh(TwoHandedWeapon);
 	}
 	
+}
+
+void UWeaponComponent::EquipWand()
+{
+	if ( WandWeapon )
+	{
+		SetStaticMesh(WandWeapon);
+	}
+}
+
+void UWeaponComponent::Unequip()
+{
+	SetStaticMesh(NULL);
 }
 
 void UWeaponComponent::AttackEnd()
@@ -54,3 +67,4 @@ void UWeaponComponent::AttackEnd()
 		SetStaticMesh(WandWeapon);
 	}
 }
+

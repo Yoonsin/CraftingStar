@@ -167,6 +167,7 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -175,6 +176,7 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 void ACraftingStarCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
 	
 	//GameWB     
 	CreateWidget(GetWorld(), GameWidget)->AddToViewport();
@@ -798,14 +800,10 @@ void ACraftingStarCharacter::MulticastUseProjectionTwoHanded_Implementation()
 {
 	if ( ProjectionTwoHandedMontage )
 	{
-		Weapon_rMesh->WeaponChange();
+		Weapon_rMesh->EquipTwoHanded();
 		Weapon_rMesh->bCanDamage = true;
 
 		GetMesh()->GetAnimInstance()->Montage_Play(ProjectionTwoHandedMontage);
-		
-		// NEED
-		//Weapon_rMesh->bCanDamage = false
-		// END Notify
 	}	
 	
 		

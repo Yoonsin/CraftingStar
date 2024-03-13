@@ -16,6 +16,7 @@ void UAnimNotify_TwoHandedEnd::Notify(USkeletalMeshComponent* MeshComp , UAnimSe
         if ( CharacterOwner )
         {
             CharacterOwner->GetWeaponComponent()->AttackEnd();
+            
         }
     }
 }
