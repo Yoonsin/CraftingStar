@@ -24,7 +24,6 @@
 #include "UtilityFunction.h"
 #include "WeaponComponent.h"
 #include "BowComponent.h"
-#include "PhysicsEngine/PhysicsHandleComponent.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -159,6 +158,8 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom , USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
+
+	PhysicsHandle = CreateDefaultSubobject<UPhysicsHandleComponent>(TEXT("PhysicsHandle"));
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
@@ -502,20 +503,28 @@ void ACraftingStarCharacter::CameraRay() {
 	// Visualize LineTrace
 	DrawDebugLine(GetWorld() , Start , End , FColor::Green);
 
-	selectedTarget = Hit.GetActor();
+	selectedTarget = Hit.GetComponent();
 
 	if ( Hit.bBlockingHit ) {
-		//PhysicsHandle->GrabComponentAtLocation(Hit.GetComponent() , NAME_None , End);
-		//GetOwner()->FindComponentByClass<UPhysicsHandleComponent>()->GrabComponentAtLocation(NULL , NAME_None , End);
-		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("Something hit")));
-		//->GrabComponentAtLocation(Hit.GetComponent() , NAME_None , End);
+		//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("Something hit")));
 	}
 
 	if ( selectedTarget != NULL ) {
 		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("selected object name: %s"), *selectedTarget->GetName()));
+		/*
+		PhysicsHandle->GrabComponentAtLocation(selectedTarget , NAME_None , End);
+		if ( PhysicsHandle->GrabbedComponent )
+		{
+			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("selected")));
+			PhysicsHandle->SetTargetLocation(End);
+		}
+		*/
+		selectedTarget->SetRelativeLocation(End);
+		//GetOwner()->FindComponentByClass<UPhysicsHandleComponent>()->GrabComponentAtLocation(NULL , NAME_None , End);
+		//->GrabComponentAtLocation(Hit.GetComponent() , NAME_None , End);
 	}
 }
-
+/*
 void ACraftingStarCharacter::Telekinesis() {
 	FVector forward = FollowCamera->GetForwardVector();
 	FVector curLoc = selectedTarget->GetActorLocation();
@@ -531,7 +540,7 @@ void ACraftingStarCharacter::Telekinesis() {
 	}
 	
 }
-
+*/
 // Ability Animaition Replicate
 bool ACraftingStarCharacter::ServerAbility_Validate(bool abilityState) {
 	return true;

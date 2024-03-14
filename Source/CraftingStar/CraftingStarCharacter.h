@@ -7,6 +7,7 @@
 #include "Blueprint/UserWidget.h"
 #include "CustomEnum.h"
 #include "Net/UnrealNetwork.h"
+#include "PhysicsEngine/PhysicsHandleComponent.h"
 #include "CraftingStarCharacter.generated.h"
 
 UCLASS(config=Game)
@@ -22,7 +23,8 @@ class ACraftingStarCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
 
-
+	UPROPERTY(EditDefaultsOnly , Category = "Physics")
+	UPhysicsHandleComponent* PhysicsHandle;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = UI, meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UUserWidget> PaletteWidget;
@@ -53,7 +55,7 @@ class ACraftingStarCharacter : public ACharacter
 	bool abilityReadyStatus = false;
 
 	// Telekinesis
-	AActor* selectedTarget;
+	UPrimitiveComponent* selectedTarget;
 	FVector diff;
 	void CameraRay();
 	void Telekinesis();
