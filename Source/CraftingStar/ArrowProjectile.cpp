@@ -59,7 +59,7 @@ void AArrowProjectile::OnHit(UPrimitiveComponent* HitComp , AActor* OtherActor ,
 	{
 		//빛 대상
 		//IArrowSensingInterface를 상속받은 얘의 React 함수를 호출받는 방법.
-		targetSense->Execute_React(Hit.Actor.Get());
+		targetSense->Execute_OnHitArrow(Hit.Actor.Get());
 	}
 }
 

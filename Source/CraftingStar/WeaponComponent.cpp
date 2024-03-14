@@ -2,7 +2,7 @@
 
 
 #include "WeaponComponent.h"
-
+#include "TwoHandedSensingInterface.h"
 
 UWeaponComponent::UWeaponComponent()
 {
@@ -20,7 +20,16 @@ void UWeaponComponent::OnHit(UPrimitiveComponent* OverlappedComp , AActor* Other
 {
 	if ( bCanDamage )
 	{
-		UE_LOG(LogTemp , Display , TEXT("Weapon Hit"));
+		auto targetSense = Cast<ITwoHandedSensingInterface>(OtherActor);
+		if ( targetSense )
+		{
+			//빛 대상
+			//IArrowSensingInterface를 상속받은 얘의 React 함수를 호출받는 방법.
+			targetSense->Execute_OnHitTwoHanded(OtherActor);
+			UE_LOG(LogTemp , Display , TEXT("Hmm"));
+		}
+		UE_LOG(LogTemp , Display , TEXT("%s") , *OtherActor->GetClass()->GetName());
+		
 	}
 	
 }

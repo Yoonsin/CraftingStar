@@ -4,11 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "ArrowSensingInterface.generated.h"
+#include "TwoHandedSensingInterface.generated.h"
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
-class UArrowSensingInterface : public UInterface
+class UTwoHandedSensingInterface : public UInterface
 {
 	GENERATED_BODY()
 };
@@ -16,15 +16,13 @@ class UArrowSensingInterface : public UInterface
 /**
  * 
  */
-class CRAFTINGSTAR_API IArrowSensingInterface
+class CRAFTINGSTAR_API ITwoHandedSensingInterface
 {
 	GENERATED_BODY()
 
-	
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 	UFUNCTION(BlueprintNativeEvent , BlueprintCallable)
-	void OnHitArrow();
-	virtual void OnHitArrow_Implementation() = 0;
-
+	void OnHitTwoHanded();
+	virtual void OnHitTwoHanded_Implementation() = 0;
 };
