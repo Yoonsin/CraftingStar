@@ -55,7 +55,7 @@ class ACraftingStarCharacter : public ACharacter
 	// Telekinesis
 	AActor* selectedTarget;
 	FVector diff;
-	void Ray();
+	void CameraRay();
 	void Telekinesis();
 
 public:

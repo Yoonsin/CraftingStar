@@ -24,6 +24,7 @@
 #include "UtilityFunction.h"
 #include "WeaponComponent.h"
 #include "BowComponent.h"
+#include "PhysicsEngine/PhysicsHandleComponent.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -167,6 +168,7 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -254,7 +256,8 @@ void ACraftingStarCharacter::Tick(float DeltaTime)
 			}
 			else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
 				//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Tele"));
-				Telekinesis();
+				CameraRay();
+				//Telekinesis();
 			}
 		}
 	}
@@ -476,32 +479,47 @@ bool ACraftingStarCharacter::WandLineTrace(float distance){
 }
 
 // Ray for Telekinesis
-void ACraftingStarCharacter::Ray() {
-	FVector start = CameraBoom->GetComponentLocation();
-	FVector forward = CameraBoom->GetForwardVector();
-	start = FVector(start.X + ( forward.X * 100 ) , start.Y + ( forward.Y * 100 ) , start.Z + ( forward.Z * 100 ));
-	FVector end = start + ( forward * 1000 );
-	FHitResult hit;
+void ACraftingStarCharacter::CameraRay() {
+	/* Set LineTrace */
 
-	if ( GetWorld() ) {
-		bool actorHit = GetWorld()->LineTraceSingleByChannel(hit , start , end , ECC_Pawn , FCollisionQueryParams() , FCollisionResponseParams());
-		DrawDebugLine(GetWorld() , start , end , FColor::Red , false , 2.f , 0.f , 10.f);
-		if ( actorHit && hit.GetActor() ) {
-			if ( KeepAbility ) {
-				selectedTarget = hit.GetActor();
-				diff = selectedTarget->GetActorLocation() - hit.ImpactPoint;
-			}
-			else {
-				//Duplicate(hit.GetActor());
-			}
-		}
+	// Result oof LineTrace
+	FHitResult Hit;
+
+	// Ability Spawn Loc Socket Transform
+	FVector SpawnLocation = FollowCamera->GetComponentLocation();
+	// Start point and End point of LineTrace
+	FVector Start = SpawnLocation;
+	FVector End = SpawnLocation + ( FollowCamera->GetForwardVector() * 500 );
+
+	// Trace Channel: Custom Trace Channel - AbilitySpawn
+	ECollisionChannel Channel = ECollisionChannel::ECC_GameTraceChannel1;
+
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+
+	/* Execute LineTrace */
+	GetWorld()->LineTraceSingleByChannel(Hit , Start , End , Channel , QueryParams);
+	// Visualize LineTrace
+	DrawDebugLine(GetWorld() , Start , End , FColor::Green);
+
+	selectedTarget = Hit.GetActor();
+
+	if ( Hit.bBlockingHit ) {
+		//PhysicsHandle->GrabComponentAtLocation(Hit.GetComponent() , NAME_None , End);
+		//GetOwner()->FindComponentByClass<UPhysicsHandleComponent>()->GrabComponentAtLocation(NULL , NAME_None , End);
+		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("Something hit")));
+		//->GrabComponentAtLocation(Hit.GetComponent() , NAME_None , End);
+	}
+
+	if ( selectedTarget != NULL ) {
+		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("selected object name: %s"), *selectedTarget->GetName()));
 	}
 }
 
 void ACraftingStarCharacter::Telekinesis() {
-	FVector forward = CameraBoom->GetForwardVector();
+	FVector forward = FollowCamera->GetForwardVector();
 	FVector curLoc = selectedTarget->GetActorLocation();
-	FVector loc = CameraBoom->GetComponentLocation();
+	FVector loc = FollowCamera->GetComponentLocation();
 
 	loc += diff;
 
@@ -625,7 +643,6 @@ void ACraftingStarCharacter::MouseLeftPressed() {
 	if ( nowAbility != EPlayerAbility::ENone ) {
 		if ( nowAbility == EPlayerAbility::ETelekinesis ) {
 			if ( abilityReadyStatus ) {
-				Ray();
 				KeepAbility = true;
 
 				if ( AbilityMontage ) {
