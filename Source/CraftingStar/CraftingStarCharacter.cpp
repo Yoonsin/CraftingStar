@@ -521,7 +521,7 @@ void ACraftingStarCharacter::Telekinesis() {
 		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("selected object name: %s") , *selectedTarget->GetName()));
 		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("selected object distance: %f") , Hit.Distance));
 	}
-
+	
 	SetLaser(Hit , End);
 }
 
