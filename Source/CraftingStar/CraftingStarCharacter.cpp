@@ -257,8 +257,7 @@ void ACraftingStarCharacter::Tick(float DeltaTime)
 			}
 			else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
 				//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Tele"));
-				CameraRay();
-				//Telekinesis();
+				Telekinesis();
 			}
 		}
 	}
@@ -450,10 +449,19 @@ bool ACraftingStarCharacter::WandLineTrace(float distance){
 	// Visualize LineTrace
 	DrawDebugLine(GetWorld() , Start , End , FColor::Green);
 
+	SetLaser(Hit , End);
+
+	LightAct(Hit.Actor.Get() , Hit.Location);
+
+	return !Hit.bBlockingHit;
+}
+
+// Set Laser
+void ACraftingStarCharacter::SetLaser(FHitResult Hit , FVector End) {
 	// Set the End of Laser Body
 	if ( Hit.bBlockingHit ) {
 		if ( Cast<ACraftingStarPS>(GetPlayerState())->PlayerData.Mode == EPlayerRole::EDark ) {
-			ServerLaser(LaserBody , true , Hit.bBlockingHit , Hit.Location, FLinearColor::Black);
+			ServerLaser(LaserBody , true , Hit.bBlockingHit , Hit.Location , FLinearColor::Black);
 		}
 		else if ( Cast<ACraftingStarPS>(GetPlayerState())->PlayerData.Mode == EPlayerRole::ELight ) {
 			ServerLaser(LaserBody , true , Hit.bBlockingHit , Hit.Location , FLinearColor::White);
@@ -473,14 +481,10 @@ bool ACraftingStarCharacter::WandLineTrace(float distance){
 	else if ( Cast<ACraftingStarPS>(GetPlayerState())->PlayerData.Mode == EPlayerRole::ELight ) {
 		ServerLaser(LaserImpact , false , Hit.bBlockingHit , Hit.Location , FLinearColor::White);
 	}
-
-	LightAct(Hit.Actor.Get() , Hit.Location);
-
-	return !Hit.bBlockingHit;
 }
 
 // Ray for Telekinesis
-void ACraftingStarCharacter::CameraRay() {
+void ACraftingStarCharacter::Telekinesis() {
 	/* Set LineTrace */
 
 	// Result oof LineTrace
@@ -490,7 +494,7 @@ void ACraftingStarCharacter::CameraRay() {
 	FVector SpawnLocation = FollowCamera->GetComponentLocation();
 	// Start point and End point of LineTrace
 	FVector Start = SpawnLocation;
-	FVector End = SpawnLocation + ( FollowCamera->GetForwardVector() * 500 );
+	FVector End = SpawnLocation + ( FollowCamera->GetForwardVector() * 750 );
 
 	// Trace Channel: Custom Trace Channel - AbilitySpawn
 	ECollisionChannel Channel = ECollisionChannel::ECC_GameTraceChannel1;
@@ -503,44 +507,24 @@ void ACraftingStarCharacter::CameraRay() {
 	// Visualize LineTrace
 	DrawDebugLine(GetWorld() , Start , End , FColor::Green);
 
-	selectedTarget = Hit.GetComponent();
-
 	if ( Hit.bBlockingHit ) {
 		//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("Something hit")));
+
+		if ( selectedTarget == NULL ) {
+			selectedTarget = Hit.GetComponent();
+			selectedTarget->SetSimulatePhysics(false);
+		}
 	}
 
 	if ( selectedTarget != NULL ) {
-		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("selected object name: %s"), *selectedTarget->GetName()));
-		/*
-		PhysicsHandle->GrabComponentAtLocation(selectedTarget , NAME_None , End);
-		if ( PhysicsHandle->GrabbedComponent )
-		{
-			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("selected")));
-			PhysicsHandle->SetTargetLocation(End);
-		}
-		*/
 		selectedTarget->SetRelativeLocation(End);
-		//GetOwner()->FindComponentByClass<UPhysicsHandleComponent>()->GrabComponentAtLocation(NULL , NAME_None , End);
-		//->GrabComponentAtLocation(Hit.GetComponent() , NAME_None , End);
+		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("selected object name: %s") , *selectedTarget->GetName()));
+		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("selected object distance: %f") , Hit.Distance));
 	}
-}
-/*
-void ACraftingStarCharacter::Telekinesis() {
-	FVector forward = FollowCamera->GetForwardVector();
-	FVector curLoc = selectedTarget->GetActorLocation();
-	FVector loc = FollowCamera->GetComponentLocation();
 
-	loc += diff;
-
-	float dist = FVector::Distance(loc, curLoc);
-	
-	if ( selectedTarget ) {
-		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("selected"));
-		//selectedTarget->SetActorRelativeLocation(FVector(loc.X + ( forward.X * dist ) , loc.Y + ( forward.Y * dist ) , loc.Z + ( forward.Z * dist )));
-	}
-	
+	SetLaser(Hit , End);
 }
-*/
+
 // Ability Animaition Replicate
 bool ACraftingStarCharacter::ServerAbility_Validate(bool abilityState) {
 	return true;

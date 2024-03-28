@@ -56,8 +56,7 @@ class ACraftingStarCharacter : public ACharacter
 
 	// Telekinesis
 	UPrimitiveComponent* selectedTarget;
-	FVector diff;
-	void CameraRay();
+	void ACraftingStarCharacter::SetLaser(FHitResult Hit , FVector End);
 	void Telekinesis();
 
 public:
