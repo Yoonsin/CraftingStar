@@ -20,10 +20,12 @@
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h" 
 #include "NiagaraComponent.h"
-#include "LightSensingObject.h"
 #include "UtilityFunction.h"
-#include "WeaponComponent.h"
-#include "BowComponent.h"
+
+#include "Ability/WeaponComponent.h"
+#include "Ability/BowComponent.h"
+
+#include "Object/LightSensingObject.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -860,16 +862,12 @@ void ACraftingStarCharacter::ServerUseProjectionTwoHanded_Implementation()
 
 void ACraftingStarCharacter::MulticastUseProjectionTwoHanded_Implementation()
 {
-	if ( ProjectionTwoHandedMontage )
+	if ( auto montage = GetWeaponComponent()->GetProjectionTwoHandedMontage() )
 	{
 		Weapon_rMesh->WeaponChange();
 		Weapon_rMesh->bCanDamage = true;
 
-		GetMesh()->GetAnimInstance()->Montage_Play(ProjectionTwoHandedMontage);
-		
-		// NEED
-		//Weapon_rMesh->bCanDamage = false
-		// END Notify
+		GetMesh()->GetAnimInstance()->Montage_Play(montage);
 	}	
 	
 		

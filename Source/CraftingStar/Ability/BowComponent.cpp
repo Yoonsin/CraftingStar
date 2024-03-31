@@ -2,7 +2,7 @@
 
 
 #include "BowComponent.h"
-#include "CraftingStarCharacter.h"
+#include "../CraftingStarCharacter.h"
 #include "ArrowProjectile.h"
 
 UBowComponent::UBowComponent()

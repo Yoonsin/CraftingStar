@@ -20,6 +20,9 @@ private:
 	UStaticMesh* WandWeapon;
 	UPROPERTY(EditAnywhere)
 	UStaticMesh* TwoHandedWeapon;
+
+	UPROPERTY(EditDefaultsOnly , BlueprintReadOnly , Category = AnimMontage, meta = ( AllowPrivateAccess = "true" ))
+	class UAnimMontage* ProjectionTwoHandedMontage;
 	
 public:
 
@@ -34,4 +37,7 @@ public:
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
+
+public:
+	FORCEINLINE class UAnimMontage* GetProjectionTwoHandedMontage() const { return ProjectionTwoHandedMontage; }
 };

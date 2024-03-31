@@ -56,7 +56,7 @@ class ACraftingStarCharacter : public ACharacter
 
 	// Telekinesis
 	UPrimitiveComponent* selectedTarget;
-	void ACraftingStarCharacter::SetLaser(FHitResult Hit , FVector End);
+	void SetLaser(FHitResult Hit , FVector End);
 	void Telekinesis();
 
 public:
@@ -132,8 +132,7 @@ protected:
 	class UAnimMontage* AbilityMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = AnimMontage)
 	class UAnimMontage* DeactiveAbilityMontage;
-	UPROPERTY(EditDefaultsOnly , BlueprintReadOnly , Category = AnimMontage)
-	class UAnimMontage* ProjectionTwoHandedMontage;
+	
 	
 	// Anim Replicate
 	UFUNCTION(Server, Reliable, WithValidation, Category = "CraftingStar Character")
