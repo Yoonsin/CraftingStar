@@ -199,9 +199,9 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
-
+	/** Returns WeaponComponent subobject **/
 	FORCEINLINE class UWeaponComponent* GetWeaponComponent() const { return Weapon_rMesh; }
-
+	/** Returns BowComponent subobject **/
 	FORCEINLINE class UBowComponent* GetBowComponent() const { return Bow_lMesh; }
 
 
@@ -218,9 +218,9 @@ public:
 
 	//���� ������ ������Ʈ
 	UFUNCTION(BlueprintCallable)
-		void UpdatePlayerAbility(EPlayerAbility playerAbility);
+	void UpdatePlayerAbility(EPlayerAbility playerAbility);
 	UFUNCTION(BlueprintCallable)
-		void UpdatePlayerGMState(EPlayerGMState playerGMState);
+	void UpdatePlayerGMState(EPlayerGMState playerGMState);
 
 	// LineTrace: Set Wand Ability Vector
 	bool WandLineTrace(float distance);
