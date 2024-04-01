@@ -246,6 +246,9 @@ private:
 	// Set LineTrace Start Loc
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Ability, meta = (AllowPrivateAccess = "true"))
 	class USceneComponent* SpawnLocSource;
+
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	class ULaserComponent* LaserComponent;
 	// Laser: Niagara Component
 
 

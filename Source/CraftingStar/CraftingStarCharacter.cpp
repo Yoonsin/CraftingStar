@@ -27,6 +27,8 @@
 
 #include "Object/LightSensingObject.h"
 
+#include "Ability/LaserComponent.h"
+
 
 //////////////////////////////////////////////////////////////////////////
 // ACraftingStarCharacter
@@ -127,19 +129,8 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 	SpawnLocSource->SetupAttachment(Weapon_rMesh, FName(TEXT("SpawnLoc")));
 
 	// Ability: Laser Niagara System
-	LaserBody = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Laser Body"));
-	ConstructorHelpers::FObjectFinder<UNiagaraSystem> LaserBodyAsset(TEXT("NiagaraSystem'/Game/Assets/Effects/Laser/NS_Laser.NS_Laser'"));
-	if ( LaserBodyAsset.Succeeded() ) {
-		LaserBody->SetAsset(LaserBodyAsset.Object);
-	}
-	LaserBody->SetupAttachment(Weapon_rMesh , FName(TEXT("SpawnLoc")));
-
-	LaserImpact = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Laser Impact"));
-	ConstructorHelpers::FObjectFinder<UNiagaraSystem> LaserImpactAsset(TEXT("NiagaraSystem'/Game/Assets/Effects/Laser/NS_LaserImpact.NS_LaserImpact'"));
-	if ( LaserBodyAsset.Succeeded() ) {
-		LaserImpact->SetAsset(LaserImpactAsset.Object);
-	}
-	LaserImpact->SetupAttachment(Weapon_rMesh , FName(TEXT("SpawnLoc")));
+	LaserComponent = CreateDefaultSubobject<ULaserComponent>(TEXT("Laser Component"));
+	LaserComponent->SetupAttachment(Weapon_rMesh , FName(TEXT("SpawnLoc")));
 
 	Bow_lMesh = CreateDefaultSubobject<UBowComponent>(TEXT("Bow Projection"));
 	Bow_lMesh->SetupAttachment(GetMesh() , FName(TEXT("Weapon_L")));
@@ -183,9 +174,6 @@ void ACraftingStarCharacter::BeginPlay()
 	
 	//GameWB     
 	CreateWidget(GetWorld(), GameWidget)->AddToViewport();
-
-	LaserBody->SetVisibility(false);
-	LaserImpact->SetVisibility(false);
 }
 
 void ACraftingStarCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
@@ -243,18 +231,12 @@ void ACraftingStarCharacter::Tick(float DeltaTime)
 	//          Ӹ          ɷ              ʿ        Ʈ
 	Super::Tick(DeltaTime);
 
-	//if (nowAbility == EPlayerAbility::ETelekinesis )
-		//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Tele"));
-	// KeepAbility: using skill. It doesn't mean just ability activated statement.
 	if ( KeepAbility ) {
 		// Activate Ability
 		if ( nowAbility != EPlayerAbility::ENone ) {
 			// Laser(EBlast)
 			if ( nowAbility == EPlayerAbility::EBlast ) {
-				// Activate Laser
-				//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Activate Laser"));
-				// Execute Laser
-				ACraftingStarCharacter::WandLineTrace(10000);
+				//ACraftingStarCharacter::WandLineTrace(10000);
 
 			}
 			else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
@@ -429,33 +411,7 @@ void ACraftingStarCharacter::MulticastLaser_Implementation(UNiagaraComponent* Ni
 // Magic Wand Line Trace for Ability
 bool ACraftingStarCharacter::WandLineTrace(float distance){
 
-	/* Set LineTrace */
-
-	// Result oof LineTrace
-	FHitResult Hit;
-
-	// Ability Spawn Loc Socket Transform
-	FVector SpawnLocation = this->Weapon_rMesh->GetSocketLocation(FName("SpawnLoc"));
-	// Start point and End point of LineTrace
-	FVector Start = SpawnLocation;
-	FVector End = SpawnLocation + ( GetActorForwardVector() * distance );
-
-	// Trace Channel: Custom Trace Channel - AbilitySpawn
-	ECollisionChannel Channel = ECollisionChannel::ECC_GameTraceChannel1;
-	
-	FCollisionQueryParams QueryParams;
-	QueryParams.AddIgnoredActor(this);
-
-	/* Execute LineTrace */
-	GetWorld()->LineTraceSingleByChannel(Hit , Start , End , Channel, QueryParams);
-	// Visualize LineTrace
-	DrawDebugLine(GetWorld() , Start , End , FColor::Green);
-
-	SetLaser(Hit , End);
-
-	LightAct(Hit.Actor.Get() , Hit.Location);
-
-	return !Hit.bBlockingHit;
+	return false;;
 }
 
 // Set Laser
@@ -616,7 +572,8 @@ void ACraftingStarCharacter::ActivateAbility() {
 	}
 }
 void ACraftingStarCharacter::DeactivateAbility() {
-	if ( nowAbility == EPlayerAbility::EBlast ) {
+	if ( nowAbility == EPlayerAbility::EBlast ) 
+	{
 		KeepAbility = false;
 
 		CameraBoom->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
