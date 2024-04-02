@@ -32,7 +32,7 @@ public:
 	UFUNCTION(BlueprintCallable, NetMulticast, Reliable)
 		void RequestSave();
 	UFUNCTION(BlueprintCallable, Server, Reliable)
-		void RequestClientUpdate(FPlayerData playerData);
+		void RequestClientUpdate(FPlayerData playerData,FTransform transform);
 
 	//상대방한테 보여줄 능력과 상태
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
