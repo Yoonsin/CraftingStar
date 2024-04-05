@@ -24,6 +24,7 @@
 #include "UtilityFunction.h"
 #include "WeaponComponent.h"
 #include "BowComponent.h"
+#include "TelekinesisInteractableObject.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -520,6 +521,18 @@ void ACraftingStarCharacter::Telekinesis() {
 		selectedTarget->SetRelativeLocation(End);
 		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("selected object name: %s") , *selectedTarget->GetName()));
 		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("selected object distance: %f") , Hit.Distance));
+
+		if ( selectedTarget->GetOwner() ) {
+			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("Is selectedTarget class ATelekinesisInteractableObject?: %d") , selectedTarget->GetOwner()->IsA(ATelekinesisInteractableObject::StaticClass())));
+
+			// Change Tele' Interactive Actor's Color
+			if ( Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner()) )
+			{
+				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("custom~"));
+				// Set CustomDepth Stencil Value to chagne Color
+				Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ActorMesh->SetCustomDepthStencilValue(1);
+			}
+		}
 	}
 	
 	SetLaser(Hit , End);
@@ -594,6 +607,15 @@ void ACraftingStarCharacter::ActivateAbility() {
 			CameraBoom->SetRelativeLocation(FVector(0.0f , 100.0f , 100.0f));
 			//CameraBoom->bUsePawnControlRotation = false; // Does not rotate the arm based on the controller
 
+			// Create Tele' Interactable Actor's Outline
+			TArray<AActor*> TeleActors;
+			UGameplayStatics::GetAllActorsOfClass(GetWorld() , ATelekinesisInteractableObject::StaticClass() , TeleActors);
+			for ( int i = 0; i < TeleActors.Num(); ++i )
+			{
+				Cast<ATelekinesisInteractableObject>(TeleActors[i])->ActorMesh->SetRenderCustomDepth(true);
+				Cast<ATelekinesisInteractableObject>(TeleActors[i])->ActorMesh->SetCustomDepthStencilValue(0);
+			}
+
 			// activate the outline of objects that can be interacted with telekinesis skill
 			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Tele ready done"));
 		}
@@ -604,6 +626,15 @@ void ACraftingStarCharacter::ActivateAbility() {
 			selectedTarget = NULL;
 
 			// deactivate the outline of objects that can be interacted with telekinesis skill
+			// Delete Tele' Interactable Actor's Outline
+			TArray<AActor*> TeleActors;
+			UGameplayStatics::GetAllActorsOfClass(GetWorld() , ATelekinesisInteractableObject::StaticClass() , TeleActors);
+			for ( int i = 0; i < TeleActors.Num(); ++i )
+			{
+				Cast<ATelekinesisInteractableObject>(TeleActors[i])->ActorMesh->SetCustomDepthStencilValue(0);
+				Cast< ATelekinesisInteractableObject>(TeleActors[i])->ActorMesh->SetRenderCustomDepth(false);
+			}
+
 
 			abilityReadyStatus = false;
 		}
@@ -656,6 +687,15 @@ void ACraftingStarCharacter::MouseLeftReleased() {
 			if ( abilityReadyStatus ) {
 				KeepAbility = false;
 
+				if ( selectedTarget ) {
+					// Change Tele' Interactive Actor's Color
+					if ( Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner()) )
+					{
+						GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("custom!"));
+						// Set CustomDepth Stencil Value to chagne Color
+						Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ActorMesh->SetCustomDepthStencilValue(0);
+					}
+				}
 				selectedTarget = NULL;
 
 				if ( DeactiveAbilityMontage ) {
