@@ -3,6 +3,7 @@
 
 #include "BTTask_MazePatrol.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "Mob/FlameGuardian.h"
 
 UBTTask_MazePatrol::UBTTask_MazePatrol()
 {
@@ -13,11 +14,10 @@ UBTTask_MazePatrol::UBTTask_MazePatrol()
 EBTNodeResult::Type UBTTask_MazePatrol::ExecuteTask(UBehaviorTreeComponent& OwnerComp , uint8* NodeMemory)
 {
     UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
-
-    if ( BlackboardComp )
+    auto Owner = Cast<AFlameGuardian>(OwnerComp.GetOwner());
+    if ( BlackboardComp && Owner )
     {
-        int a[3][2] = {1, 2, 3 ,4 ,5, 6};
-        UE_LOG(LogTemp , Display , TEXT("%d"), a[2][1]);
+        
        // 현재 있는 밸류;
         int CurrentNumber = BlackboardComp->GetValueAsInt(Destination.SelectedKeyName);
 
