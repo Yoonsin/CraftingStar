@@ -12,7 +12,8 @@
 				"Engine",
 				"UMGEditor",
 				"UMG",
-				"Niagara"
+				"Niagara",
+				"AIModule"
 			]
 		}
 	],

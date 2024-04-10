@@ -230,7 +230,7 @@ void ACraftingStarCharacter::Tick(float DeltaTime)
 {
 	//          Ӹ          ɷ              ʿ        Ʈ
 	Super::Tick(DeltaTime);
-
+	/*
 	if ( KeepAbility ) {
 		// Activate Ability
 		if ( nowAbility != EPlayerAbility::ENone ) {
@@ -245,7 +245,7 @@ void ACraftingStarCharacter::Tick(float DeltaTime)
 			}
 		}
 	}
-
+	*/
 }
 
 void ACraftingStarCharacter::UpdatePlayerAbility(EPlayerAbility playerAbility) {
@@ -496,12 +496,12 @@ void ACraftingStarCharacter::MulticastAbility_Implementation(bool abilityState) 
 		if ( nowAbility != EPlayerAbility::ENone ) {
 			// Laser(EBlast)
 			if ( nowAbility == EPlayerAbility::EBlast ) {
-				GetMesh()->GetAnimInstance()->Montage_Play(AbilityMontage , 1.0f);
+				//GetMesh()->GetAnimInstance()->Montage_Play(AbilityMontage , 1.0f);
 				bUseControllerRotationYaw = true;	// Rotate the player based on the controller
 			}
 			// Manipulate(ETelekinesis)
 			else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
-				GetMesh()->GetAnimInstance()->Montage_Play(AbilityMontage , 1.0f);
+				//GetMesh()->GetAnimInstance()->Montage_Play(AbilityMontage , 1.0f);
 				bUseControllerRotationYaw = true;	// Rotate the player based on the controller
 			}
 		}
@@ -512,18 +512,18 @@ void ACraftingStarCharacter::MulticastAbility_Implementation(bool abilityState) 
 			// Laser(EBlast)
 			if ( nowAbility == EPlayerAbility::EBlast ) {
 				bUseControllerRotationYaw = false;	// Rotate the player based on the controller
-				GetMesh()->GetAnimInstance()->Montage_Play(DeactiveAbilityMontage , 1.0f);
+				//GetMesh()->GetAnimInstance()->Montage_Play(DeactiveAbilityMontage , 1.0f);
 				// Hide Laser
-				LaserBody->SetVisibility(false);
-				LaserImpact->SetVisibility(false);
+				//LaserBody->SetVisibility(false);
+				//LaserImpact->SetVisibility(false);
 			}
 			// Manipulate(ETelekinesis)
 			else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
 				bUseControllerRotationYaw = false;	// Rotate the player based on the controller
-				GetMesh()->GetAnimInstance()->Montage_Play(DeactiveAbilityMontage , 1.0f);
+				//GetMesh()->GetAnimInstance()->Montage_Play(DeactiveAbilityMontage , 1.0f);
 				// Hide Laser
-				LaserBody->SetVisibility(false);
-				LaserImpact->SetVisibility(false);
+				//LaserBody->SetVisibility(false);
+				//LaserImpact->SetVisibility(false);
 			}
 		}
 	}
@@ -531,19 +531,16 @@ void ACraftingStarCharacter::MulticastAbility_Implementation(bool abilityState) 
 
 // Input Ability (Key:E)
 void ACraftingStarCharacter::ActivateAbility() {
-	if ( nowAbility == EPlayerAbility::EBlast ) {
+	if ( nowAbility == EPlayerAbility::EBlast ) 
+	{
 		KeepAbility = true;
 		CameraBoom->SetRelativeLocation(FVector(0.0f , 100.0f , 100.0f));
 		CameraBoom->bUsePawnControlRotation = false; // Does not rotate the arm based on the controller
-		if ( AbilityMontage ) {
-			// Play Animation
-			bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(AbilityMontage);
-			if ( !bIsMontagePlaying ) {
-				ServerAbility(true);	// request ability animation on server
-			}
-		}
+
+		LaserComponent->EmitLaser(GetActorForwardVector());
 	}
 	else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
+
 		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Tele"));
 		if ( !abilityReadyStatus ) {
 			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Tele ready"));
@@ -580,10 +577,10 @@ void ACraftingStarCharacter::DeactivateAbility() {
 		CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 		if ( DeactiveAbilityMontage ) {
 			// Play Animation
-			bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(DeactiveAbilityMontage);
-			if ( !bIsMontagePlaying ) {
-				ServerAbility(false);	// request ability animation on server
-			}
+			//bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(DeactiveAbilityMontage);
+			//if ( !bIsMontagePlaying ) {
+			//	ServerAbility(false);	// request ability animation on server
+			//}
 		}
 	}
 	else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
@@ -599,8 +596,9 @@ void ACraftingStarCharacter::MouseLeftPressed() {
 
 				if ( AbilityMontage ) {
 					// Play Animation
-					bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(AbilityMontage);
-					if ( !bIsMontagePlaying ) {
+					//bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(AbilityMontage);
+					//if ( !bIsMontagePlaying ) 
+					{
 						ServerAbility(true);	// request ability animation on server
 					}
 				}
@@ -619,8 +617,9 @@ void ACraftingStarCharacter::MouseLeftReleased() {
 
 				if ( DeactiveAbilityMontage ) {
 					// Play Animation
-					bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(DeactiveAbilityMontage);
-					if ( !bIsMontagePlaying ) {
+					//bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(DeactiveAbilityMontage);
+					//if ( !bIsMontagePlaying ) 
+					{
 						ServerAbility(false);	// request ability animation on server
 					}
 				}

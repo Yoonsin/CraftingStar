@@ -32,13 +32,17 @@ public:
 	//Deactivate Laser
 	void StopLaser();
 	
+
+
+
+
+protected:
 	UFUNCTION()
 	void DrawLaser(FHitResult Hit , FVector End);
 
 	UFUNCTION()
 	void LightAct(AActor* target , FVector Location);
 
-protected:
 	UFUNCTION(Server , Reliable)
 	void ServerEmitLaser(FVector Location);
 	UFUNCTION(NetMulticast , Reliable)

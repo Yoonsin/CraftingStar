@@ -36,6 +36,10 @@ ULaserComponent::ULaserComponent()
 	LaserImpact->SetupAttachment(this);
 
 	Owner = Cast<ACraftingStarCharacter>(GetOwner());
+
+	LaserBody->SetVisibility(false);
+	LaserImpact->SetVisibility(false);
+	
 }
 
 
@@ -70,6 +74,7 @@ void ULaserComponent::EmitLaser(FVector Location)
 void ULaserComponent::ServerEmitLaser_Implementation(FVector Location)
 {
 	MulticastEmitLaser(Location);
+	return;
 }
 
 void ULaserComponent::MulticastEmitLaser_Implementation(FVector Location)
@@ -123,7 +128,7 @@ void ULaserComponent::DrawLaser(FHitResult Hit , FVector End)
 		LaserBody->SetVectorParameter(FName(TEXT("LaserEnd")) , End); // Set End point
 	else 
 		LaserBody->SetWorldLocation(End); // Set End point
-	LaserBody->SetVisibility(Hit.bBlockingHit);// Show Laser
+	LaserBody->SetVisibility(true);// Show Laser
 	LaserBody->SetNiagaraVariableLinearColor("Color" , EPlayerRole::ELight == OwnerRole ? FLinearColor::White : FLinearColor::Black);
 
 	//Draw LaserImpact
