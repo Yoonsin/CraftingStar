@@ -33,6 +33,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetOffset();
 
+	FORCEINLINE FVector2D GetVector2DByIndex(int32 index) { return FVector2D(index / MazeCol , index % MazeCol); }
+	FORCEINLINE int32 GetIndexBy2D(int32 Row , int32 Col) { return (Row * MazeCol + Col); }
+
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AMazeBlock> DefaultBlock;
 
@@ -40,10 +43,8 @@ public:
 	FVector Offset = FVector(200.0f , 200.0f , 0.0f);
 
 private:
-	UPROPERTY(EditAnywhere , BlueprintReadWrite , meta = ( AllowPrivateAccess = "true" ))
-	int32 MazeRow = 10;
-	UPROPERTY(EditAnywhere , BlueprintReadWrite , meta = ( AllowPrivateAccess = "true" ))
-	int32 MazeCol = 10;
+	int32 MazeRow = 15;
+	int32 MazeCol = 15;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = ( AllowPrivateAccess = "true" ))
 	TArray<UChildActorComponent*> MazeBlockComps;

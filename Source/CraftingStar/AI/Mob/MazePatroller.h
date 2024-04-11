@@ -4,16 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "FlameGuardian.generated.h"
+#include "MazePatroller.generated.h"
 
 UCLASS()
-class CRAFTINGSTAR_API AFlameGuardian : public ACharacter
+class CRAFTINGSTAR_API AMazePatroller : public ACharacter
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this character's properties
-	AFlameGuardian();
+	AMazePatroller();
 
 protected:
 	// Called when the game starts or when spawned

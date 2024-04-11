@@ -6,6 +6,15 @@
 #include "BehaviorTree/Tasks/BTTask_BlackboardBase.h"
 #include "BTTask_MazePatrol.generated.h"
 
+
+enum EDirection : int32
+{
+	North = 0,
+	South = 1,
+	East = 2,
+	West= 3
+};
+
 /**
  * 
  */
@@ -18,7 +27,7 @@ class CRAFTINGSTAR_API UBTTask_MazePatrol : public UBTTask_BlackboardBase
 
 public:
 	UPROPERTY(EditAnywhere , Category = "Maze")
-	FBlackboardKeySelector PartolNumber;
+	FBlackboardKeySelector PatrolNumber;
 	UPROPERTY(EditAnywhere , Category = "Maze")
 	FBlackboardKeySelector Destination;
 

@@ -7,6 +7,13 @@
 #include "../Ability/LightSensingInterface.h"
 #include "MazeBlock.generated.h"
 
+UENUM(BlueprintType)
+enum class EMazeBlockType : uint8
+{
+	MBT_Wall,
+	MBT_Floor
+};
+
 UCLASS()
 class CRAFTINGSTAR_API AMazeBlock : public AActor, public ILightSensingInterface
 {
@@ -15,6 +22,9 @@ class CRAFTINGSTAR_API AMazeBlock : public AActor, public ILightSensingInterface
 public:	
 	// Sets default values for this actor's properties
 	AMazeBlock();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = ( BitmaskEnum = EMazeBlockType))
+	EMazeBlockType BlockType = EMazeBlockType::MBT_Floor;
 
 protected:
 	// Called when the game starts or when spawned

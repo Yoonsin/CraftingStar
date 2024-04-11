@@ -15,18 +15,18 @@ AMazeBoard::AMazeBoard()
 	
 	RootComponent = RootComp = CreateDefaultSubobject<USceneComponent>(TEXT("Root Componnet"));
 
-	//Maze 생성
-	int count = 0;
-	for ( size_t Row = 0; Row < MazeRow; Row++ )
-	{
-		for ( size_t Col = 0; Col < MazeCol; Col++ )
-		{
+    //Maze 생성
+    int count = 0;
+    for ( size_t Row = 0; Row < MazeRow; Row++ )
+    {
+        for ( size_t Col = 0; Col < MazeCol; Col++ )
+        {
 
             //UChildActorComponent를 등록합니다.
-			auto MazeBlockComp = CreateDefaultSubobject<UChildActorComponent>(*FString::Printf(TEXT("MazeBlock %d") , ++count));
-			MazeBlockComp->SetupAttachment(RootComponent);
+            auto MazeBlockComp = CreateDefaultSubobject<UChildActorComponent>(*FString::Printf(TEXT("MazeBlock %d") , ++count));
+            MazeBlockComp->SetupAttachment(RootComponent);
             MazeBlockComp->AttachToComponent(RootComponent , FAttachmentTransformRules::KeepRelativeTransform);
-			MazeBlockComp->SetChildActorClass(DefaultBlock);
+            MazeBlockComp->SetChildActorClass(DefaultBlock);
 
             //UChildActorComponent의 위치를 지정합니다.
             FVector NewLocation = FVector(Col * Offset.X , Row * Offset.Y , 0.0f);
@@ -35,9 +35,8 @@ AMazeBoard::AMazeBoard()
 
             //UChildActorComponent를 배열에 추가합니다.
             MazeBlockComps.Add(MazeBlockComp);
-		}
-	}
-
+        }
+    }
 
 
 }
