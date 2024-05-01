@@ -251,6 +251,9 @@ private:
 	class ULaserComponent* LaserComponent;
 	// Laser: Niagara Component
 
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	class UAssimilationComponent* AssimilationComponent;
+
 
 
 	bool KeepAbility;

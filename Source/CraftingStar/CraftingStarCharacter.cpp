@@ -21,6 +21,7 @@
 #include "NiagaraFunctionLibrary.h" 
 #include "NiagaraComponent.h"
 #include "UtilityFunction.h"
+#include "Ability/AssimilationComponent.h"
 
 #include "Ability/WeaponComponent.h"
 #include "Ability/BowComponent.h"
@@ -163,6 +164,10 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 
 	PhysicsHandle = CreateDefaultSubobject<UPhysicsHandleComponent>(TEXT("PhysicsHandle"));
 
+
+	AssimilationComponent = CreateDefaultSubobject<UAssimilationComponent>(TEXT("Abiility "));
+	AssimilationComponent->SetupAttachment(RootComponent);
+	AssimilationComponent->SetCapsuleSize(100 , 100);
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
 
@@ -449,7 +454,7 @@ bool ACraftingStarCharacter::WandLineTrace(float distance) {
 	/* Execute LineTrace */
 	GetWorld()->LineTraceSingleByChannel(Hit , Start , End , Channel , QueryParams);
 	// Visualize LineTrace
-	DrawDebugLine(GetWorld() , Start , End , FColor::Green);
+	//DrawDebugLine(GetWorld() , Start , End , FColor::Green);
 
 	SetLaser(Hit , End);
 
@@ -464,24 +469,30 @@ void ACraftingStarCharacter::SetLaser(FHitResult Hit , FVector End) {
 	if ( Hit.bBlockingHit ) {
 		if ( Cast<ACraftingStarPS>(GetPlayerState())->PlayerData.Mode == EPlayerRole::EDark ) {
 			ServerLaser(LaserBody , true , Hit.bBlockingHit , Hit.Location , FLinearColor::Black);
+			
 		}
 		else if ( Cast<ACraftingStarPS>(GetPlayerState())->PlayerData.Mode == EPlayerRole::ELight ) {
 			ServerLaser(LaserBody , true , Hit.bBlockingHit , Hit.Location , FLinearColor::White);
+			
 		}
 	}
 	else {
 		if ( Cast<ACraftingStarPS>(GetPlayerState())->PlayerData.Mode == EPlayerRole::EDark ) {
 			ServerLaser(LaserBody , true , Hit.bBlockingHit , End , FLinearColor::Black);
+			
 		}
 		else if ( Cast<ACraftingStarPS>(GetPlayerState())->PlayerData.Mode == EPlayerRole::ELight ) {
 			ServerLaser(LaserBody , true , Hit.bBlockingHit , End , FLinearColor::White);
+			
 		}
 	}
 	if ( Cast<ACraftingStarPS>(GetPlayerState())->PlayerData.Mode == EPlayerRole::EDark ) {
 		ServerLaser(LaserImpact , false , Hit.bBlockingHit , Hit.Location , FLinearColor::Black);
+		
 	}
 	else if ( Cast<ACraftingStarPS>(GetPlayerState())->PlayerData.Mode == EPlayerRole::ELight ) {
 		ServerLaser(LaserImpact , false , Hit.bBlockingHit , Hit.Location , FLinearColor::White);
+		
 	}
 }
 
@@ -613,6 +624,11 @@ void ACraftingStarCharacter::ActivateAbility() {
 	else if ( nowAbility == EPlayerAbility::EAbility_dummy1 )
 	{
 		UseProjectionTwoHanded();
+	}
+
+	else if ( nowAbility == EPlayerAbility::EAbility_dummy2 )
+	{
+		AssimilationComponent->Assimilation();
 	}
 }
 void ACraftingStarCharacter::DeactivateAbility() {
