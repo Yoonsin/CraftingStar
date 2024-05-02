@@ -23,8 +23,11 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	UPROPERTY(VisibleAnywhere , BlueprintReadWrite , Category = Camera)
+	UPROPERTY(VisibleAnywhere , BlueprintReadWrite , Category = Mesh)
 	class UStaticMeshComponent* ActorMesh;
+
+	UPROPERTY(VisibleAnywhere , BlueprintReadWrite , Category = Physics)
+	bool isPhysics = false;
 
 	virtual void Init();
 

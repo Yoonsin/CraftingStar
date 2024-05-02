@@ -24,6 +24,8 @@ class CRAFTINGSTAR_API ITelekinesisInteractableInterface
 public:
 	class UStaticMeshComponent* StaticMesh;
 
+	bool isPhysics = false;
+
 	virtual void Init() = 0;
 
 	virtual void DrawOuline() = 0;

@@ -513,22 +513,39 @@ void ACraftingStarCharacter::Telekinesis() {
 
 		if ( selectedTarget == NULL ) {
 			selectedTarget = Hit.GetComponent();
-			selectedTarget->SetSimulatePhysics(false);
+			//selectedTarget->SetSimulatePhysics(false);
+			// Grab selectedTarget Component
+			PhysicsHandle->GrabComponent(selectedTarget , NAME_None , End , true);
+			if ( PhysicsHandle->GrabbedComponent ) {
+				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Grab"));
+			} else {
+				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Missed"));
+			}
+			// Check is the simulate physics true
+			if ( !selectedTarget->IsSimulatingPhysics() ) {
+				selectedTarget->SetSimulatePhysics(true);
+				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Physics true"));
+			}
+			else {
+				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("origin Physics true"));
+			}
 		}
 	}
 
 	if ( selectedTarget != NULL ) {
-		selectedTarget->SetRelativeLocation(End);
-		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("selected object name: %s") , *selectedTarget->GetName()));
-		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("selected object distance: %f") , Hit.Distance));
+		//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("selected object name: %s") , *selectedTarget->GetName()));
+		//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("selected object distance: %f") , Hit.Distance));
 
 		if ( selectedTarget->GetOwner() ) {
-			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("Is selectedTarget class ATelekinesisInteractableObject?: %d") , selectedTarget->GetOwner()->IsA(ATelekinesisInteractableObject::StaticClass())));
+			//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("Is selectedTarget class ATelekinesisInteractableObject?: %d") , selectedTarget->GetOwner()->IsA(ATelekinesisInteractableObject::StaticClass())));
 
-			// Change Tele' Interactive Actor's Color
+			// Move target if it can be cast
+			// Change Tele' Interactive Actor's Outline Color
 			if ( Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner()) )
 			{
-				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("custom~"));
+				// Move selectedTarget Component
+				//selectedTarget->SetRelativeLocation(End);
+				PhysicsHandle->SetTargetLocation(End);
 				// Set CustomDepth Stencil Value to chagne Color
 				Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ActorMesh->SetCustomDepthStencilValue(1);
 			}
@@ -547,19 +564,23 @@ void ACraftingStarCharacter::ServerAbility_Implementation(bool abilityState) {
 }
 void ACraftingStarCharacter::MulticastAbility_Implementation(bool abilityState) {
 	if ( abilityState ) {
+		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Ability Replicate"));
 		// Activate Ability
-		if ( nowAbility != EPlayerAbility::ENone ) {
+		//if ( nowAbility != EPlayerAbility::ENone ) {
+			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Have Abililty"));
 			// Laser(EBlast)
-			if ( nowAbility == EPlayerAbility::EBlast ) {
+			//if ( nowAbility == EPlayerAbility::EBlast ) {
+				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Blast Montage"));
 				GetMesh()->GetAnimInstance()->Montage_Play(AbilityMontage , 1.0f);
 				bUseControllerRotationYaw = true;	// Rotate the player based on the controller
-			}
+			//}
 			// Manipulate(ETelekinesis)
-			else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
-				GetMesh()->GetAnimInstance()->Montage_Play(AbilityMontage , 1.0f);
-				bUseControllerRotationYaw = true;	// Rotate the player based on the controller
-			}
-		}
+			//else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
+			//	GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Tele Montage"));
+			//	GetMesh()->GetAnimInstance()->Montage_Play(AbilityMontage , 1.0f);
+			//	bUseControllerRotationYaw = true;	// Rotate the player based on the controller
+			//}
+		//}
 	}
 	else {
 		// Deactivate Ability
@@ -691,9 +712,12 @@ void ACraftingStarCharacter::MouseLeftReleased() {
 					// Change Tele' Interactive Actor's Color
 					if ( Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner()) )
 					{
-						GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("custom!"));
 						// Set CustomDepth Stencil Value to chagne Color
 						Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ActorMesh->SetCustomDepthStencilValue(0);
+						PhysicsHandle->ReleaseComponent();
+						if ( !Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->isPhysics ) {
+							selectedTarget->SetSimulatePhysics(true);
+						}
 					}
 				}
 				selectedTarget = NULL;
