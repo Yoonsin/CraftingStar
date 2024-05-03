@@ -23,7 +23,12 @@ void UBowComponent::Shoot()
 	if ( ShootBowMontage )
 	{
 		if ( GetAnimInstance() )
+		{
+			
 			GetAnimInstance()->Montage_Play(ShootBowMontage);
+			
+		}
+			
 	}
 
 	if ( Archer && ShootArcherMontage )
@@ -40,11 +45,15 @@ void UBowComponent::ShootEnd()
 void UBowComponent::Equip()
 {
 	SetSkeletalMesh(BowMesh);
+	if ( WandWeaponComponent )
+		WandWeaponComponent->SetHiddenInGame(true);
 }
 
 void UBowComponent::Unequip()
 {
 	SetSkeletalMesh(NULL);
+	if ( WandWeaponComponent )
+		WandWeaponComponent->SetHiddenInGame(false);
 }
 
 void UBowComponent::SetArcher(ACharacter* Owner)

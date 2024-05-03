@@ -147,6 +147,7 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 	Bow_lMesh->SetRelativeRotation(FRotator(90.0f , 0.f , 90.0f));
 	Bow_lMesh->SetArcher(this);
 	Bow_lMesh->Unequip();
+	Bow_lMesh->SetWandComponent(Weapon_rMesh);
 
 
 
