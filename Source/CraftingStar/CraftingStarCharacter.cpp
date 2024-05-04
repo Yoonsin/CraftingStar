@@ -20,7 +20,8 @@
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h" 
 #include "NiagaraComponent.h"
-
+#include "Blueprint/WidgetBlueprintLibrary.h"
+#include "Blueprint/WidgetLayoutLibrary.h"
 
 //////////////////////////////////////////////////////////////////////////
 // ACraftingStarCharacter
@@ -152,9 +153,17 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 void ACraftingStarCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+
+	if (LoadingWidgetRef == nullptr)
+	{
+		//LoadingWB
+		LoadingWidgetRef = CreateWidget(GetWorld() , LoadingWidget);
+		LoadingWidgetRef->AddToViewport();
+		//idx++;
+	}
+
 	
-	//GameWB     
-	CreateWidget(GetWorld(), GameWidget)->AddToViewport();
 
 	LaserBody->SetVisibility(false);
 	LaserImpact->SetVisibility(false);
@@ -309,6 +318,54 @@ void ACraftingStarCharacter::RepeatingFunction() {
 	PaletteCnt += 0.01f;
 }
 
+void ACraftingStarCharacter::LogoutClient() {
+	if ( LogOutClientWidget != NULL ) {
+
+		LogOutClientWidgetRef = CreateWidget(GetWorld() , LogOutClientWidget);
+		if ( LogOutClientWidgetRef == nullptr ) {
+			GEngine->AddOnScreenDebugMessage(-1 , 3 , FColor::Red , FString::Printf(TEXT("PTR nullptr")));
+		}
+		else {
+
+			GEngine->AddOnScreenDebugMessage(-1 , 3 , FColor::Red , FString::Printf(TEXT("PTR ptr")));
+			LogOutClientWidgetRef->AddToViewport();
+			SetPause(true);
+		}
+
+	
+	}
+
+}
+
+void  ACraftingStarCharacter::StopLogoutClient() {
+	if ( LogOutClientWidgetRef != NULL ) {
+		// ȷ Ʈ     
+		LogOutClientWidgetRef->RemoveFromParent();
+		LogOutClientWidgetRef = NULL;
+		SetPause(false);
+	}
+
+}
+
+void ACraftingStarCharacter::ServerStopLoadingWidget_Implementation()
+{
+	MulticastStopLoadingWidget();
+	//GEngine->AddOnScreenDebugMessage(-1 , 3 , FColor::Red , FString::Printf(TEXT("RemoveWidget_Server")));
+}
+
+void ACraftingStarCharacter::MulticastStopLoadingWidget_Implementation()
+{
+
+    //GEngine->AddOnScreenDebugMessage(-1 , 3 , FColor::Red , FString::Printf(TEXT("RemoveWidget_MULTICAST")));
+
+	UWidgetLayoutLibrary::RemoveAllWidgets(GetWorld());
+
+	//GameWB     
+	CreateWidget(GetWorld() , GameWidget)->AddToViewport();
+}
+
+
+
 void ACraftingStarCharacter::WorldMap() {
 	if (WorldMapWidgetRef == NULL) {
 		WorldMapWidgetRef = CreateWidget(GetWorld(), WorldMapWidget);
@@ -406,6 +463,9 @@ void ACraftingStarCharacter::MulticastAbility_Implementation(bool abilityState) 
 		GetMesh()->GetAnimInstance()->Montage_Play(DeactiveAbilityMontage , 1.0f);
 	}
 }
+
+
+
 
 // Input Ability
 void ACraftingStarCharacter::ActivateAbility() {

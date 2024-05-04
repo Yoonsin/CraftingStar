@@ -22,6 +22,9 @@ class ACraftingStarCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
 
+	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = UI , meta = ( AllowPrivateAccess = "true" ))
+    TSubclassOf<UUserWidget> LoadingWidget;
+
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = UI, meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UUserWidget> PaletteWidget;
@@ -35,6 +38,8 @@ class ACraftingStarCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = UI, meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UUserWidget> SystemMenuWidget;
 
+	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = UI , meta = ( AllowPrivateAccess = "true" ))
+	TSubclassOf<UUserWidget> LogOutClientWidget;
 
 	//�ȷ�Ʈ
 	class UUserWidget* PaletteWidgetRef;
@@ -44,10 +49,12 @@ class ACraftingStarCharacter : public ACharacter
 	//�����
 	class UUserWidget* WorldMapWidgetRef;
 	class UUserWidget* SystemMenuWidgetRef;
+	class UUserWidget* LoadingWidgetRef;
 
+	
 public:
 	ACraftingStarCharacter();
-
+	class UUserWidget* LogOutClientWidgetRef;
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseTurnRate;
@@ -99,7 +106,7 @@ protected:
 	void RepeatingFunction();
 
 	//�����
-	void WorldMap();
+	
 	void SystemMenu();
 
 	//��ȣ�ۿ�
@@ -117,6 +124,9 @@ protected:
 	void ServerAbility(bool abilityState);
 	UFUNCTION(NetMulticast, Unreliable, Category = "CraftingStar Character")
 	void MulticastAbility(bool abilityState);
+
+	
+
 
 	//�Է� �Ͻ�����
 	void SetPause(bool isPaused);
@@ -144,12 +154,19 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void StopPalette();
 
+	void WorldMap();
+
 	//����ʵ� ��������
 	UFUNCTION(BlueprintCallable)
 	void StopWorldMap();
 
 	UFUNCTION(BlueprintCallable)
 	void StopSystemMenu();
+
+	void LogoutClient();
+
+	UFUNCTION(BlueprintCallable)
+	void StopLogoutClient();
 
 	//���� ������ ������Ʈ
 	UFUNCTION(BlueprintCallable)
@@ -159,6 +176,12 @@ public:
 
 	// LineTrace: Set Wand Ability Vector
 	bool WandLineTrace(float distance) const;
+
+	UFUNCTION(NetMulticast , Reliable , Category = "UI", BlueprintCallable)
+		void MulticastStopLoadingWidget();
+	UFUNCTION(Server , Reliable , Category = "UI", BlueprintCallable)
+		void ServerStopLoadingWidget();
+
 
 private:
 	// Cahracter Mesh
@@ -186,4 +209,6 @@ private:
 
 	bool KeepAbility;
 	bool canUseAbility;
+
+	int idx = 0;
 };

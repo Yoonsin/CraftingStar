@@ -70,6 +70,18 @@ void ACraftingStarGameMode::PostLogin(APlayerController* newPlayer)
 
 void  ACraftingStarGameMode::InitGame()
 {
+	//모든 클라이언트에서 로딩창 제거
+	ACharacter* hostCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld() , 0);
+	if ( hostCharacter == nullptr ) return;
+	ACraftingStarCharacter* host = Cast<ACraftingStarCharacter>(hostCharacter);
+	if ( host == nullptr ) return;
+	host->ServerStopLoadingWidget();
+
+
+	//모든 클라이언트에서 모드 적용
+
+
+	//맵 위치 + 진행도 에 따라 달라지는 초기화 로직
 	switch (NowMapName)
 	{
 	case EMapName::EWorldMap:
@@ -86,18 +98,37 @@ void  ACraftingStarGameMode::InitGame()
 	default:
 		break;
 	}
+
+	
 }
 
 void  ACraftingStarGameMode::Logout(AController* Exiting)
 {
 	Super::Logout(Exiting);
 
+	
 	//���� ����� ���� �������� Ȯ��
 	if (UUtilityFunction::IsHost(Exiting)) {
-		UE_LOG(LogTemp, Log, TEXT("Host Logout"));
+		GEngine->AddOnScreenDebugMessage(-1 , 3 , FColor::Red , FString::Printf(TEXT("Host Logout")));
+
+
+		 
 	}
 	else {
-		UE_LOG(LogTemp, Log, TEXT("Guest Logout"));
+		GEngine->AddOnScreenDebugMessage(-1 , 3 , FColor::Red , FString::Printf(TEXT("Guest Logout")));
+
+		ACharacter* hostCharacter  = UGameplayStatics::GetPlayerCharacter(GetWorld() , 0);
+		if ( hostCharacter == nullptr ) return;
+		
+
+		ACraftingStarCharacter* host = Cast<ACraftingStarCharacter>(hostCharacter);
+		if ( host == nullptr ) return;
+
+		
+		//host->WorldMap();
+		host->LogoutClient();
+		
+
 	}
 	
 }
