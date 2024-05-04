@@ -10,7 +10,6 @@
 			"LoadingPhase": "Default",
 			"AdditionalDependencies": [
 				"Engine",
-				"UMGEditor",
 				"UMG",
 				"Niagara"
 			]
@@ -19,6 +18,14 @@
 	"Plugins": [
 		{
 			"Name": "NiagaraExtras",
+			"Enabled": true
+		},
+		{
+			"Name": "AdvancedSessions",
+			"Enabled": true
+		},
+		{
+			"Name": "AdvancedSteamSessions",
 			"Enabled": true
 		}
 	]

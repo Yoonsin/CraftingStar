@@ -64,6 +64,8 @@ void ACraftingStarPS::RequestHealth_Implementation(float Damage)
 void ACraftingStarPS::RequestSave_Implementation()
 {
 	
+
+
 	if (UUtilityFunction::IsHost(Cast<AController>(GetOwner())))
 	{
 		//호스트
@@ -71,22 +73,33 @@ void ACraftingStarPS::RequestSave_Implementation()
 		ACraftingStarGS* CraftingStarGS = Cast<ACraftingStarGS>(UGameplayStatics::GetGameState(this));
 		ACraftingStarCharacter* CraftingStarCharacter = Cast<ACraftingStarCharacter>(Cast<AController>(GetOwner())->GetPawn());
 		CraftingStarGS->ProgressData.HostPlayerPos = CraftingStarCharacter->GetTransform();
-
+		FVector temp = CraftingStarGS->ProgressData.HostPlayerPos.GetLocation();
+		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , FString::Printf(TEXT("HOST X : %f Y : %f Z : %f") , temp.X , temp.Y , temp.Z));
 	}
 	else {
 		//게스트
+		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , FString::Printf(TEXT("GUEST")));
 		
+
+		//플레이어 함수 (클라) -> 플레이어 Reque
+		//playerState(클라) -> getOwner() 에서 null 접근하기 때문에 다른 방법을 해줘야함
+		ACraftingStarCharacter* CraftingStarCharacter = Cast<ACraftingStarCharacter>(Cast<AController>(GetOwner())->GetPawn());
+		FTransform transform = CraftingStarCharacter->GetTransform();
+
 		//서버한테 데이터 업데이트 요청
-		RequestClientUpdate(PlayerData);
+		RequestClientUpdate(PlayerData, transform);
 	}
 }
 
-void ACraftingStarPS::RequestClientUpdate_Implementation(FPlayerData playerData)
+void ACraftingStarPS::RequestClientUpdate_Implementation(FPlayerData playerData , FTransform transform)
 {
 	//캐릭터 위치 업데이트
 	ACraftingStarGS* CraftingStarGS = Cast<ACraftingStarGS>(UGameplayStatics::GetGameState(this));
-	ACraftingStarCharacter* CraftingStarCharacter = Cast<ACraftingStarCharacter>(Cast<AController>(GetOwner())->GetPawn());
-	CraftingStarGS->ProgressData.GuestPlayerPos = CraftingStarCharacter->GetTransform();
+	//ACraftingStarCharacter* CraftingStarCharacter = Cast<ACraftingStarCharacter>(Cast<AController>(GetOwner())->GetPawn());
+	CraftingStarGS->ProgressData.GuestPlayerPos = transform;
+
+	FVector temp = CraftingStarGS->ProgressData.GuestPlayerPos.GetLocation();
+	GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , FString::Printf(TEXT("GUEST X : %f Y : %f Z : %f") , temp.X , temp.Y , temp.Z));
 
 	//PS 업데이트
 	PlayerData = playerData;

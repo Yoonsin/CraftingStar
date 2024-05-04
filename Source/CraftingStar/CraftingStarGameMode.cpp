@@ -20,7 +20,11 @@ ACraftingStarGameMode::ACraftingStarGameMode()
 	{
 		DefaultPawnClass = PlayerPawnBPClass.Class;
 		CharClass = PlayerPawnBPClass.Class;
-	}
+	}	
+	
+	
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	PrimaryActorTick.bCanEverTick = true;
 
 	//SpawnLoc = FVector(165.f, 0.f, 124.f);
 	//SpawnRot = FRotator(0.f, 0.f, 0.f);
@@ -137,6 +141,8 @@ void ACraftingStarGameMode::RespawnPlayer(ACharacter* NewPlayer)
 	float closestDist = 20000000.0f;
 	int NearsIdx = 0;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerStart::StaticClass(), FoundActors);
+	GEngine->AddOnScreenDebugMessage(-1 , 2.0f , FColor::Red , FString::Printf(TEXT("FoundActor Num :: %d") , FoundActors.Num()));
+
 
 	for (int i = 0; i < FoundActors.Num(); i++) {
 		if (closestDist > FVector::Distance(FoundActors[i]->GetActorLocation(), SpawnLoc)) {
