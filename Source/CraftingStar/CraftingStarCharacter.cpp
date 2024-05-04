@@ -24,6 +24,8 @@
 #include "UtilityFunction.h"
 #include "WeaponComponent.h"
 #include "BowComponent.h"
+#include "LaserNiagaraComponent.h"
+#include "TelekinesisInteractableObject.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -124,28 +126,14 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 	SpawnLocSource = CreateDefaultSubobject<USceneComponent>(TEXT("SpawnLoc Source"));
 	SpawnLocSource->SetupAttachment(Weapon_rMesh, FName(TEXT("SpawnLoc")));
 
-	// Ability: Laser Niagara System
-	LaserBody = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Laser Body"));
-	ConstructorHelpers::FObjectFinder<UNiagaraSystem> LaserBodyAsset(TEXT("NiagaraSystem'/Game/Assets/Effects/Laser/NS_Laser.NS_Laser'"));
-	if ( LaserBodyAsset.Succeeded() ) {
-		LaserBody->SetAsset(LaserBodyAsset.Object);
-	}
-	LaserBody->SetupAttachment(Weapon_rMesh , FName(TEXT("SpawnLoc")));
-
-	LaserImpact = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Laser Impact"));
-	ConstructorHelpers::FObjectFinder<UNiagaraSystem> LaserImpactAsset(TEXT("NiagaraSystem'/Game/Assets/Effects/Laser/NS_LaserImpact.NS_LaserImpact'"));
-	if ( LaserBodyAsset.Succeeded() ) {
-		LaserImpact->SetAsset(LaserImpactAsset.Object);
-	}
-	LaserImpact->SetupAttachment(Weapon_rMesh , FName(TEXT("SpawnLoc")));
-
 	Bow_lMesh = CreateDefaultSubobject<UBowComponent>(TEXT("Bow Projection"));
 	Bow_lMesh->SetupAttachment(GetMesh() , FName(TEXT("Weapon_L")));
 	Bow_lMesh->SetRelativeRotation(FRotator(90.0f , 0.f , 90.0f));
 	Bow_lMesh->SetArcher(this);
 	Bow_lMesh->Unequip();
 	
-
+	Comp_LaserNiagara = CreateDefaultSubobject<ULaserNiagaraComponent>(TEXT("Laser Niagara System"));
+	Comp_LaserNiagara->SetupAttachment(SpawnLocSource);
 
 
 	// Create a camera boom (pulls in towards the player if there is a collision)
@@ -159,6 +147,8 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 	FollowCamera->SetupAttachment(CameraBoom , USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
+	PhysicsHandle = CreateDefaultSubobject<UPhysicsHandleComponent>(TEXT("PhysicsHandle"));
+
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
 	
@@ -167,6 +157,7 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -179,8 +170,7 @@ void ACraftingStarCharacter::BeginPlay()
 	//GameWB     
 	CreateWidget(GetWorld(), GameWidget)->AddToViewport();
 
-	LaserBody->SetVisibility(false);
-	LaserImpact->SetVisibility(false);
+	Comp_LaserNiagara->Hide();
 }
 
 void ACraftingStarCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
@@ -238,18 +228,23 @@ void ACraftingStarCharacter::Tick(float DeltaTime)
 	//          Ӹ          ɷ              ʿ        Ʈ
 	Super::Tick(DeltaTime);
 
+	//if (nowAbility == EPlayerAbility::ETelekinesis )
+		//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Tele"));
 	// KeepAbility: using skill. It doesn't mean just ability activated statement.
 	if ( KeepAbility ) {
 		// Activate Ability
 		if ( nowAbility != EPlayerAbility::ENone ) {
 			// Laser(EBlast)
 			if ( nowAbility == EPlayerAbility::EBlast ) {
-				// 테스트
 				// Activate Laser
 				//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Activate Laser"));
 				// Execute Laser
 				ACraftingStarCharacter::WandLineTrace(10000);
 
+			}
+			else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
+				//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Tele"));
+				Telekinesis();
 			}
 		}
 	}
@@ -392,30 +387,6 @@ void ACraftingStarCharacter::Interaction() {
 
 }
 
-// Laser Niagara System Replicate
-
-bool ACraftingStarCharacter::ServerLaser_Validate(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color) {
-	return true;
-}
-void ACraftingStarCharacter::ServerLaser_Implementation(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color) {
-	MulticastLaser(NiagaraComp, isBody, isHit, end , color);
-}
-void ACraftingStarCharacter::MulticastLaser_Implementation(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color) {
-	if ( isBody ) {
-		// Set End point
-		NiagaraComp->SetVectorParameter(FName(TEXT("LaserEnd")) , end);
-		// Show Laser
-		NiagaraComp->SetVisibility(true);
-	}
-	else {
-		// Set End point
-		NiagaraComp->SetWorldLocation(end);
-		// Show Laser
-		NiagaraComp->SetVisibility(isHit);
-	}
-	NiagaraComp->SetNiagaraVariableLinearColor("Color" , color);
-}
-
 // Magic Wand Line Trace for Ability
 bool ACraftingStarCharacter::WandLineTrace(float distance){
 
@@ -441,33 +412,82 @@ bool ACraftingStarCharacter::WandLineTrace(float distance){
 	// Visualize LineTrace
 	DrawDebugLine(GetWorld() , Start , End , FColor::Green);
 
-	// Set the End of Laser Body
-	if ( Hit.bBlockingHit ) {
-		if ( Cast<ACraftingStarPS>(GetPlayerState())->PlayerData.Mode == EPlayerRole::EDark ) {
-			ServerLaser(LaserBody , true , Hit.bBlockingHit , Hit.Location, FLinearColor::Black);
-		}
-		else if ( Cast<ACraftingStarPS>(GetPlayerState())->PlayerData.Mode == EPlayerRole::ELight ) {
-			ServerLaser(LaserBody , true , Hit.bBlockingHit , Hit.Location , FLinearColor::White);
-		}
-	}
-	else {
-		if ( Cast<ACraftingStarPS>(GetPlayerState())->PlayerData.Mode == EPlayerRole::EDark ) {
-			ServerLaser(LaserBody , true , Hit.bBlockingHit , End , FLinearColor::Black);
-		}
-		else if ( Cast<ACraftingStarPS>(GetPlayerState())->PlayerData.Mode == EPlayerRole::ELight ) {
-			ServerLaser(LaserBody , true , Hit.bBlockingHit , End , FLinearColor::White);
-		}
-	}
-	if ( Cast<ACraftingStarPS>(GetPlayerState())->PlayerData.Mode == EPlayerRole::EDark ) {
-		ServerLaser(LaserImpact , false , Hit.bBlockingHit , Hit.Location , FLinearColor::Black);
-	}
-	else if ( Cast<ACraftingStarPS>(GetPlayerState())->PlayerData.Mode == EPlayerRole::ELight ) {
-		ServerLaser(LaserImpact , false , Hit.bBlockingHit , Hit.Location , FLinearColor::White);
-	}
+	Comp_LaserNiagara->SetLaser(Hit , End);
 
 	LightAct(Hit.Actor.Get() , Hit.Location);
 
 	return !Hit.bBlockingHit;
+}
+
+// Ray for Telekinesis
+void ACraftingStarCharacter::Telekinesis() {
+	/* Set LineTrace */
+
+	// Result oof LineTrace
+	FHitResult Hit;
+
+	// Ability Spawn Loc Socket Transform
+	FVector SpawnLocation = FollowCamera->GetComponentLocation();
+	// Start point and End point of LineTrace
+	FVector Start = SpawnLocation;
+	FVector End = SpawnLocation + ( FollowCamera->GetForwardVector() * 750 );
+
+	// Trace Channel: Custom Trace Channel - AbilitySpawn
+	ECollisionChannel Channel = ECollisionChannel::ECC_GameTraceChannel1;
+
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+
+	/* Execute LineTrace */
+	GetWorld()->LineTraceSingleByChannel(Hit , Start , End , Channel , QueryParams);
+	// Visualize LineTrace
+	DrawDebugLine(GetWorld() , Start , End , FColor::Green);
+
+	if ( Hit.bBlockingHit ) {
+		//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("Something hit")));
+
+		if ( selectedTarget == NULL ) {
+			selectedTarget = Hit.GetComponent();
+			//selectedTarget->SetSimulatePhysics(false);
+			// Grab selectedTarget Component
+			PhysicsHandle->GrabComponent(selectedTarget , NAME_None , End , true);
+			if ( PhysicsHandle->GrabbedComponent ) {
+				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Grab"));
+			} else {
+				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Missed"));
+			}
+			// Check is the simulate physics true
+			if ( !selectedTarget->IsSimulatingPhysics() ) {
+				selectedTarget->SetSimulatePhysics(true);
+				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Physics true"));
+			}
+			else {
+				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("origin Physics true"));
+			}
+		}
+	}
+
+	if ( selectedTarget != NULL ) {
+		//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("selected object name: %s") , *selectedTarget->GetName()));
+		//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("selected object distance: %f") , Hit.Distance));
+
+		if ( selectedTarget->GetOwner() ) {
+			//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("Is selectedTarget class ATelekinesisInteractableObject?: %d") , selectedTarget->GetOwner()->IsA(ATelekinesisInteractableObject::StaticClass())));
+
+			// Move target if it can be cast
+			// Change Tele' Interactive Actor's Outline Color
+			if ( Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner()) )
+			{
+				// Move selectedTarget Component
+				//selectedTarget->SetRelativeLocation(End);
+				PhysicsHandle->SetTargetLocation(End);
+				// Set CustomDepth Stencil Value to chagne Color
+				Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ActorMesh->SetCustomDepthStencilValue(1);
+			}
+		}
+	}
+	
+	Comp_LaserNiagara->SetLaser(Hit , End);
 }
 
 // Ability Animaition Replicate
@@ -479,40 +499,30 @@ void ACraftingStarCharacter::ServerAbility_Implementation(bool abilityState) {
 }
 void ACraftingStarCharacter::MulticastAbility_Implementation(bool abilityState) {
 	if ( abilityState ) {
+		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Ability Replicate"));
 		// Activate Ability
-		if ( nowAbility != EPlayerAbility::ENone ) {
+		//if ( nowAbility != EPlayerAbility::ENone ) {
+			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Have Abililty"));
 			// Laser(EBlast)
-			if ( nowAbility == EPlayerAbility::EBlast ) {
+			//if ( nowAbility == EPlayerAbility::EBlast ) {
+				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Blast Montage"));
 				GetMesh()->GetAnimInstance()->Montage_Play(AbilityMontage , 1.0f);
 				bUseControllerRotationYaw = true;	// Rotate the player based on the controller
-			}
+			//}
 			// Manipulate(ETelekinesis)
-			else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
-				GetMesh()->GetAnimInstance()->Montage_Play(AbilityMontage , 1.0f);
-				bUseControllerRotationYaw = true;	// Rotate the player based on the controller
-			}
-		}
+			//else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
+			//	GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Tele Montage"));
+			//	GetMesh()->GetAnimInstance()->Montage_Play(AbilityMontage , 1.0f);
+			//	bUseControllerRotationYaw = true;	// Rotate the player based on the controller
+			//}
+		//}
 	}
 	else {
 		// Deactivate Ability
-		if ( nowAbility != EPlayerAbility::ENone ) {
-			// Laser(EBlast)
-			if ( nowAbility == EPlayerAbility::EBlast ) {
-				bUseControllerRotationYaw = false;	// Rotate the player based on the controller
-				GetMesh()->GetAnimInstance()->Montage_Play(DeactiveAbilityMontage , 1.0f);
-				// Hide Laser
-				LaserBody->SetVisibility(false);
-				LaserImpact->SetVisibility(false);
-			}
-			// Manipulate(ETelekinesis)
-			else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
-				bUseControllerRotationYaw = false;	// Rotate the player based on the controller
-				GetMesh()->GetAnimInstance()->Montage_Play(DeactiveAbilityMontage , 1.0f);
-				// Hide Laser
-				LaserBody->SetVisibility(false);
-				LaserImpact->SetVisibility(false);
-			}
-		}
+		bUseControllerRotationYaw = false;	// Rotate the player based on the controller
+		GetMesh()->GetAnimInstance()->Montage_Play(DeactiveAbilityMontage , 1.0f);
+		// Hide Laser
+		Comp_LaserNiagara->Hide();
 	}
 }
 
@@ -531,17 +541,42 @@ void ACraftingStarCharacter::ActivateAbility() {
 		}
 	}
 	else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
+		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Tele"));
 		if ( !abilityReadyStatus ) {
+			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Tele ready"));
 			abilityReadyStatus = true;
 
 			CameraBoom->SetRelativeLocation(FVector(0.0f , 100.0f , 100.0f));
+			//CameraBoom->bUsePawnControlRotation = false; // Does not rotate the arm based on the controller
+
+			// Create Tele' Interactable Actor's Outline
+			TArray<AActor*> TeleActors;
+			UGameplayStatics::GetAllActorsOfClass(GetWorld() , ATelekinesisInteractableObject::StaticClass() , TeleActors);
+			for ( int i = 0; i < TeleActors.Num(); ++i )
+			{
+				Cast<ATelekinesisInteractableObject>(TeleActors[i])->ActorMesh->SetRenderCustomDepth(true);
+				Cast<ATelekinesisInteractableObject>(TeleActors[i])->ActorMesh->SetCustomDepthStencilValue(0);
+			}
 
 			// activate the outline of objects that can be interacted with telekinesis skill
+			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Tele ready done"));
 		}
 		else {
 			CameraBoom->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
+			//CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
+
+			selectedTarget = NULL;
 
 			// deactivate the outline of objects that can be interacted with telekinesis skill
+			// Delete Tele' Interactable Actor's Outline
+			TArray<AActor*> TeleActors;
+			UGameplayStatics::GetAllActorsOfClass(GetWorld() , ATelekinesisInteractableObject::StaticClass() , TeleActors);
+			for ( int i = 0; i < TeleActors.Num(); ++i )
+			{
+				Cast<ATelekinesisInteractableObject>(TeleActors[i])->ActorMesh->SetCustomDepthStencilValue(0);
+				Cast< ATelekinesisInteractableObject>(TeleActors[i])->ActorMesh->SetRenderCustomDepth(false);
+			}
+
 
 			abilityReadyStatus = false;
 		}
@@ -553,14 +588,17 @@ void ACraftingStarCharacter::ActivateAbility() {
 }
 void ACraftingStarCharacter::DeactivateAbility() {
 	if ( nowAbility == EPlayerAbility::EBlast ) {
+		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Blast deactivate"));
 		KeepAbility = false;
 
 		CameraBoom->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
 		CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 		if ( DeactiveAbilityMontage ) {
+			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Blast stop montage play"));
 			// Play Animation
 			bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(DeactiveAbilityMontage);
 			if ( !bIsMontagePlaying ) {
+				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Blast montage stop"));
 				ServerAbility(false);	// request ability animation on server
 			}
 		}
@@ -593,6 +631,20 @@ void ACraftingStarCharacter::MouseLeftReleased() {
 		if ( nowAbility == EPlayerAbility::ETelekinesis ) {
 			if ( abilityReadyStatus ) {
 				KeepAbility = false;
+
+				if ( selectedTarget ) {
+					// Change Tele' Interactive Actor's Color
+					if ( Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner()) )
+					{
+						// Set CustomDepth Stencil Value to chagne Color
+						Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ActorMesh->SetCustomDepthStencilValue(0);
+						PhysicsHandle->ReleaseComponent();
+						if ( !Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->isPhysics ) {
+							selectedTarget->SetSimulatePhysics(true);
+						}
+					}
+				}
+				selectedTarget = NULL;
 
 				if ( DeactiveAbilityMontage ) {
 					// Play Animation

@@ -7,6 +7,7 @@
 #include "Blueprint/UserWidget.h"
 #include "CustomEnum.h"
 #include "Net/UnrealNetwork.h"
+#include "PhysicsEngine/PhysicsHandleComponent.h"
 #include "CraftingStarCharacter.generated.h"
 
 UCLASS(config=Game)
@@ -22,7 +23,8 @@ class ACraftingStarCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
 
-
+	UPROPERTY(EditDefaultsOnly , Category = "Physics")
+	UPhysicsHandleComponent* PhysicsHandle;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = UI, meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UUserWidget> PaletteWidget;
@@ -47,8 +49,14 @@ class ACraftingStarCharacter : public ACharacter
 	class UUserWidget* SystemMenuWidgetRef;
 
 	/* Ability */
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
 	EPlayerAbility nowAbility = EPlayerAbility::ENone;
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
 	bool abilityReadyStatus = false;
+
+	// Telekinesis
+	UPrimitiveComponent* selectedTarget;
+	void Telekinesis();
 
 public:
 	ACraftingStarCharacter();
@@ -132,18 +140,6 @@ protected:
 	UFUNCTION(NetMulticast, Unreliable, Category = "CraftingStar Character")
 	void MulticastAbility(bool abilityState);
 
-	// Laser: Niagara Component
-	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = "Laser" , meta = ( AllowPrivateAccess = "true" ))
-	class UNiagaraComponent* LaserBody;
-	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = "Laser" , meta = ( AllowPrivateAccess = "true" ))
-	class UNiagaraComponent* LaserImpact;
-	//Laser
-	UFUNCTION(Server , Reliable , WithValidation , Category = "CraftingStar Character")
-	void ServerLaser(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color);
-	UFUNCTION(NetMulticast , Unreliable , Category = "CraftingStar Character")
-	void MulticastLaser(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color);
-
-
 	//Ability Projection 능력 "투영"
 	void UseProjectionTwoHanded();
 	UFUNCTION(Server, Reliable)
@@ -219,7 +215,7 @@ public:
 
 
 private:
-	// Cahracter Mesh
+	// Character Mesh
 	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
 	class UStaticMeshComponent* HeadMesh;
 	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
@@ -231,14 +227,17 @@ private:
 	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
 	class USkeletalMeshComponent* CloakMesh;
 	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+
+	// Mesh: Weapons & Skills
 	class UWeaponComponent* Weapon_rMesh;
 	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
 	class UBowComponent* Bow_lMesh;
+	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	class ULaserNiagaraComponent* Comp_LaserNiagara;
 
 	// Set LineTrace Start Loc
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Ability, meta = (AllowPrivateAccess = "true"))
 	class USceneComponent* SpawnLocSource;
-	// Laser: Niagara Component
 
 
 
