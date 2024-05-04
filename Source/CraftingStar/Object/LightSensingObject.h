@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "InteractiveObject.h"
-#include "LightSensingInterface.h"
+#include "../Object/InteractiveObject.h"
+#include "../Ability/LightSensingInterface.h"
 #include "LightSensingObject.generated.h"
 
 /**

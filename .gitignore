@@ -77,3 +77,4 @@ DerivedDataCache/*
 # Assets
 Content/Assets/*
 !Content/Assets/Effects/*
+Content/LowPolyCubeWorld/*
