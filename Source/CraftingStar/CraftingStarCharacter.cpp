@@ -170,7 +170,7 @@ void ACraftingStarCharacter::BeginPlay()
 	Super::BeginPlay();
 
 
-	if (LoadingWidgetRef == nullptr)
+	if (LoadingWidgetRef == nullptr && LoadingWidget)
 	{
 		//LoadingWB
 		LoadingWidgetRef = CreateWidget(GetWorld() , LoadingWidget);
