@@ -2,8 +2,8 @@
 
 
 #include "AnimNotify_FireArrow.h"
-#include "CraftingStarCharacter.h"
-#include "BowComponent.h"
+#include "../../CraftingStarCharacter.h"
+#include "../BowComponent.h"
 
 void UAnimNotify_FireArrow::Notify(USkeletalMeshComponent* MeshComp , UAnimSequenceBase* Animation)
 {

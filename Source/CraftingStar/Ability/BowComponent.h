@@ -19,6 +19,9 @@ class CRAFTINGSTAR_API UBowComponent : public USkeletalMeshComponent
 private:
 	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = Mesh , meta = ( AllowPrivateAccess = "true" ))
 	USkeletalMesh* BowMesh;
+
+	UPROPERTY()
+	UStaticMeshComponent* WandWeaponComponent;
 	
 	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = AnimMontage, meta = ( AllowPrivateAccess = "true" ))
 	class UAnimMontage* ShootBowMontage;
@@ -38,6 +41,8 @@ public:
 
 	void Equip();
 	void Unequip();
+
+	FORCEINLINE void SetWandComponent(class UStaticMeshComponent* WandComponent) { this->WandWeaponComponent = WandComponent; }
 	
 private:
 	

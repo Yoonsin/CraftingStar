@@ -1,11 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "AnimNotify_TwoHandedEnd.h"
-#include "CraftingStarCharacter.h"
-#include "WeaponComponent.h"
+#include "AnimNotify_BowEnd.h"
+#include "../../CraftingStarCharacter.h"
+#include "../BowComponent.h"
 
-void UAnimNotify_TwoHandedEnd::Notify(USkeletalMeshComponent* MeshComp , UAnimSequenceBase* Animation)
+void UAnimNotify_BowEnd::Notify(USkeletalMeshComponent* MeshComp , UAnimSequenceBase* Animation)
 {
     Super::Notify(MeshComp , Animation);
 
@@ -15,7 +15,7 @@ void UAnimNotify_TwoHandedEnd::Notify(USkeletalMeshComponent* MeshComp , UAnimSe
         ACraftingStarCharacter* CharacterOwner = Cast<ACraftingStarCharacter>(Owner);
         if ( CharacterOwner )
         {
-            CharacterOwner->GetWeaponComponent()->AttackEnd();
+            CharacterOwner->GetBowComponent()->ShootEnd();
         }
     }
 }
