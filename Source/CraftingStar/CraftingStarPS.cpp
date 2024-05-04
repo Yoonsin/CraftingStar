@@ -30,8 +30,8 @@ void ACraftingStarPS::BeginPlay()
 	//this->SetReplicates(true);
 	//bAlwaysRelevant = true;
 
-	PlayerData.Mode = EPlayerRole::EDark;
-	PlayerData.PlayerName = FString("DefalultName");
+	//PlayerData.Mode = EPlayerRole::EDark;
+	//PlayerData.PlayerName = FString("DefalultName");
 	
 	//원래는 전부 false이지만 디버그를 위해 서버로 바꿔줌
 	//PlayerData.AbleAbility.Init(false, (int)EPlayerAbility::ENone+1);
@@ -63,9 +63,6 @@ void ACraftingStarPS::RequestHealth_Implementation(float Damage)
 
 void ACraftingStarPS::RequestSave_Implementation()
 {
-	
-
-
 	if (UUtilityFunction::IsHost(Cast<AController>(GetOwner())))
 	{
 		//호스트
