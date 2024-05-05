@@ -15,11 +15,19 @@ UAssimilationComponent::UAssimilationComponent()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
+	
 	HaloEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Assimilation Effect"));
 	HaloEffect->SetupAttachment(this);
-	HaloEffect->SetVisibility(false);
 
+	ConstructorHelpers::FObjectFinder<UNiagaraSystem> HaloAsset(TEXT("NiagaraSystem'/Game/Object/Assimilate.Assimilate'"));
+	if ( HaloAsset.Succeeded() ) 
+	{
+		HaloEffect->SetAsset(HaloAsset.Object);
+	}
+
+	HaloEffect->SetVisibility(false);
 	// ...
+	
 }
 
 
@@ -135,8 +143,9 @@ void UAssimilationComponent::ShowHaloEffect(bool bShow)
 {
 	if ( HaloEffect )
 	{
-		HaloEffect->Activate(true);
 		HaloEffect->SetVisibility(bShow);
 		HaloEffect->SetNiagaraVariableLinearColor(FString("Color") , FLinearColor::Yellow);
 	}
+
+	else UE_LOG(LogTemp , Warning , TEXT("레이저가 안보이는건 HaloEffcet가 Null이라는건데이게 어떻게 가능하지?"));
 }

@@ -44,7 +44,7 @@ public:
 	//@param bHide: true이면 메쉬를 숨기고, false이면 메쉬를 드러나게 한다.
 	void HideOwner(bool bHide);
 
-	//@param bShow: true이면 나이아가라 이펙트를 보이게 하고, false이면 숨긴다..
+	//@param bShow: true이면 나이아가라 이펙트를 보이게 하고, false이면 숨긴다.
 	void ShowHaloEffect(bool bShow);
 	
 	//동화 능력

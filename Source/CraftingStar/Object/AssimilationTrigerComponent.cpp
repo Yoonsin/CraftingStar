@@ -7,7 +7,6 @@
 
 void UAssimilationTrigerComponent::ChaseStart_Implementation(class UAssimilationComponent* AssimilationComp)
 {
-	UE_LOG(LogTemp , Display , TEXT("A"));
 	if ( auto Object = Cast<AAssimilationObject>(GetOwner()) )
 	{
 		Object->SetChasing(true);
