@@ -499,23 +499,8 @@ void ACraftingStarCharacter::ServerAbility_Implementation(bool abilityState) {
 }
 void ACraftingStarCharacter::MulticastAbility_Implementation(bool abilityState) {
 	if ( abilityState ) {
-		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Ability Replicate"));
-		// Activate Ability
-		//if ( nowAbility != EPlayerAbility::ENone ) {
-			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Have Abililty"));
-			// Laser(EBlast)
-			//if ( nowAbility == EPlayerAbility::EBlast ) {
-				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Blast Montage"));
-				GetMesh()->GetAnimInstance()->Montage_Play(AbilityMontage , 1.0f);
-				bUseControllerRotationYaw = true;	// Rotate the player based on the controller
-			//}
-			// Manipulate(ETelekinesis)
-			//else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
-			//	GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Tele Montage"));
-			//	GetMesh()->GetAnimInstance()->Montage_Play(AbilityMontage , 1.0f);
-			//	bUseControllerRotationYaw = true;	// Rotate the player based on the controller
-			//}
-		//}
+		GetMesh()->GetAnimInstance()->Montage_Play(AbilityMontage , 1.0f);
+		bUseControllerRotationYaw = true;	// Rotate the player based on the controller
 	}
 	else {
 		// Deactivate Ability

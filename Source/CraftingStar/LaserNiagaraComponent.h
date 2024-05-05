@@ -29,23 +29,17 @@ protected :
 	class UNiagaraComponent* LaserImpact;
 
 public :
-	// Server: Replicate
-	UFUNCTION(Server , Reliable , WithValidation , Category = "CraftingStar Character")
-	void ServerLaser(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color);
-	UFUNCTION(NetMulticast , Unreliable , Category = "CraftingStar Character")
-	void MulticastLaser(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color);
-
-	/*
-	UFUNCTION(Server , Reliable , WithValidation , Category = "CraftingStar Character")
-	void ServerAbility(bool abilityState);
-	UFUNCTION(NetMulticast , Unreliable , Category = "CraftingStar Character")
-	void MulticastAbility(bool abilityState);
-	*/
 	// Set
 	void SetLaser(FHitResult Hit , FVector End);
 
 	// Show & Hide
 	void Show();
 	void Hide();
+
+	// Server: Replicate
+	UFUNCTION(Server , Reliable , WithValidation , Category = "CraftingStar Character")
+	void ServerLaser(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color);
+	UFUNCTION(NetMulticast , Unreliable , Category = "CraftingStar Character")
+	void MulticastLaser(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color);
 
 };
