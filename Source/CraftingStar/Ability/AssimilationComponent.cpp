@@ -17,6 +17,7 @@ UAssimilationComponent::UAssimilationComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 	HaloEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Assimilation Effect"));
 	HaloEffect->SetupAttachment(this);
+	HaloEffect->SetVisibility(false);
 
 	// ...
 }
@@ -92,37 +93,22 @@ void UAssimilationComponent::DetectSpline(UPrimitiveComponent* OverlappedComp , 
 {
 	if ( auto Triger = Cast<UAssimilationTrigerComponent>(OtherComp) )
 	{
+		Triger->SetAssimilationComponent(this);
 		UE_LOG(LogTemp , Display , TEXT("Detect Spline"));
 		if ( Triger->Implements<USplineChasingInterface>() )
 		{
 			SplineTrigers.Add(Triger);
 		}
 	}
-	/*
-	if(OtherActor->Implements<USplineChasingInterface>())
-	{
-		
-		//ISplineChasingInterface::Execute_ChaseStart(OtherActor, this);
-		UE_LOG(LogTemp , Warning , TEXT("A Spline Collision Detected!"));
-		Assimilation();
-	}
-
-	else if (auto a = Cast<ISplineChasingInterface>(OtherActor))
-	{
-		//a->ChaseStart();
-		a->Execute_ChaseStart(OtherActor, this);
-		
-		// 스플라인이 따라가게 하고 싶어요
-		UE_LOG(LogTemp , Warning , TEXT("B Spline Collision Detected!"));
-	}
-	*/
+	
 }
 
 void UAssimilationComponent::UndetectSpline(UPrimitiveComponent* OverlappedComp , AActor* OtherActor ,
 	UPrimitiveComponent* OtherComp , int32 OtherBodyIndex)
 {
-	if ( auto Triger = Cast<UBoxComponent>(OtherComp) )
+	if ( auto Triger = Cast<UAssimilationTrigerComponent>(OtherComp) )
 	{
+		//Triger->SetAssimilationComponent(nullptr);
 		UE_LOG(LogTemp , Display , TEXT("Undetect Spline"));
 		if ( Triger->Implements<USplineChasingInterface>() )
 		{
@@ -142,5 +128,15 @@ void UAssimilationComponent::HideOwner(bool bHide)
 		{
 			AttachedComponent->SetHiddenInGame(bHide);
 		}
+	}
+}
+
+void UAssimilationComponent::ShowHaloEffect(bool bShow)
+{
+	if ( HaloEffect )
+	{
+		HaloEffect->Activate(true);
+		HaloEffect->SetVisibility(bShow);
+		HaloEffect->SetNiagaraVariableLinearColor(FString("Color") , FLinearColor::Yellow);
 	}
 }
