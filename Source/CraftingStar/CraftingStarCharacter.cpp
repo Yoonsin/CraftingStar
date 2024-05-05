@@ -131,6 +131,7 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 	// Magic Wand LineTrace Start Point
 	SpawnLocSource = CreateDefaultSubobject<USceneComponent>(TEXT("SpawnLoc Source"));
 	SpawnLocSource->SetupAttachment(Weapon_rMesh , FName(TEXT("SpawnLoc")));
+	SpawnLocSource->SetIsReplicated(true);
 
 	Bow_lMesh = CreateDefaultSubobject<UBowComponent>(TEXT("Bow Projection"));
 	Bow_lMesh->SetupAttachment(GetMesh() , FName(TEXT("Weapon_L")));
@@ -140,6 +141,8 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 	
 	Comp_LaserNiagara = CreateDefaultSubobject<ULaserNiagaraComponent>(TEXT("Laser Niagara System"));
 	Comp_LaserNiagara->SetupAttachment(SpawnLocSource);
+	Comp_LaserNiagara->SetIsReplicated(true);
+
 	Bow_lMesh->SetWandComponent(Weapon_rMesh);
 
 
