@@ -34,18 +34,6 @@ void ACraftingStarGameMode::PostLogin(APlayerController* newPlayer)
 {
 	Super::PostLogin(newPlayer);
 
-	if ( UUtilityFunction::IsHost(newPlayer) ) {
-		//isHost 일 시
-		//서버의 데이터 로드를 요청한다
-		//Cast<ACraftingStarCharacter>(newPlayer->GetPawn())->LoadSaveData();
-		
-		//캐릭터의 로드 함수를 부른다.
-	}
-	else {
-		//isHost가 아닐 시
-		//클라이언트의 데이터 로드를 요청한다
-		//Cast<ACraftingStarCharacter>(newPlayer->GetPawn())->LoadSaveData();
-	}
 
 	//ACraftingStarGS* CraftingStarGS = Cast<ACraftingStarGS>(UGameplayStatics::GetGameState(this));
 	//if (CraftingStarGS != nullptr) {
