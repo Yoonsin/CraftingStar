@@ -272,7 +272,7 @@ void ACraftingStarCharacter::Tick(float DeltaTime)
 				// Activate Laser
 				//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Activate Laser"));
 				// Execute Laser
-				ACraftingStarCharacter::WandLineTrace(10000);
+				WandLineTrace(10000);
 
 			}
 			else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
