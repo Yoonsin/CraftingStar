@@ -110,7 +110,7 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 	CloakMesh->SetupAttachment(GetMesh() , FName(TEXT("CloakBone02")));
 	CloakMesh->SetRelativeLocation(FVector(40.0f , 20.0f , 0.0f));
 	CloakMesh->SetRelativeRotation(FRotator(90.0f , 0.0f , 0.0f));
-
+	
 	Weapon_rMesh = CreateDefaultSubobject<UWeaponComponent>(TEXT("Weapon_R"));
 	ConstructorHelpers::FObjectFinder<UStaticMesh> WandSM(TEXT("StaticMesh'/Game/Assets/BaseContent/RPGTinyHeroWavePolyart/Mesh/Weapon/Wand04_SM.Wand04_SM'"));
 	if ( WandSM.Succeeded() ) {
@@ -127,11 +127,11 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 	Weapon_rMesh->SetupAttachment(GetMesh() , FName(TEXT("Weapon_R")));
 	Weapon_rMesh->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
 	Weapon_rMesh->SetRelativeRotation(FRotator(0.0f , 0.0f , 0.0f));
-
+	
 	// Magic Wand LineTrace Start Point
 	SpawnLocSource = CreateDefaultSubobject<USceneComponent>(TEXT("SpawnLoc Source"));
 	SpawnLocSource->SetupAttachment(Weapon_rMesh , FName(TEXT("SpawnLoc")));
-
+	
 	Bow_lMesh = CreateDefaultSubobject<UBowComponent>(TEXT("Bow Projection"));
 	Bow_lMesh->SetupAttachment(GetMesh() , FName(TEXT("Weapon_L")));
 	Bow_lMesh->SetRelativeRotation(FRotator(90.0f , 0.f , 90.0f));
@@ -949,7 +949,6 @@ void ACraftingStarCharacter::MulticastUseProjectionBow_Implementation()
 
 void ACraftingStarCharacter::ServerRequestLoadSaveData_Implementation()
 {
-	
 	LoadSaveData(false);
 }
 
