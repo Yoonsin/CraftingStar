@@ -217,6 +217,10 @@ public:
 
 	void LogoutClient();
 
+	void LoadSaveData(bool isHost);
+	UFUNCTION(Server, Reliable)
+	void ServerRequestLoadSaveData();
+
 	UFUNCTION(BlueprintCallable)
 	void StopLogoutClient();
 

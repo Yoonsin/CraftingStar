@@ -32,6 +32,7 @@
 
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
+#include "Misc/OutputDeviceNull.h"
 
 //////////////////////////////////////////////////////////////////////////
 // ACraftingStarCharacter
@@ -109,7 +110,7 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 	CloakMesh->SetupAttachment(GetMesh() , FName(TEXT("CloakBone02")));
 	CloakMesh->SetRelativeLocation(FVector(40.0f , 20.0f , 0.0f));
 	CloakMesh->SetRelativeRotation(FRotator(90.0f , 0.0f , 0.0f));
-
+	
 	Weapon_rMesh = CreateDefaultSubobject<UWeaponComponent>(TEXT("Weapon_R"));
 	ConstructorHelpers::FObjectFinder<UStaticMesh> WandSM(TEXT("StaticMesh'/Game/Assets/BaseContent/RPGTinyHeroWavePolyart/Mesh/Weapon/Wand04_SM.Wand04_SM'"));
 	if ( WandSM.Succeeded() ) {
@@ -126,11 +127,11 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 	Weapon_rMesh->SetupAttachment(GetMesh() , FName(TEXT("Weapon_R")));
 	Weapon_rMesh->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
 	Weapon_rMesh->SetRelativeRotation(FRotator(0.0f , 0.0f , 0.0f));
-
+	
 	// Magic Wand LineTrace Start Point
 	SpawnLocSource = CreateDefaultSubobject<USceneComponent>(TEXT("SpawnLoc Source"));
 	SpawnLocSource->SetupAttachment(Weapon_rMesh , FName(TEXT("SpawnLoc")));
-
+	
 	Bow_lMesh = CreateDefaultSubobject<UBowComponent>(TEXT("Bow Projection"));
 	Bow_lMesh->SetupAttachment(GetMesh() , FName(TEXT("Weapon_L")));
 	Bow_lMesh->SetRelativeRotation(FRotator(90.0f , 0.f , 90.0f));
@@ -180,12 +181,24 @@ void ACraftingStarCharacter::BeginPlay()
 	Super::BeginPlay();
 
 
-	if (LoadingWidgetRef == nullptr && LoadingWidget)
-	{
-		//LoadingWB
-		LoadingWidgetRef = CreateWidget(GetWorld() , LoadingWidget);
-		LoadingWidgetRef->AddToViewport();
-		//idx++;
+	//if (LoadingWidgetRef == nullptr && LoadingWidget)
+	//{
+	//	//LoadingWB
+	//	LoadingWidgetRef = CreateWidget(GetWorld() , LoadingWidget);
+	//	LoadingWidgetRef->AddToViewport();
+	//	//idx++;
+	//}
+
+
+	if ( HasAuthority() ) {
+		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("LOAD Server"));
+		LoadSaveData(true);
+		
+	}
+	else {
+		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("LOAD Client"));
+		//ServerRequestLoadSaveData();
+		LoadSaveData(false);
 	}
 
 	
@@ -251,7 +264,7 @@ void ACraftingStarCharacter::Tick(float DeltaTime)
 	//if (nowAbility == EPlayerAbility::ETelekinesis )
 		//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Tele"));
 	// KeepAbility: using skill. It doesn't mean just ability activated statement.
-	if ( KeepAbility ) {
+	if ( KeepAbility  ) {
 		// Activate Ability
 		if ( nowAbility != EPlayerAbility::ENone ) {
 			// Laser(EBlast)
@@ -259,7 +272,7 @@ void ACraftingStarCharacter::Tick(float DeltaTime)
 				// Activate Laser
 				//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Activate Laser"));
 				// Execute Laser
-				ACraftingStarCharacter::WandLineTrace(10000);
+				WandLineTrace(10000);
 
 			}
 			else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
@@ -931,4 +944,25 @@ void ACraftingStarCharacter::MulticastUseProjectionBow_Implementation()
 {
 	Bow_lMesh->Equip();
 	Bow_lMesh->Shoot();
+
 }
+
+void ACraftingStarCharacter::ServerRequestLoadSaveData_Implementation()
+{
+	LoadSaveData(false);
+}
+
+void ACraftingStarCharacter::LoadSaveData(bool isHost)
+{
+	
+	FOutputDeviceNull Ar;
+
+	if ( isHost ) {
+		CallFunctionByNameWithArguments(TEXT("BP_LoadSaveData_Server") , Ar , nullptr , true);
+	}
+	else {
+		CallFunctionByNameWithArguments(TEXT("BP_LoadSaveData_Client") , Ar , nullptr , true);
+	}
+	
+}
+
