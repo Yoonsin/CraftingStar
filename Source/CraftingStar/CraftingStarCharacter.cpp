@@ -272,7 +272,7 @@ void ACraftingStarCharacter::Tick(float DeltaTime)
 				// Activate Laser
 				//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Activate Laser"));
 				// Execute Laser
-				WandLineTrace(10000);
+				WandLineTrace(10000.0f);
 
 			}
 			else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
@@ -477,7 +477,10 @@ bool ACraftingStarCharacter::WandLineTrace(float distance) {
 	FHitResult Hit;
 
 	// Ability Spawn Loc Socket Transform
-	FVector SpawnLocation = this->Weapon_rMesh->GetSocketLocation(FName("SpawnLoc"));
+	//FVector SpawnLocation = this->Weapon_rMesh->GetSocketLocation(FName("SpawnLoc"));
+	FVector SpawnLocation = this->SpawnLocSource->GetComponentLocation();
+	//FVector SpawnLocation = FVector::UpVector;
+	
 	// Start point and End point of LineTrace
 	FVector Start = SpawnLocation;
 	FVector End = SpawnLocation + ( GetActorForwardVector() * distance );
@@ -498,6 +501,7 @@ bool ACraftingStarCharacter::WandLineTrace(float distance) {
 	LightAct(Hit.Actor.Get() , Hit.Location);
 
 	return !Hit.bBlockingHit;
+	
 }
 
 // Ray for Telekinesis
