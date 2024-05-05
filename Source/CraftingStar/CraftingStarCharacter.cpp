@@ -32,6 +32,7 @@
 
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
+#include "Misc/OutputDeviceNull.h"
 
 //////////////////////////////////////////////////////////////////////////
 // ACraftingStarCharacter
@@ -180,12 +181,24 @@ void ACraftingStarCharacter::BeginPlay()
 	Super::BeginPlay();
 
 
-	if (LoadingWidgetRef == nullptr && LoadingWidget)
-	{
-		//LoadingWB
-		LoadingWidgetRef = CreateWidget(GetWorld() , LoadingWidget);
-		LoadingWidgetRef->AddToViewport();
-		//idx++;
+	//if (LoadingWidgetRef == nullptr && LoadingWidget)
+	//{
+	//	//LoadingWB
+	//	LoadingWidgetRef = CreateWidget(GetWorld() , LoadingWidget);
+	//	LoadingWidgetRef->AddToViewport();
+	//	//idx++;
+	//}
+
+
+	if ( HasAuthority() ) {
+		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("LOAD Server"));
+		LoadSaveData(true);
+		
+	}
+	else {
+		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("LOAD Client"));
+		//ServerRequestLoadSaveData();
+		LoadSaveData(false);
 	}
 
 	
@@ -251,7 +264,7 @@ void ACraftingStarCharacter::Tick(float DeltaTime)
 	//if (nowAbility == EPlayerAbility::ETelekinesis )
 		//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Tele"));
 	// KeepAbility: using skill. It doesn't mean just ability activated statement.
-	if ( KeepAbility ) {
+	if ( KeepAbility  ) {
 		// Activate Ability
 		if ( nowAbility != EPlayerAbility::ENone ) {
 			// Laser(EBlast)
@@ -946,4 +959,26 @@ void ACraftingStarCharacter::MulticastUseProjectionBow_Implementation()
 {
 	Bow_lMesh->Equip();
 	Bow_lMesh->Shoot();
+
 }
+
+void ACraftingStarCharacter::ServerRequestLoadSaveData_Implementation()
+{
+	
+	LoadSaveData(false);
+}
+
+void ACraftingStarCharacter::LoadSaveData(bool isHost)
+{
+	
+	FOutputDeviceNull Ar;
+
+	if ( isHost ) {
+		CallFunctionByNameWithArguments(TEXT("BP_LoadSaveData_Server") , Ar , nullptr , true);
+	}
+	else {
+		CallFunctionByNameWithArguments(TEXT("BP_LoadSaveData_Client") , Ar , nullptr , true);
+	}
+	
+}
+
