@@ -29,7 +29,7 @@ public:
 		void RequestPlayerGMState(EPlayerGMState playerGmState);
 	UFUNCTION(BlueprintCallable, Server, Reliable)
 		void RequestHealth(float Damage);
-	UFUNCTION(BlueprintCallable, NetMulticast, Reliable)
+	UFUNCTION(BlueprintCallable)
 		void RequestSave();
 	UFUNCTION(BlueprintCallable, Server, Reliable)
 		void RequestClientUpdate(FPlayerData playerData,FTransform transform);

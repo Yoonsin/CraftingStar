@@ -6,6 +6,7 @@
 #include "UtilityFunction.h"
 #include "Net/UnrealNetwork.h"
 #include "Kismet/GameplayStatics.h"
+#include "Misc/OutputDeviceNull.h"
 #include "CraftingStarCharacter.h"
 
 ACraftingStarPS::ACraftingStarPS()
@@ -61,31 +62,32 @@ void ACraftingStarPS::RequestHealth_Implementation(float Damage)
 
 }
 
-void ACraftingStarPS::RequestSave_Implementation()
+void ACraftingStarPS::RequestSave()
 {
 	if (UUtilityFunction::IsHost(Cast<AController>(GetOwner())))
 	{
-		//호스트
-		//캐릭터 위치 업데이트
-		ACraftingStarGS* CraftingStarGS = Cast<ACraftingStarGS>(UGameplayStatics::GetGameState(this));
-		ACraftingStarCharacter* CraftingStarCharacter = Cast<ACraftingStarCharacter>(Cast<AController>(GetOwner())->GetPawn());
-		CraftingStarGS->ProgressData.HostPlayerPos = CraftingStarCharacter->GetTransform();
-		FVector temp = CraftingStarGS->ProgressData.HostPlayerPos.GetLocation();
-		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , FString::Printf(TEXT("HOST X : %f Y : %f Z : %f") , temp.X , temp.Y , temp.Z));
-	}
-	else {
-		//게스트
-		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , FString::Printf(TEXT("GUEST")));
 		
 
-		//플레이어 함수 (클라) -> 플레이어 Reque
-		//playerState(클라) -> getOwner() 에서 null 접근하기 때문에 다른 방법을 해줘야함
-		ACraftingStarCharacter* CraftingStarCharacter = Cast<ACraftingStarCharacter>(Cast<AController>(GetOwner())->GetPawn());
-		FTransform transform = CraftingStarCharacter->GetTransform();
+		FOutputDeviceNull Ar;
+	    CallFunctionByNameWithArguments(TEXT("Save") , Ar , nullptr , true);
 
-		//서버한테 데이터 업데이트 요청
-		RequestClientUpdate(PlayerData, transform);
+		auto GameInstance = UGameplayStatics::GetGameInstance(GetWorld());
+        UFunction* Function = GameInstance->GetClass()->FindFunctionByName(FName("Save"));
+
+		if (Function == nullptr)
+	    {
+			GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , FString::Printf(TEXT("Save Failed")));
+			return;
+        }
+
+		struct FLocalParameters{};
+		FLocalParameters Parameter;
+
+        GameInstance->ProcessEvent(Function,&Parameter);
+		//GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , FString::Printf(TEXT("HOST X : %f Y : %f Z : %f") , temp.X , temp.Y , temp.Z));
+		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , FString::Printf(TEXT("Save Clear") ));
 	}
+	
 }
 
 void ACraftingStarPS::RequestClientUpdate_Implementation(FPlayerData playerData , FTransform transform)
