@@ -34,53 +34,6 @@ void ULaserNiagaraComponent::SetOwner() {
 	owner = Cast< ACraftingStarCharacter>(GetOwner());
 }
 
-// Laser Niagara System Replicate
-bool ULaserNiagaraComponent::ServerLaser_Validate(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color) {
-	return true;
-}
-void ULaserNiagaraComponent::ServerLaser_Implementation(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color) {
-	MulticastLaser(NiagaraComp , isBody , isHit , end , color);
-}
-void ULaserNiagaraComponent::MulticastLaser_Implementation(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color) {
-	if ( isBody ) {
-		// Set End point
-		NiagaraComp->SetVectorParameter(FName(TEXT("LaserEnd")) , end);
-		// Show Laser
-		NiagaraComp->SetVisibility(true);
-	}
-	else {
-		// Set End point
-		NiagaraComp->SetWorldLocation(end);
-		// Show Laser
-		NiagaraComp->SetVisibility(isHit);
-	}
-	NiagaraComp->SetNiagaraVariableLinearColor("Color" , color);
-}
-/*
-// Ability Animaition Replicate
-bool ULaserNiagaraComponent::ServerAbility_Validate(bool abilityState) {
-	return true;
-}
-void ULaserNiagaraComponent::ServerAbility_Implementation(bool abilityState) {
-	MulticastAbility(abilityState);
-}
-void ULaserNiagaraComponent::MulticastAbility_Implementation(bool abilityState) {
-	if ( abilityState ) {
-		// Activate Ability
-		// Laser(EBlast)
-		owner->GetMesh()->GetAnimInstance()->Montage_Play(AbilityMontage , 1.0f);
-		owner->bUseControllerRotationYaw = true;	// Rotate the player based on the controller
-	}
-	else {
-		// Deactivate Ability
-		// Laser(EBlast)
-		owner->bUseControllerRotationYaw = false;	// Rotate the player based on the controller
-		owner->GetMesh()->GetAnimInstance()->Montage_Play(DeactiveAbilityMontage , 1.0f);
-		// Hide Laser
-		Hide();
-	}
-}
-*/
 // Set Laser
 void ULaserNiagaraComponent::SetLaser(FHitResult Hit , FVector End) {
 	// Set the End of Laser Body
@@ -117,4 +70,27 @@ void ULaserNiagaraComponent::Show() {
 void ULaserNiagaraComponent::Hide() {
 	LaserBody->SetVisibility(false);
 	LaserImpact->SetVisibility(false);
+}
+
+// Laser Niagara System Replicate
+bool ULaserNiagaraComponent::ServerLaser_Validate(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color) {
+	return true;
+}
+void ULaserNiagaraComponent::ServerLaser_Implementation(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color) {
+	MulticastLaser(NiagaraComp , isBody , isHit , end , color);
+}
+void ULaserNiagaraComponent::MulticastLaser_Implementation(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color) {
+	if ( isBody ) {
+		// Set End point
+		NiagaraComp->SetVectorParameter(FName(TEXT("LaserEnd")) , end);
+		// Show Laser
+		NiagaraComp->SetVisibility(true);
+	}
+	else {
+		// Set End point
+		NiagaraComp->SetWorldLocation(end);
+		// Show Laser
+		NiagaraComp->SetVisibility(isHit);
+	}
+	NiagaraComp->SetNiagaraVariableLinearColor("Color" , color);
 }
