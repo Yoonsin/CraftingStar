@@ -129,6 +129,7 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 	// Magic Wand LineTrace Start Point
 	SpawnLocSource = CreateDefaultSubobject<USceneComponent>(TEXT("SpawnLoc Source"));
 	SpawnLocSource->SetupAttachment(Weapon_rMesh , FName(TEXT("SpawnLoc")));
+	SpawnLocSource->SetIsReplicated(true);
 	
 	Bow_lMesh = CreateDefaultSubobject<UBowComponent>(TEXT("Bow Projection"));
 	Bow_lMesh->SetupAttachment(GetMesh() , FName(TEXT("Weapon_L")));
@@ -138,6 +139,8 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 	
 	Comp_LaserNiagara = CreateDefaultSubobject<ULaserNiagaraComponent>(TEXT("Laser Niagara System"));
 	Comp_LaserNiagara->SetupAttachment(SpawnLocSource);
+	Comp_LaserNiagara->SetIsReplicated(true);
+
 	Bow_lMesh->SetWandComponent(Weapon_rMesh);
 
 
@@ -481,7 +484,8 @@ bool ACraftingStarCharacter::WandLineTrace(float distance) {
 	
 	// Start point and End point of LineTrace
 	FVector Start = SpawnLocation;
-	FVector End = SpawnLocation + ( GetActorForwardVector() * distance );
+	//FVector End = SpawnLocation + ( GetActorForwardVector() * distance );
+	FVector End = SpawnLocation + ( FollowCamera->GetForwardVector() * distance );
 
 	// Trace Channel: Custom Trace Channel - AbilitySpawn
 	ECollisionChannel Channel = ECollisionChannel::ECC_GameTraceChannel1;
@@ -594,12 +598,12 @@ void ACraftingStarCharacter::MulticastAbility_Implementation(bool abilityState) 
 	}
 }
 
-// Input Ability (Key:E)
+// Input Ability (Key: E)
 void ACraftingStarCharacter::ActivateAbility() {
 	if ( nowAbility == EPlayerAbility::EBlast ) {
 		KeepAbility = true;
 		CameraBoom->SetRelativeLocation(FVector(0.0f , 100.0f , 100.0f));
-		CameraBoom->bUsePawnControlRotation = false; // Does not rotate the arm based on the controller
+		//CameraBoom->bUsePawnControlRotation = false; // Does not rotate the arm based on the controller
 		if ( AbilityMontage ) {
 			// Play Animation
 			bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(AbilityMontage);
@@ -665,7 +669,7 @@ void ACraftingStarCharacter::DeactivateAbility() {
 		KeepAbility = false;
 
 		CameraBoom->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
-		CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
+		//CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 		if ( DeactiveAbilityMontage ) {
 			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Blast stop montage play"));
 			// Play Animation
@@ -713,7 +717,7 @@ void ACraftingStarCharacter::MouseLeftReleased() {
 						Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ActorMesh->SetCustomDepthStencilValue(0);
 						PhysicsHandle->ReleaseComponent();
 						if ( !Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->isPhysics ) {
-							selectedTarget->SetSimulatePhysics(true);
+							selectedTarget->SetSimulatePhysics(false);
 						}
 					}
 				}

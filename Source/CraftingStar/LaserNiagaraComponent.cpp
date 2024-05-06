@@ -18,6 +18,7 @@ ULaserNiagaraComponent::ULaserNiagaraComponent()
 		LaserBody->SetAsset(LaserBodyAsset.Object);
 		LaserBody->SetupAttachment(this);
 	}
+	LaserBody->SetIsReplicated(true);
 
 	LaserImpact = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Laser Impact"));
 	ConstructorHelpers::FObjectFinder<UNiagaraSystem> LaserImpactAsset(TEXT("NiagaraSystem'/Game/Assets/Effects/Laser/NS_LaserImpact.NS_LaserImpact'"));
@@ -25,6 +26,7 @@ ULaserNiagaraComponent::ULaserNiagaraComponent()
 		LaserImpact->SetAsset(LaserImpactAsset.Object);
 		LaserImpact->SetupAttachment(this);
 	}
+	LaserImpact->SetIsReplicated(true);
 
 	SetOwner();
 

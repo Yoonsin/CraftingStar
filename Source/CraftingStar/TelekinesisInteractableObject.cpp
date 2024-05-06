@@ -9,12 +9,18 @@ ATelekinesisInteractableObject::ATelekinesisInteractableObject()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	// Set this Component's Replication Property
+	SetReplicates(true);
+
+	// Set Rotation
+
 	// Actor Mesh
 	ActorMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ActorMesh"));
 	ConstructorHelpers::FObjectFinder<UStaticMesh> ActorSM(TEXT("StaticMesh'/Game/Assets/BaseContent/StarterContent/Shapes/Shape_Cube.Shape_Cube'"));
 	if ( ActorSM.Succeeded() ) {
 		ActorMesh->SetStaticMesh(ActorSM.Object);
 	}
+	ActorMesh->SetIsReplicated(true);
 }
 
 // Called when the game starts or when spawned
