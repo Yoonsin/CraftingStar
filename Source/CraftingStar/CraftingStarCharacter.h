@@ -252,9 +252,10 @@ private:
 	class UStaticMeshComponent* MouthMesh;
 	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
 	class USkeletalMeshComponent* CloakMesh;
-	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	
 
 	// Mesh: Weapons & Skills
+	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
 	class UWeaponComponent* Weapon_rMesh;
 	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
 	class UBowComponent* Bow_lMesh;
