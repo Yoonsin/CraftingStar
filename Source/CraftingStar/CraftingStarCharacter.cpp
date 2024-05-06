@@ -24,10 +24,8 @@
 #include "LaserNiagaraComponent.h"
 #include "TelekinesisInteractableObject.h"
 #include "Ability/AssimilationComponent.h"
-
 #include "Ability/WeaponComponent.h"
 #include "Ability/BowComponent.h"
-
 #include "Object/LightSensingObject.h"
 
 #include "Blueprint/WidgetBlueprintLibrary.h"

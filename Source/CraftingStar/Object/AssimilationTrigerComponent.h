@@ -15,9 +15,17 @@ class CRAFTINGSTAR_API UAssimilationTrigerComponent : public UBoxComponent, publ
 {
 	GENERATED_BODY()
 	
-
+private:
+	class UAssimilationComponent* AssimilationComponent;
+	
 public:
-	virtual void ChaseStart_Implementation(class UAssimilationComponent* AssmitationComp) override;
-	virtual void ChaseEnd_Implementation(class UAssimilationComponent* AssmitationComp) override;
+	UFUNCTION(BlueprintCallable)
+	void SetAssimilationComponent(class UAssimilationComponent* AssimilationComp);
+	
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE class UAssimilationComponent* GetAssimilationComponent() { return this->AssimilationComponent; }
+
+	virtual void ChaseStart_Implementation(class UAssimilationComponent* AssimilationComp) override;
+	virtual void ChaseEnd_Implementation(class UAssimilationComponent* AssimilationComp) override;
 
 };

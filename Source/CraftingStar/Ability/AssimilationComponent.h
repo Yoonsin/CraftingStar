@@ -21,8 +21,7 @@ private:
 	void UndetectSpline(UPrimitiveComponent* OverlappedComp , AActor* OtherActor ,
 		UPrimitiveComponent* OtherComp , int32 OtherBodyIndex);
 
-	//@param bHide: true이면 메쉬를 숨기고, false이면 메쉬를 드러나게 한다.
-	void HideOwner(bool bHide);
+	
 
 	//동화 능력을 일으키기 위한 트리거
 	UPROPERTY(VisibleAnywhere, meta = ( AllowPrivateAccess = "true" ))
@@ -42,6 +41,11 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	//@param bHide: true이면 메쉬를 숨기고, false이면 메쉬를 드러나게 한다.
+	void HideOwner(bool bHide);
+
+	//@param bShow: true이면 나이아가라 이펙트를 보이게 하고, false이면 숨긴다.
+	void ShowHaloEffect(bool bShow);
 	
 	//동화 능력
 	UFUNCTION(BlueprintCallable)

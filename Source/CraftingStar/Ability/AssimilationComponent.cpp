@@ -15,10 +15,19 @@ UAssimilationComponent::UAssimilationComponent()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
+	
 	HaloEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Assimilation Effect"));
 	HaloEffect->SetupAttachment(this);
 
+	ConstructorHelpers::FObjectFinder<UNiagaraSystem> HaloAsset(TEXT("NiagaraSystem'/Game/Object/Assimilate.Assimilate'"));
+	if ( HaloAsset.Succeeded() ) 
+	{
+		HaloEffect->SetAsset(HaloAsset.Object);
+	}
+
+	HaloEffect->SetVisibility(false);
 	// ...
+	
 }
 
 
@@ -92,37 +101,22 @@ void UAssimilationComponent::DetectSpline(UPrimitiveComponent* OverlappedComp , 
 {
 	if ( auto Triger = Cast<UAssimilationTrigerComponent>(OtherComp) )
 	{
+		Triger->SetAssimilationComponent(this);
 		UE_LOG(LogTemp , Display , TEXT("Detect Spline"));
 		if ( Triger->Implements<USplineChasingInterface>() )
 		{
 			SplineTrigers.Add(Triger);
 		}
 	}
-	/*
-	if(OtherActor->Implements<USplineChasingInterface>())
-	{
-		
-		//ISplineChasingInterface::Execute_ChaseStart(OtherActor, this);
-		UE_LOG(LogTemp , Warning , TEXT("A Spline Collision Detected!"));
-		Assimilation();
-	}
-
-	else if (auto a = Cast<ISplineChasingInterface>(OtherActor))
-	{
-		//a->ChaseStart();
-		a->Execute_ChaseStart(OtherActor, this);
-		
-		// 스플라인이 따라가게 하고 싶어요
-		UE_LOG(LogTemp , Warning , TEXT("B Spline Collision Detected!"));
-	}
-	*/
+	
 }
 
 void UAssimilationComponent::UndetectSpline(UPrimitiveComponent* OverlappedComp , AActor* OtherActor ,
 	UPrimitiveComponent* OtherComp , int32 OtherBodyIndex)
 {
-	if ( auto Triger = Cast<UBoxComponent>(OtherComp) )
+	if ( auto Triger = Cast<UAssimilationTrigerComponent>(OtherComp) )
 	{
+		//Triger->SetAssimilationComponent(nullptr);
 		UE_LOG(LogTemp , Display , TEXT("Undetect Spline"));
 		if ( Triger->Implements<USplineChasingInterface>() )
 		{
@@ -143,4 +137,15 @@ void UAssimilationComponent::HideOwner(bool bHide)
 			AttachedComponent->SetHiddenInGame(bHide);
 		}
 	}
+}
+
+void UAssimilationComponent::ShowHaloEffect(bool bShow)
+{
+	if ( HaloEffect )
+	{
+		HaloEffect->SetVisibility(bShow);
+		HaloEffect->SetNiagaraVariableLinearColor(FString("Color") , FLinearColor::Yellow);
+	}
+
+	else UE_LOG(LogTemp , Warning , TEXT("레이저가 안보이는건 HaloEffcet가 Null이라는건데이게 어떻게 가능하지?"));
 }
