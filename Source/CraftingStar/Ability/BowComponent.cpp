@@ -24,9 +24,11 @@ void UBowComponent::Shoot()
 	{
 		if ( GetAnimInstance() )
 		{
-			
 			GetAnimInstance()->Montage_Play(ShootBowMontage);
-			
+		}
+		else
+		{
+			UE_LOG(LogTemp , Warning , TEXT("Bow does not have Animation Blueprint. Need to Set Bluepirnt"));
 		}
 			
 	}
