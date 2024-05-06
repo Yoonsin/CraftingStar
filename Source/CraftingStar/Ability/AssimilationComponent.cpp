@@ -8,6 +8,7 @@
 #include "Components/SplineComponent.h"
 #include "SplineChasingInterface.h"
 #include "../Object/AssimilationTrigerComponent.h"
+#include "../CraftingStarPS.h"
 
 // Sets default values for this component's properties
 UAssimilationComponent::UAssimilationComponent()
@@ -143,8 +144,19 @@ void UAssimilationComponent::ShowHaloEffect(bool bShow)
 {
 	if ( HaloEffect )
 	{
-		HaloEffect->SetVisibility(bShow);
-		HaloEffect->SetNiagaraVariableLinearColor(FString("Color") , FLinearColor::Yellow);
+		if ( auto OwnerCharacter = Cast<ACharacter>(GetOwner()) )
+		{
+			HaloEffect->SetVisibility(bShow);
+			
+			if ( auto State = Cast<ACraftingStarPS>(OwnerCharacter->GetPlayerState())) 
+			{
+				HaloEffect->SetNiagaraVariableLinearColor(FString("Color") , 
+					EPlayerRole::ELight == State->PlayerData.Mode ? FLinearColor::White : FLinearColor::Black);
+			}
+		}
+
+		
+			
 	}
 
 	else UE_LOG(LogTemp , Warning , TEXT("레이저가 안보이는건 HaloEffcet가 Null이라는건데이게 어떻게 가능하지?"));

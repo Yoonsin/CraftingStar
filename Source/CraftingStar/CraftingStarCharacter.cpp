@@ -121,7 +121,7 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 	{
 		Weapon_rMesh->SetTwoHandedWeapon(TwoHandedWeaponSM.Object);
 	}
-
+	
 	Weapon_rMesh->SetupAttachment(GetMesh() , FName(TEXT("Weapon_R")));
 	Weapon_rMesh->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
 	Weapon_rMesh->SetRelativeRotation(FRotator(0.0f , 0.0f , 0.0f));
