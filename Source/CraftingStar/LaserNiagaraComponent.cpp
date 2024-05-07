@@ -38,6 +38,8 @@ void ULaserNiagaraComponent::SetOwner() {
 
 // Set Laser
 void ULaserNiagaraComponent::SetLaser(FHitResult Hit , FVector End) {
+	
+	
 	// Set the End of Laser Body
 	if ( Hit.bBlockingHit && owner) {
 		if ( Cast<ACraftingStarPS>(owner->GetPlayerState())->PlayerData.Mode == EPlayerRole::EDark ) {
@@ -55,6 +57,9 @@ void ULaserNiagaraComponent::SetLaser(FHitResult Hit , FVector End) {
 			ServerLaser(LaserBody , true , Hit.bBlockingHit , End , FLinearColor::White);
 		}
 	}
+
+
+
 	if ( Cast<ACraftingStarPS>(owner->GetPlayerState())->PlayerData.Mode == EPlayerRole::EDark ) {
 		ServerLaser(LaserImpact , false , Hit.bBlockingHit , Hit.Location , FLinearColor::Black);
 	}
@@ -79,9 +84,13 @@ bool ULaserNiagaraComponent::ServerLaser_Validate(UNiagaraComponent* NiagaraComp
 	return true;
 }
 void ULaserNiagaraComponent::ServerLaser_Implementation(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color) {
+	
 	MulticastLaser(NiagaraComp , isBody , isHit , end , color);
 }
 void ULaserNiagaraComponent::MulticastLaser_Implementation(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color) {
+	
+	//클라는 end = 0 나옴 
+
 	if ( isBody ) {
 		// Set End point
 		NiagaraComp->SetVectorParameter(FName(TEXT("LaserEnd")) , end);

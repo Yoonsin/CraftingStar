@@ -62,7 +62,9 @@ class ACraftingStarCharacter : public ACharacter
 
 	// Telekinesis
 	UPrimitiveComponent* selectedTarget;
-	void Telekinesis();
+
+	UFUNCTION(Server , Reliable)
+	void ServerTelekinesis();
 
 	
 public:

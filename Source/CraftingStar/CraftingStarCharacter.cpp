@@ -278,7 +278,12 @@ void ACraftingStarCharacter::Tick(float DeltaTime)
 			}
 			else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
 				//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Tele"));
-				Telekinesis();
+				//Telekinesis();
+				ServerTelekinesis();
+
+				//FVector End = FollowCamera->GetComponentLocation();
+				//End += ( FollowCamera->GetForwardVector() * 750 );
+				//PhysicsHandle->SetTargetLocation(End);
 			}
 		}
 	}
@@ -507,7 +512,7 @@ bool ACraftingStarCharacter::WandLineTrace(float distance) {
 }
 
 // Ray for Telekinesis
-void ACraftingStarCharacter::Telekinesis() {
+void ACraftingStarCharacter::ServerTelekinesis_Implementation() {
 	/* Set LineTrace */
 
 	// Result oof LineTrace
@@ -527,6 +532,7 @@ void ACraftingStarCharacter::Telekinesis() {
 
 	/* Execute LineTrace */
 	GetWorld()->LineTraceSingleByChannel(Hit , Start , End , Channel , QueryParams);
+
 	// Visualize LineTrace
 	DrawDebugLine(GetWorld() , Start , End , FColor::Green);
 
@@ -538,6 +544,8 @@ void ACraftingStarCharacter::Telekinesis() {
 			//selectedTarget->SetSimulatePhysics(false);
 			// Grab selectedTarget Component
 			PhysicsHandle->GrabComponent(selectedTarget , NAME_None , End , true);
+
+
 			if ( PhysicsHandle->GrabbedComponent ) {
 				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Grab"));
 			} else {
@@ -552,29 +560,43 @@ void ACraftingStarCharacter::Telekinesis() {
 				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("origin Physics true"));
 			}
 		}
+		else {
+			//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("selectedTarget Not Null"));
+		}
+	}
+	else {
+		//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Not Hit"));
 	}
 
 	if ( selectedTarget != NULL ) {
-		//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("selected object name: %s") , *selectedTarget->GetName()));
+		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("selected object name: %s") , *selectedTarget->GetName()));
 		//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("selected object distance: %f") , Hit.Distance));
 
 		if ( selectedTarget->GetOwner() ) {
-			//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("Is selectedTarget class ATelekinesisInteractableObject?: %d") , selectedTarget->GetOwner()->IsA(ATelekinesisInteractableObject::StaticClass())));
+			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("Is selectedTarget class ATelekinesisInteractableObject?: %d") , selectedTarget->GetOwner()->IsA(ATelekinesisInteractableObject::StaticClass())));
 
 			// Move target if it can be cast
 			// Change Tele' Interactive Actor's Outline Color
 			if ( Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner()) )
 			{
-				// Move selectedTarget Component
-				//selectedTarget->SetRelativeLocation(End);
+			
 				PhysicsHandle->SetTargetLocation(End);
 				// Set CustomDepth Stencil Value to chagne Color
 				Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ActorMesh->SetCustomDepthStencilValue(1);
+				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("HIHI")));
+				
+				//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("x : %f  y : %f  z : %f ") , end.X , end.Y , end.Z));
+				Comp_LaserNiagara->SetLaser(Hit , End);
 			}
 		}
 	}
+
+	// Move selectedTarget Component
+	//selectedTarget->SetRelativeLocation(End);
 	
-	Comp_LaserNiagara->SetLaser(Hit , End);
+	//PhysicsHandle->SetTargetLocation(End);
+	
+
 }
 
 // Ability Animaition Replicate
