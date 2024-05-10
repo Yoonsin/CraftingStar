@@ -157,8 +157,8 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 	FollowCamera->SetupAttachment(CameraBoom , USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
+	// Telekinesis Components
 	PhysicsHandle = CreateDefaultSubobject<UPhysicsHandleComponent>(TEXT("PhysicsHandle"));
-
 
 	AssimilationComponent = CreateDefaultSubobject<UAssimilationComponent>(TEXT("Abiility "));
 	AssimilationComponent->SetupAttachment(RootComponent);
@@ -535,28 +535,35 @@ void ACraftingStarCharacter::Telekinesis() {
 	// Visualize LineTrace
 	DrawDebugLine(GetWorld() , Start , End , FColor::Green);
 
+	// Draw Laser
+	//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("x : %f  y : %f  z : %f ") , End.X , End.Y , End.Z));
+	Comp_LaserNiagara->SetLaser(Hit , End);
+
 	if ( Hit.bBlockingHit ) {
 		//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("Something hit")));
 
 		if ( selectedTarget == NULL ) {
-			selectedTarget = Hit.GetComponent();
-			//selectedTarget->SetSimulatePhysics(false);
+
 			// Grab selectedTarget Component
-			PhysicsHandle->GrabComponent(selectedTarget , NAME_None , End , true);
-
-
-			if ( PhysicsHandle->GrabbedComponent ) {
-				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Grab"));
-			} else {
-				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Missed"));
-			}
-			// Check is the simulate physics true
-			if ( !selectedTarget->IsSimulatingPhysics() ) {
-				selectedTarget->SetSimulatePhysics(true);
-				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Physics true"));
-			}
-			else {
-				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("origin Physics true"));
+			switch ( HasAuthority() ) {
+			case true:
+				selectedTarget = Hit.GetComponent();
+				PhysicsHandle->GrabComponent(selectedTarget , NAME_None , End , true);
+				if ( selectedTarget ) {
+					// Check is the simulate physics true
+					if ( !selectedTarget->IsSimulatingPhysics() ) {
+						selectedTarget->SetSimulatePhysics(true);
+						GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Set Physics true"));
+					}
+					else {
+						GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Origin Physics true"));
+					}
+				}
+				break;
+			case false:
+				ServerSelectTarget(Hit);
+				ServerGrabComponent(End);
+				break;
 			}
 		}
 	}
@@ -574,13 +581,69 @@ void ACraftingStarCharacter::Telekinesis() {
 			{
 
 				// Move selectedTarget Component
-				ServerTeleObjLoc(End);
+			// Grab selectedTarget Component
+				switch ( HasAuthority() ) {
+				case true:
+					//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("teleObj RPC")));
+					PhysicsHandle->SetTargetLocation(End);
+					break;
+				case false:
+					//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("teleObj RPC")));
+					ServerTeleObjLoc(End);
+					break;
+				}
 				// Set CustomDepth Stencil Value to chagne Color
 				Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ActorMesh->SetCustomDepthStencilValue(1);
-				
-				//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("x : %f  y : %f  z : %f ") , end.X , end.Y , end.Z));
-				Comp_LaserNiagara->SetLaser(Hit , End);
 			}
+		}
+	}
+}
+
+// Select Target
+bool ACraftingStarCharacter::ServerSelectTarget_Validate(FHitResult Hit) {
+	return true;
+}
+void ACraftingStarCharacter::ServerSelectTarget_Implementation(FHitResult Hit) {
+	MulticastSelectTarget(Hit);
+}
+void ACraftingStarCharacter::MulticastSelectTarget_Implementation(FHitResult Hit) {
+	GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("select target")));
+	selectedTarget = Hit.GetComponent();
+}
+
+// Deselect Target
+bool ACraftingStarCharacter::ServerDeselectTarget_Validate() {
+	return true;
+}
+void ACraftingStarCharacter::ServerDeselectTarget_Implementation() {
+	MulticastDeselectTarget();
+}
+void ACraftingStarCharacter::MulticastDeselectTarget_Implementation() {
+	if ( selectedTarget != NULL ) {
+		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("deselect target")));
+		selectedTarget = NULL;
+	}
+}
+
+// Grab Component on Server
+bool ACraftingStarCharacter::ServerGrabComponent_Validate(FVector End) {
+	return true;
+}
+void ACraftingStarCharacter::ServerGrabComponent_Implementation(FVector End) {
+	MulticastGrabComponent(End);
+}
+void ACraftingStarCharacter::MulticastGrabComponent_Implementation(FVector End) {
+	PhysicsHandle->GrabComponent(selectedTarget , NAME_None , End , true);
+	GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Grab Component"));
+
+	if ( selectedTarget ) {
+		// Check is the simulate physics true
+		if ( !selectedTarget->IsSimulatingPhysics() ) {
+			selectedTarget->SetSimulatePhysics(true);
+			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Set Physics true"));
+		}
+		else {
+			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Origin Physics true"));
 		}
 	}
 }
@@ -593,7 +656,9 @@ void ACraftingStarCharacter::ServerTeleObjLoc_Implementation(FVector End) {
 	MulticastTeleObjLoc(End);
 }
 void ACraftingStarCharacter::MulticastTeleObjLoc_Implementation(FVector End) {
-	GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("teleObj RPC")));
+	//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("teleObj RPC")));
+	//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("x : %f  y : %f  z : %f ") , End.X , End.Y , End.Z));
+	
 	PhysicsHandle->SetTargetLocation(End);
 }
 
@@ -657,7 +722,7 @@ void ACraftingStarCharacter::ActivateAbility() {
 			CameraBoom->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
 			//CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 
-			selectedTarget = NULL;
+			ServerDeselectTarget();
 
 			// deactivate the outline of objects that can be interacted with telekinesis skill
 			// Delete Tele' Interactable Actor's Outline
@@ -735,13 +800,26 @@ void ACraftingStarCharacter::MouseLeftReleased() {
 					{
 						// Set CustomDepth Stencil Value to chagne Color
 						Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ActorMesh->SetCustomDepthStencilValue(0);
-						PhysicsHandle->ReleaseComponent();
-						if ( !Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->isPhysics ) {
-							selectedTarget->SetSimulatePhysics(false);
+						switch ( HasAuthority() ) {
+						case true :
+							PhysicsHandle->ReleaseComponent();
+							if ( selectedTarget ) {
+								if ( Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner()) )
+								{
+									if ( !Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->isPhysics ) {
+										selectedTarget->SetSimulatePhysics(false);
+										GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("SetSimulatePhysics"));
+									}
+								}
+							}
+							break;
+						case false :
+							ServerReleaseComponent();
+							break;
 						}
 					}
 				}
-				selectedTarget = NULL;
+				ServerDeselectTarget();
 
 				if ( DeactiveAbilityMontage ) {
 					// Play Animation
@@ -750,6 +828,30 @@ void ACraftingStarCharacter::MouseLeftReleased() {
 						ServerAbility(false);	// request ability animation on server
 					}
 				}
+			}
+		}
+	}
+}
+
+// Release Component on Server
+bool ACraftingStarCharacter::ServerReleaseComponent_Validate() {
+	return true;
+}
+void ACraftingStarCharacter::ServerReleaseComponent_Implementation() {
+	MulticastReleaseComponent();
+}
+void ACraftingStarCharacter::MulticastReleaseComponent_Implementation() {
+	PhysicsHandle->ReleaseComponent();
+	GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Release Component"));
+
+	// Set Simulate Physics to false
+	if ( selectedTarget ) {
+		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Have selectedTarget"));
+		if ( Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner()) )
+		{
+			if ( !Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->isPhysics ) {
+				selectedTarget->SetSimulatePhysics(false);
+				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("SetSimulatePhysics"));
 			}
 		}
 	}

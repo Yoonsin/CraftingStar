@@ -64,11 +64,31 @@ class ACraftingStarCharacter : public ACharacter
 	UPrimitiveComponent* selectedTarget;
 
 	void Telekinesis();
+	// Select Target
+	UFUNCTION(Server , Reliable , WithValidation , Category = "Telekinesis")
+	void ServerSelectTarget(FHitResult Hit);
+	UFUNCTION(NetMulticast , Unreliable , Category = "Telekinesis")
+	void MulticastSelectTarget(FHitResult Hit);
+	// Deselect Target
+	UFUNCTION(Server , Reliable , WithValidation , Category = "Telekinesis")
+	void ServerDeselectTarget();
+	UFUNCTION(NetMulticast , Unreliable , Category = "Telekinesis")
+	void MulticastDeselectTarget();
+	// Server Grab Component
+	UFUNCTION(Server , Reliable , WithValidation , Category = "Telekinesis")
+	void ServerGrabComponent(FVector End);
+	UFUNCTION(NetMulticast , Unreliable , Category = "Telekinesis")
+	void MulticastGrabComponent(FVector End);
 	// Object Locate Replication
 	UFUNCTION(Server , Reliable , WithValidation , Category = "Telekinesis")
 	void ServerTeleObjLoc(FVector End);
 	UFUNCTION(NetMulticast , Unreliable , Category = "Telekinesis")
 	void MulticastTeleObjLoc(FVector End);
+	// Server Release Component
+	UFUNCTION(Server , Reliable , WithValidation , Category = "Telekinesis")
+	void ServerReleaseComponent();
+	UFUNCTION(NetMulticast , Unreliable , Category = "Telekinesis")
+	void MulticastReleaseComponent();
 
 	
 public:
