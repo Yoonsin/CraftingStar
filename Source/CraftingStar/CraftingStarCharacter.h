@@ -64,6 +64,8 @@ class ACraftingStarCharacter : public ACharacter
 	UPrimitiveComponent* selectedTarget;
 
 	void Telekinesis();
+	void CreateTeleObjOutline();
+	void RemoveTeleObjOutline();
 	// Select Target
 	UFUNCTION(Server , Reliable , WithValidation , Category = "Telekinesis")
 	void ServerSelectTarget(FHitResult Hit);
@@ -89,6 +91,12 @@ class ACraftingStarCharacter : public ACharacter
 	void ServerReleaseComponent();
 	UFUNCTION(NetMulticast , Unreliable , Category = "Telekinesis")
 	void MulticastReleaseComponent();
+
+	// Anim Replicate
+	UFUNCTION(Server , Reliable , WithValidation , Category = "CraftingStar Character")
+	void ServerOrientRotationToMove(bool rotateToMove);
+	UFUNCTION(NetMulticast , Unreliable , Category = "CraftingStar Character")
+	void MulticastOrientRotationToMove(bool rotateToMove);
 
 	
 public:
@@ -265,6 +273,8 @@ public:
 	UFUNCTION(Server , Reliable , Category = "UI", BlueprintCallable)
 		void ServerStopLoadingWidget();
 
+	bool KeepAbility;
+	bool canUseAbility;
 
 private:
 	// Character Mesh
@@ -294,11 +304,6 @@ private:
 
 	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
 	class UAssimilationComponent* AssimilationComponent;
-
-
-
-	bool KeepAbility;
-	bool canUseAbility;
 
 	int idx = 0;
 };

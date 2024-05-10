@@ -157,7 +157,6 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 	FollowCamera->SetupAttachment(CameraBoom , USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
-	// Telekinesis Components
 	PhysicsHandle = CreateDefaultSubobject<UPhysicsHandleComponent>(TEXT("PhysicsHandle"));
 
 	AssimilationComponent = CreateDefaultSubobject<UAssimilationComponent>(TEXT("Abiility "));
@@ -262,27 +261,16 @@ void ACraftingStarCharacter::Tick(float DeltaTime)
 	//          Ӹ          ɷ              ʿ        Ʈ
 	Super::Tick(DeltaTime);
 
-	//if (nowAbility == EPlayerAbility::ETelekinesis )
-		//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Tele"));
-	// KeepAbility: using skill. It doesn't mean just ability activated statement.
 	if ( KeepAbility  ) {
 		// Activate Ability
 		if ( nowAbility != EPlayerAbility::ENone ) {
-			// Laser(EBlast)
 			if ( nowAbility == EPlayerAbility::EBlast ) {
 				// Activate Laser
-				//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Activate Laser"));
-				// Execute Laser
 				WandLineTrace(10000.0f);
 
 			}
 			else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
-				//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Tele"));
 				Telekinesis();
-
-				//FVector End = FollowCamera->GetComponentLocation();
-				//End += ( FollowCamera->GetForwardVector() * 750 );
-				//PhysicsHandle->SetTargetLocation(End);
 			}
 		}
 	}
@@ -295,6 +283,23 @@ void ACraftingStarCharacter::UpdatePlayerAbility(EPlayerAbility playerAbility) {
 	if ( playerState != nullptr ) {
 		playerState->NowAbility = playerAbility;
 		playerState->RequestPlayerAbility(playerAbility);
+	}
+
+	// cancel previous skill if it is running
+	if ( nowAbility == EPlayerAbility::EBlast ) {
+		if ( KeepAbility ) {
+			DeactivateAbility();
+			KeepAbility = false;
+		}
+	}
+	else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
+		GEngine->AddOnScreenDebugMessage(-1 , 3 , FColor::Red , FString::Printf(TEXT("Try To Cancel tele")));
+		if ( abilityReadyStatus ) {
+			MouseLeftReleased();
+			ActivateAbility();
+			KeepAbility = false;
+			abilityReadyStatus = false;
+		}
 	}
 
 	// update now ability
@@ -350,18 +355,6 @@ void ACraftingStarCharacter::StopPalette() {
 		//Ű      Է       &    콺          Ȱ  ȭ
 		SetPause(false);
 	}
-
-	// cancel previous skill
-	if ( nowAbility == EPlayerAbility::EBlast ) {
-		if ( KeepAbility )
-			DeactivateAbility();
-	}
-	else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
-		if ( abilityReadyStatus )
-			ActivateAbility();
-	}
-	KeepAbility = false;
-	abilityReadyStatus = false;
 }
 
 void ACraftingStarCharacter::RepeatingFunction() {
@@ -540,7 +533,6 @@ void ACraftingStarCharacter::Telekinesis() {
 	Comp_LaserNiagara->SetLaser(Hit , End);
 
 	if ( Hit.bBlockingHit ) {
-		//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("Something hit")));
 
 		if ( selectedTarget == NULL ) {
 
@@ -553,10 +545,8 @@ void ACraftingStarCharacter::Telekinesis() {
 					// Check is the simulate physics true
 					if ( !selectedTarget->IsSimulatingPhysics() ) {
 						selectedTarget->SetSimulatePhysics(true);
-						GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Set Physics true"));
 					}
 					else {
-						GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Origin Physics true"));
 					}
 				}
 				break;
@@ -569,26 +559,19 @@ void ACraftingStarCharacter::Telekinesis() {
 	}
 
 	if ( selectedTarget != NULL ) {
-		//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("selected object name: %s") , *selectedTarget->GetName()));
 		//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("selected object distance: %f") , Hit.Distance));
 
 		if ( selectedTarget->GetOwner() ) {
-			//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("Is selectedTarget class ATelekinesisInteractableObject?: %d") , selectedTarget->GetOwner()->IsA(ATelekinesisInteractableObject::StaticClass())));
-
 			// Move target if it can be cast
 			// Change Tele' Interactive Actor's Outline Color
 			if ( Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner()) )
 			{
-
-				// Move selectedTarget Component
-			// Grab selectedTarget Component
+			// Move selectedTarget Component
 				switch ( HasAuthority() ) {
 				case true:
-					//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("teleObj RPC")));
 					PhysicsHandle->SetTargetLocation(End);
 					break;
 				case false:
-					//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("teleObj RPC")));
 					ServerTeleObjLoc(End);
 					break;
 				}
@@ -676,11 +659,35 @@ void ACraftingStarCharacter::MulticastAbility_Implementation(bool abilityState) 
 	}
 	else {
 		// Deactivate Ability
-		bUseControllerRotationYaw = false;	// Rotate the player based on the controller
+		bUseControllerRotationYaw = false;	// Not Rotate the player based on the controller
 		GetMesh()->GetAnimInstance()->Montage_Play(DeactiveAbilityMontage , 1.0f);
 		// Hide Laser
 		Comp_LaserNiagara->Hide();
 	}
+}
+
+void ACraftingStarCharacter::CreateTeleObjOutline() {
+	// Create Tele' Interactable Actor's Outline
+	// activate the outline of objects that can be interacted with telekinesis skill
+	TArray<AActor*> TeleActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld() , ATelekinesisInteractableObject::StaticClass() , TeleActors);
+	for ( int i = 0; i < TeleActors.Num(); ++i )
+	{
+		Cast<ATelekinesisInteractableObject>(TeleActors[i])->ActorMesh->SetRenderCustomDepth(true);
+		Cast<ATelekinesisInteractableObject>(TeleActors[i])->ActorMesh->SetCustomDepthStencilValue(0);
+	}
+}
+void ACraftingStarCharacter::RemoveTeleObjOutline() {
+	// Remove Tele' Interactable Actor's Outline
+	// deactivate the outline of objects that can be interacted with telekinesis skill
+	TArray<AActor*> TeleActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld() , ATelekinesisInteractableObject::StaticClass() , TeleActors);
+	for ( int i = 0; i < TeleActors.Num(); ++i )
+	{
+		Cast<ATelekinesisInteractableObject>(TeleActors[i])->ActorMesh->SetCustomDepthStencilValue(0);
+		Cast< ATelekinesisInteractableObject>(TeleActors[i])->ActorMesh->SetRenderCustomDepth(false);
+	}
+
 }
 
 // Input Ability (Key: E)
@@ -706,34 +713,26 @@ void ACraftingStarCharacter::ActivateAbility() {
 			CameraBoom->SetRelativeLocation(FVector(0.0f , 100.0f , 100.0f));
 			//CameraBoom->bUsePawnControlRotation = false; // Does not rotate the arm based on the controller
 
-			// Create Tele' Interactable Actor's Outline
-			TArray<AActor*> TeleActors;
-			UGameplayStatics::GetAllActorsOfClass(GetWorld() , ATelekinesisInteractableObject::StaticClass() , TeleActors);
-			for ( int i = 0; i < TeleActors.Num(); ++i )
-			{
-				Cast<ATelekinesisInteractableObject>(TeleActors[i])->ActorMesh->SetRenderCustomDepth(true);
-				Cast<ATelekinesisInteractableObject>(TeleActors[i])->ActorMesh->SetCustomDepthStencilValue(0);
-			}
-
-			// activate the outline of objects that can be interacted with telekinesis skill
-			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Tele ready done"));
+			//GetCharacterMovement()->bOrientRotationToMovement = false; // Character doesn't moves in the direction of input...
+			
+			CreateTeleObjOutline();
 		}
 		else {
+			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Cancel"));
 			CameraBoom->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
 			//CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 
-			ServerDeselectTarget();
+			//GetCharacterMovement()->bOrientRotationToMovement = false; // Character doesn't moves in the direction of input...
 
-			// deactivate the outline of objects that can be interacted with telekinesis skill
-			// Delete Tele' Interactable Actor's Outline
-			TArray<AActor*> TeleActors;
-			UGameplayStatics::GetAllActorsOfClass(GetWorld() , ATelekinesisInteractableObject::StaticClass() , TeleActors);
-			for ( int i = 0; i < TeleActors.Num(); ++i )
-			{
-				Cast<ATelekinesisInteractableObject>(TeleActors[i])->ActorMesh->SetCustomDepthStencilValue(0);
-				Cast< ATelekinesisInteractableObject>(TeleActors[i])->ActorMesh->SetRenderCustomDepth(false);
+			switch ( HasAuthority() ) {
+			case true :
+				if ( selectedTarget != NULL ) {
+					selectedTarget = NULL;
+				}
+			case false :
+				ServerDeselectTarget();
 			}
-
+			RemoveTeleObjOutline();
 
 			abilityReadyStatus = false;
 		}
@@ -770,9 +769,28 @@ void ACraftingStarCharacter::DeactivateAbility() {
 	}
 }
 
+// Replicate Orient Roation to Move
+bool ACraftingStarCharacter::ServerOrientRotationToMove_Validate(bool rotateToMove) {
+	return true;
+}
+void ACraftingStarCharacter::ServerOrientRotationToMove_Implementation(bool rotateToMove) {
+	MulticastOrientRotationToMove(rotateToMove);
+}
+void ACraftingStarCharacter::MulticastOrientRotationToMove_Implementation(bool rotateToMove) {
+	GetCharacterMovement()->bOrientRotationToMovement = rotateToMove;	// false: fix , true: rotate
+}
+
 void ACraftingStarCharacter::MouseLeftPressed() {
 	if ( nowAbility != EPlayerAbility::ENone ) {
 		if ( nowAbility == EPlayerAbility::ETelekinesis ) {
+			switch ( HasAuthority() ) {
+			case true :
+				GetCharacterMovement()->bOrientRotationToMovement = false; // Character doesn't moves in the direction of input...
+				break;
+			case false :
+				ServerOrientRotationToMove(false);
+				break;
+			}
 			if ( abilityReadyStatus ) {
 				KeepAbility = true;
 
@@ -803,23 +821,21 @@ void ACraftingStarCharacter::MouseLeftReleased() {
 						switch ( HasAuthority() ) {
 						case true :
 							PhysicsHandle->ReleaseComponent();
-							if ( selectedTarget ) {
-								if ( Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner()) )
-								{
-									if ( !Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->isPhysics ) {
-										selectedTarget->SetSimulatePhysics(false);
-										GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("SetSimulatePhysics"));
-									}
+							if ( Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner()) )
+							{
+								if ( !Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->isPhysics ) {
+									selectedTarget->SetSimulatePhysics(false);
 								}
 							}
+							selectedTarget = NULL;
 							break;
 						case false :
 							ServerReleaseComponent();
+							ServerDeselectTarget();
 							break;
 						}
 					}
 				}
-				ServerDeselectTarget();
 
 				if ( DeactiveAbilityMontage ) {
 					// Play Animation
@@ -827,6 +843,15 @@ void ACraftingStarCharacter::MouseLeftReleased() {
 					if ( !bIsMontagePlaying ) {
 						ServerAbility(false);	// request ability animation on server
 					}
+				}
+
+				switch ( HasAuthority() ) {
+				case true:
+					GetCharacterMovement()->bOrientRotationToMovement = true; // Character't moves in the direction of input...
+					break;
+				case false:
+					ServerOrientRotationToMove(true);
+					break;
 				}
 			}
 		}
