@@ -63,8 +63,12 @@ class ACraftingStarCharacter : public ACharacter
 	// Telekinesis
 	UPrimitiveComponent* selectedTarget;
 
-	UFUNCTION(Server , Reliable)
-	void ServerTelekinesis();
+	void Telekinesis();
+	// Object Locate Replication
+	UFUNCTION(Server , Reliable , WithValidation , Category = "Telekinesis")
+	void ServerTeleObjLoc(FVector End);
+	UFUNCTION(NetMulticast , Unreliable , Category = "Telekinesis")
+	void MulticastTeleObjLoc(FVector End);
 
 	
 public:
