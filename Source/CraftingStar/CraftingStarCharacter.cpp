@@ -534,7 +534,7 @@ void ACraftingStarCharacter::ServerTelekinesis_Implementation() {
 	GetWorld()->LineTraceSingleByChannel(Hit , Start , End , Channel , QueryParams);
 
 	// Visualize LineTrace
-	DrawDebugLine(GetWorld() , Start , End , FColor::Green);
+	//DrawDebugLine(GetWorld() , Start , End , FColor::Green);
 
 	if ( Hit.bBlockingHit ) {
 		//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("Something hit")));

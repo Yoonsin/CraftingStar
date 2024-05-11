@@ -97,7 +97,7 @@ void ULaserComponent::MulticastEmitLaser_Implementation(FVector Location)
 	/* Execute LineTrace */
 	GetWorld()->LineTraceSingleByChannel(Hit , Start , End , Channel , QueryParams);
 	// Visualize LineTrace
-	DrawDebugLine(GetWorld() , Start , End , FColor::Green);
+	//DrawDebugLine(GetWorld() , Start , End , FColor::Green);
 
 	DrawLaser(Hit , End);
 
