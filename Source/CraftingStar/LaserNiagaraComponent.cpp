@@ -38,8 +38,6 @@ void ULaserNiagaraComponent::SetOwner() {
 
 // Set Laser
 void ULaserNiagaraComponent::SetLaser(FHitResult Hit , FVector End) {
-	
-	
 	// Set the End of Laser Body
 	if ( Hit.bBlockingHit && owner) {
 		if ( Cast<ACraftingStarPS>(owner->GetPlayerState())->PlayerData.Mode == EPlayerRole::EDark ) {

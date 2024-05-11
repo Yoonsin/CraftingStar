@@ -63,8 +63,40 @@ class ACraftingStarCharacter : public ACharacter
 	// Telekinesis
 	UPrimitiveComponent* selectedTarget;
 
-	UFUNCTION(Server , Reliable)
-	void ServerTelekinesis();
+	void Telekinesis();
+	void CreateTeleObjOutline();
+	void RemoveTeleObjOutline();
+	// Select Target
+	UFUNCTION(Server , Reliable , WithValidation , Category = "Telekinesis")
+	void ServerSelectTarget(FHitResult Hit);
+	UFUNCTION(NetMulticast , Unreliable , Category = "Telekinesis")
+	void MulticastSelectTarget(FHitResult Hit);
+	// Deselect Target
+	UFUNCTION(Server , Reliable , WithValidation , Category = "Telekinesis")
+	void ServerDeselectTarget();
+	UFUNCTION(NetMulticast , Unreliable , Category = "Telekinesis")
+	void MulticastDeselectTarget();
+	// Server Grab Component
+	UFUNCTION(Server , Reliable , WithValidation , Category = "Telekinesis")
+	void ServerGrabComponent(FVector End);
+	UFUNCTION(NetMulticast , Unreliable , Category = "Telekinesis")
+	void MulticastGrabComponent(FVector End);
+	// Object Locate Replication
+	UFUNCTION(Server , Reliable , WithValidation , Category = "Telekinesis")
+	void ServerTeleObjLoc(FVector End);
+	UFUNCTION(NetMulticast , Unreliable , Category = "Telekinesis")
+	void MulticastTeleObjLoc(FVector End);
+	// Server Release Component
+	UFUNCTION(Server , Reliable , WithValidation , Category = "Telekinesis")
+	void ServerReleaseComponent();
+	UFUNCTION(NetMulticast , Unreliable , Category = "Telekinesis")
+	void MulticastReleaseComponent();
+
+	// Anim Replicate
+	UFUNCTION(Server , Reliable , WithValidation , Category = "CraftingStar Character")
+	void ServerOrientRotationToMove(bool rotateToMove);
+	UFUNCTION(NetMulticast , Unreliable , Category = "CraftingStar Character")
+	void MulticastOrientRotationToMove(bool rotateToMove);
 
 	
 public:
@@ -241,6 +273,8 @@ public:
 	UFUNCTION(Server , Reliable , Category = "UI", BlueprintCallable)
 		void ServerStopLoadingWidget();
 
+	bool KeepAbility;
+	bool canUseAbility;
 
 private:
 	// Character Mesh
@@ -270,11 +304,6 @@ private:
 
 	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
 	class UAssimilationComponent* AssimilationComponent;
-
-
-
-	bool KeepAbility;
-	bool canUseAbility;
 
 	int idx = 0;
 };
