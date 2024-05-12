@@ -89,7 +89,14 @@ void UAssimilationComponent::MulticastAssimilation_Implementation()
 
 	if ( ClosestTriger && ClosestTriger->Implements<USplineChasingInterface>() )
 	{
-		ISplineChasingInterface::Execute_ChaseStart(ClosestTriger , this);
+		if ( auto OwnerCharacter = Cast<ACharacter>(GetOwner()) )
+		{
+			if ( auto State = Cast<ACraftingStarPS>(OwnerCharacter->GetPlayerState()) )
+			{
+				ISplineChasingInterface::Execute_ChaseStart(ClosestTriger , this , State->PlayerData.Mode == EPlayerRole::ELight);
+			}
+		}
+		
 	}
 
 	// 현재까지의 가장 가까운 컴포넌트 갱신

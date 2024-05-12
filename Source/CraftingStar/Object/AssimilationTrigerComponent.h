@@ -17,15 +17,20 @@ class CRAFTINGSTAR_API UAssimilationTrigerComponent : public UBoxComponent, publ
 	
 private:
 	class UAssimilationComponent* AssimilationComponent;
+
 	
 public:
+	//해당 트리거가 빛의 별이 반응하게 되어있는가?.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bForLightCharacter;
+
 	UFUNCTION(BlueprintCallable)
 	void SetAssimilationComponent(class UAssimilationComponent* AssimilationComp);
 	
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE class UAssimilationComponent* GetAssimilationComponent() { return this->AssimilationComponent; }
 
-	virtual void ChaseStart_Implementation(class UAssimilationComponent* AssimilationComp) override;
+	virtual void ChaseStart_Implementation(class UAssimilationComponent* AssimilationComp, bool bLightCharacter) override;
 	virtual void ChaseEnd_Implementation(class UAssimilationComponent* AssimilationComp) override;
 
 };

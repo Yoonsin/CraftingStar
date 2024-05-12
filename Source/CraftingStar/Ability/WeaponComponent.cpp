@@ -2,7 +2,9 @@
 
 
 #include "WeaponComponent.h"
-
+#include "WeaponSensingInterface.h"
+#include "../CraftingStarPS.h"
+#include "../CraftingStarCharacter.h"
 
 UWeaponComponent::UWeaponComponent()
 {
@@ -20,7 +22,17 @@ void UWeaponComponent::OnHit(UPrimitiveComponent* OverlappedComp , AActor* Other
 {
 	if ( bCanDamage )
 	{
-		UE_LOG(LogTemp , Display , TEXT("Weapon Hit"));
+		if ( OtherActor->Implements<UWeaponSensingInterface>() )
+		{
+			if ( auto Owner = Cast<ACraftingStarCharacter>(GetOwner()) )
+			{
+				if ( auto State = Cast<ACraftingStarPS>(Owner->GetPlayerState()) )
+				{
+					IWeaponSensingInterface::Execute_AttackByTwoHanded(OtherActor , EPlayerRole::ELight == State->PlayerData.Mode);
+					UE_LOG(LogTemp , Display , TEXT("Weapon Hit"));
+				}
+			}
+		}	
 	}
 	
 }

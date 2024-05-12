@@ -136,12 +136,13 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 	Bow_lMesh->SetRelativeRotation(FRotator(90.0f , 0.f , 90.0f));
 	Bow_lMesh->SetArcher(this);
 	Bow_lMesh->Unequip();
-	
+	Bow_lMesh->SetWandComponent(Weapon_rMesh);
+
 	Comp_LaserNiagara = CreateDefaultSubobject<ULaserNiagaraComponent>(TEXT("Laser Niagara System"));
 	Comp_LaserNiagara->SetupAttachment(SpawnLocSource);
 	Comp_LaserNiagara->SetIsReplicated(true);
 
-	Bow_lMesh->SetWandComponent(Weapon_rMesh);
+	
 
 
 
@@ -1032,31 +1033,39 @@ void ACraftingStarCharacter::CallRespawnPlayer_Implementation()
 
 void ACraftingStarCharacter::LightAct(AActor* target , FVector Location)
 {
-	if ( HasAuthority() )
+	if ( !target )
 	{
-		MulticastLightAct(target , Location , true);
+		return;
 	}
-	else
+	if ( auto State = Cast<ACraftingStarPS>(this->GetPlayerState()) )
 	{
-		ServerLightAct(target , Location , false);
+		if ( HasAuthority() )
+		{
+			MulticastLightAct(target , Location , EPlayerRole::ELight == State->PlayerData.Mode);
+		}
+		else
+		{
+			ServerLightAct(target , Location , EPlayerRole::ELight == State->PlayerData.Mode);
+		}
 	}
+
+
 
 }
 
-void ACraftingStarCharacter::ServerLightAct_Implementation(AActor* target , FVector Location , bool isHost)
+void ACraftingStarCharacter::ServerLightAct_Implementation(AActor* target , FVector Location , bool bIsLight)
 {
-	MulticastLightAct(target , Location , isHost);
+	MulticastLightAct(target , Location , bIsLight);
 }
 
-void ACraftingStarCharacter::MulticastLightAct_Implementation(AActor* target , FVector Location , bool isHost)
+void ACraftingStarCharacter::MulticastLightAct_Implementation(AActor* target , FVector Location , bool bIsLight)
 {
 	//Here Ejection Abillity Interaction
-	auto targetSense = Cast<ILightSensingInterface>(target);
-	if ( targetSense )
+	if ( target->Implements<ULightSensingInterface>() )
 	{
 		//빛 대상
 		//ILightSensingInterface를 상속받은 얘의 React 함수를 호출받는 방법.
-		targetSense->Execute_React(target , isHost , Location);
+		ILightSensingInterface::Execute_React(target , bIsLight , Location);
 	}
 }
 

@@ -26,8 +26,8 @@ class CRAFTINGSTAR_API ISplineChasingInterface
 public:
 	//스플라인을 따라 움직이기 시작할 때 호출하는 함수
 	UFUNCTION(BlueprintNativeEvent , BlueprintCallable)
-	void ChaseStart(class UAssimilationComponent* AssmitationComp );
-	virtual void ChaseStart_Implementation(class UAssimilationComponent* AssmitationComp) = 0;
+	void ChaseStart(class UAssimilationComponent* AssmitationComp, bool bLightCharacter);
+	virtual void ChaseStart_Implementation(class UAssimilationComponent* AssmitationComp, bool bLightCharacter) = 0;
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void ChaseEnd(class UAssimilationComponent* AssmitationComp);

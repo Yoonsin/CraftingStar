@@ -5,8 +5,14 @@
 #include "AssimilationObject.h"
 #include "../Ability/AssimilationComponent.h"
 
-void UAssimilationTrigerComponent::ChaseStart_Implementation(class UAssimilationComponent* AssimilationComp)
+void UAssimilationTrigerComponent::ChaseStart_Implementation(class UAssimilationComponent* AssimilationComp, bool bLightCharacter)
 {
+	if ( bLightCharacter != bForLightCharacter )
+	{
+		//둘이 같아야 활성화된다.
+		return;
+	}
+
 	if ( auto Object = Cast<AAssimilationObject>(GetOwner()) )
 	{
 		Object->SetChasing(true);
