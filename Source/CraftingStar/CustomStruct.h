@@ -70,3 +70,16 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int ProgressLevel;
 };
+
+
+
+USTRUCT(Atomic , BlueprintType)
+struct FSpawnTransform
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY(EditAnywhere , BlueprintReadWrite)
+		FTransform HostPlayerPos;
+	UPROPERTY(EditAnywhere , BlueprintReadWrite)
+		FTransform GuestPlayerPos;
+};

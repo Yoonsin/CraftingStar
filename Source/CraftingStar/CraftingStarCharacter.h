@@ -44,8 +44,15 @@ class ACraftingStarCharacter : public ACharacter
 	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = UI , meta = ( AllowPrivateAccess = "true" ))
 	TSubclassOf<UUserWidget> LogOutClientWidget;
 
+	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = UI , meta = ( AllowPrivateAccess = "true" ))
+	TSubclassOf<UUserWidget> PaletteObtaingAnimationWidget;
+
 	//�ȷ�Ʈ
 	class UUserWidget* PaletteWidgetRef;
+
+	UPROPERTY(EditAnywhere , BlueprintReadWrite , Category = UI , meta = ( AllowPrivateAccess = "true" ))
+	class UUserWidget* PaletteObtaingAnimationRef;
+	
 	FTimerHandle HoldTimerHandle;
 	float PaletteCnt;
 
