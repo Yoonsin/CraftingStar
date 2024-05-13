@@ -547,6 +547,7 @@ void ACraftingStarCharacter::Telekinesis() {
 						selectedTarget->SetSimulatePhysics(true);
 					}
 					else {
+						
 					}
 				}
 				break;
@@ -590,7 +591,6 @@ void ACraftingStarCharacter::ServerSelectTarget_Implementation(FHitResult Hit) {
 	MulticastSelectTarget(Hit);
 }
 void ACraftingStarCharacter::MulticastSelectTarget_Implementation(FHitResult Hit) {
-	GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("select target")));
 	selectedTarget = Hit.GetComponent();
 }
 
@@ -603,7 +603,6 @@ void ACraftingStarCharacter::ServerDeselectTarget_Implementation() {
 }
 void ACraftingStarCharacter::MulticastDeselectTarget_Implementation() {
 	if ( selectedTarget != NULL ) {
-		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("deselect target")));
 		selectedTarget = NULL;
 	}
 }
@@ -823,8 +822,9 @@ void ACraftingStarCharacter::MouseLeftReleased() {
 							PhysicsHandle->ReleaseComponent();
 							if ( Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner()) )
 							{
-								if ( !Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->isPhysics ) {
-									selectedTarget->SetSimulatePhysics(false);
+								selectedTarget->SetSimulatePhysics(false);
+								if ( Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->isPhysicsObj ) {
+									selectedTarget->SetSimulatePhysics(true);
 								}
 							}
 							selectedTarget = NULL;
@@ -867,16 +867,14 @@ void ACraftingStarCharacter::ServerReleaseComponent_Implementation() {
 }
 void ACraftingStarCharacter::MulticastReleaseComponent_Implementation() {
 	PhysicsHandle->ReleaseComponent();
-	GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Release Component"));
 
 	// Set Simulate Physics to false
 	if ( selectedTarget ) {
-		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Have selectedTarget"));
 		if ( Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner()) )
 		{
-			if ( !Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->isPhysics ) {
-				selectedTarget->SetSimulatePhysics(false);
-				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("SetSimulatePhysics"));
+			selectedTarget->SetSimulatePhysics(false);
+			if ( Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->isPhysicsObj ) {
+				selectedTarget->SetSimulatePhysics(true);
 			}
 		}
 	}
