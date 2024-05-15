@@ -15,6 +15,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "CraftingStarGameMode.h"
 #include "DrawDebugHelpers.h"
 #include "NiagaraSystem.h"
@@ -144,8 +145,6 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 	Bow_lMesh->SetWandComponent(Weapon_rMesh);
 
 
-
-
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
@@ -170,7 +169,6 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -687,6 +685,23 @@ void ACraftingStarCharacter::RemoveTeleObjOutline() {
 		Cast< ATelekinesisInteractableObject>(TeleActors[i])->ActorMesh->SetRenderCustomDepth(false);
 	}
 
+}
+
+// Wand Skill Animation Offset
+void ACraftingStarCharacter::SetOffsetAxis() {
+	OffsetAxis = UKismetMathLibrary::NormalizedDeltaRotator(GetControlRotation() , GetActorRotation());
+}
+bool ACraftingStarCharacter::ServerSetOffsetAxis_Validate() {
+	return true;
+}
+void ACraftingStarCharacter::ServerSetOffsetAxis_Implementation() {
+	MulticastSetOffsetAxis();
+}
+void ACraftingStarCharacter::MulticastSetOffsetAxis_Implementation() {
+	SetOffsetAxis();
+}
+FRotator ACraftingStarCharacter::GetOffsetAxis() {
+	return OffsetAxis;
 }
 
 // Input Ability (Key: E)
