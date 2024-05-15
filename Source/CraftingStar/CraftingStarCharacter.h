@@ -110,17 +110,8 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseLookUpRate;
 
-	// Replicate Maintain Wand Skill and control the pitch (vertical)
-	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = AimOffset)
-	FRotator OffsetAxis;
-	UFUNCTION(Server , Reliable , WithValidation , BlueprintCallable , Category = "AimOffset")
-	void ServerSetOffsetAxis();
-	UFUNCTION(NetMulticast , Unreliable , Category = "AimOffset")
-	void MulticastSetOffsetAxis();
-	UFUNCTION(BlueprintCallable)
-	void SetOffsetAxis();
-	UFUNCTION(BlueprintCallable)
-	FRotator GetOffsetAxis();
+	
+
 
 
 protected:
@@ -177,19 +168,16 @@ protected:
 	void DeactivateAbility();
 	void ActivateAbility2();
 
-	// Wand Skill Animation: Blast, Telekinesis
-	// Activate Wand Skill
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = AnimMontage)
 	class UAnimMontage* AbilityMontage;
-	// Deactivate Wand Skill
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = AnimMontage)
 	class UAnimMontage* DeactiveAbilityMontage;
 	
 	
 	// Anim Replicate
-	UFUNCTION(Server, Reliable, WithValidation, Category = "Ability")
+	UFUNCTION(Server, Reliable, WithValidation, Category = "CraftingStar Character")
 	void ServerAbility(bool abilityState);
-	UFUNCTION(NetMulticast, Unreliable, Category = "Ability")
+	UFUNCTION(NetMulticast, Unreliable, Category = "CraftingStar Character")
 	void MulticastAbility(bool abilityState);
 
 	//Ability Projection 능력 "투영"
