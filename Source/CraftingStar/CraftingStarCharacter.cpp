@@ -477,12 +477,11 @@ bool ACraftingStarCharacter::WandLineTrace(float distance) {
 	// Ability Spawn Loc Socket Transform
 	//FVector SpawnLocation = this->Weapon_rMesh->GetSocketLocation(FName("SpawnLoc"));
 	FVector SpawnLocation = this->SpawnLocSource->GetComponentLocation();
-	//FVector SpawnLocation = FVector::UpVector;
 	
 	// Start point and End point of LineTrace
 	FVector Start = SpawnLocation;
-	//FVector End = SpawnLocation + ( GetActorForwardVector() * distance );
-	FVector End = SpawnLocation + ( FollowCamera->GetForwardVector() * distance );
+	//FVector End = SpawnLocation + ( FollowCamera->GetForwardVector() * distance );
+	FVector End = SpawnLocation + ( SpawnLocSource->GetUpVector() * distance );
 
 	// Trace Channel: Custom Trace Channel - AbilitySpawn
 	ECollisionChannel Channel = ECollisionChannel::ECC_GameTraceChannel1;
@@ -514,7 +513,8 @@ void ACraftingStarCharacter::Telekinesis() {
 	FVector SpawnLocation = FollowCamera->GetComponentLocation();
 	// Start point and End point of LineTrace
 	FVector Start = SpawnLocation;
-	FVector End = SpawnLocation + ( FollowCamera->GetForwardVector() * 750 );
+	//FVector End = SpawnLocation + ( FollowCamera->GetForwardVector() * 750 );
+	FVector End = SpawnLocation + ( SpawnLocSource->GetUpVector() * 750 );
 
 	// Trace Channel: Custom Trace Channel - AbilitySpawn
 	ECollisionChannel Channel = ECollisionChannel::ECC_GameTraceChannel1;
