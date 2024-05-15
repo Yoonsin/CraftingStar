@@ -9,6 +9,8 @@ void ACraftingStarGS::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& Ou
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(ACraftingStarGS , ProgressData);
 	DOREPLIFETIME(ACraftingStarGS , nowObtainingAbility);
+	DOREPLIFETIME(ACraftingStarGS , isHostObtain);
+	DOREPLIFETIME(ACraftingStarGS , isGuestObtain);
 
 
 }

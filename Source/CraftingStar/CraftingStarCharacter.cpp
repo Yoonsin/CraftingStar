@@ -1170,4 +1170,15 @@ void ACraftingStarCharacter::MulticastObtainAbility_Implementation(EPlayerAbilit
 	}
 }
 
+void ACraftingStarCharacter::ServerObtainAbilityComplete_Implementation(bool isHost) {
+	//GetGameState()->
 
+	if ( isHost ) {
+		Cast<ACraftingStarGS>(GetWorld()->GetGameState())->isHostObtain = true;
+	}
+	else {
+		Cast<ACraftingStarGS>(GetWorld()->GetGameState())->isGuestObtain = true;
+	}
+	
+	
+}

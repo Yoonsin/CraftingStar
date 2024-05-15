@@ -125,6 +125,9 @@ public:
 	UFUNCTION(BlueprintCallable , Server , Reliable)
 	void ServerObtainAbility(EPlayerAbility ability);
 
+	UFUNCTION(BlueprintCallable , Server , Reliable)
+		void ServerObtainAbilityComplete(bool isHost);
+
 	UFUNCTION(BlueprintCallable ,NetMulticast , Reliable )
 	void MulticastObtainAbility(EPlayerAbility ability);
 
