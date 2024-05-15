@@ -33,7 +33,12 @@ public:
 		void RequestSave();
 	UFUNCTION(BlueprintCallable, Server, Reliable)
 		void RequestClientUpdate(FPlayerData playerData,FTransform transform);
+	UFUNCTION(BlueprintCallable , Server , Reliable)
+		void ServerObtainingAbilityUpdate(EPlayerAbility ability);
 
+	UFUNCTION(BlueprintCallable)
+	    void RequestObtainingAbilityUpdate(EPlayerAbility ability);
+	
 	//상대방한테 보여줄 능력과 상태
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
 	  EPlayerAbility NowDisplayAbility = EPlayerAbility::ENone;

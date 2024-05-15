@@ -101,7 +101,20 @@ void ACraftingStarPS::RequestClientUpdate_Implementation(FPlayerData playerData 
 	GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , FString::Printf(TEXT("GUEST X : %f Y : %f Z : %f") , temp.X , temp.Y , temp.Z));
 
 	//PS 업데이트
-	PlayerData = playerData;
+}
+
+void ACraftingStarPS::RequestObtainingAbilityUpdate(EPlayerAbility ability)
+{
+	if ( ability != EPlayerAbility::ENone ) {
+		ServerObtainingAbilityUpdate(ability);
+	}
+}
+
+void ACraftingStarPS::ServerObtainingAbilityUpdate_Implementation(EPlayerAbility ability)
+{
+	if(ability != EPlayerAbility::ENone ){
+	  PlayerData.AbleAbility[(uint8)ability] = true;
+	}
 }
 
 

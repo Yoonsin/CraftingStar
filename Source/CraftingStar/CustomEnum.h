@@ -29,11 +29,11 @@ public:
 UENUM(BlueprintType)
 enum class EPlayerAbility : uint8
 {
-	ETelekinesis UMETA(DisplayNmae = "Telekinesis"),
-	EBlast UMETA(DisplayNmae = "Blast"),
-	EAbility_dummy1 UMETA(DisplayNmae = "Ability_dummy1"),
-	EAbility_dummy2 UMETA(DisplayNmae = "Ability_dummy2"),
-	ENone UMETA(DisplayNmae = "None"),
+	ETelekinesis UMETA(DisplayName = "Telekinesis"),
+	EBlast UMETA(DisplayName = "Blast"),
+	EAbility_dummy1 UMETA(DisplayName = "Ability_dummy1"),
+	EAbility_dummy2 UMETA(DisplayName = "Ability_dummy2"),
+	ENone UMETA(DisplayName = "None"),
 
 };
 
@@ -41,20 +41,20 @@ enum class EPlayerAbility : uint8
 UENUM(BlueprintType)
 enum class EPlayerGMState : uint8
 {
-	EIdle UMETA(DisplayNmae = "Idle"),
-	EWeaponReady UMETA(DisplayNmae = "WeaponReady"),
-	EWeapon UMETA(DisplayNmae = "Weapon"),
-	EAbilityReady UMETA(DisplayNmae = "AbilityReady"),
-	EAbility UMETA(DisplayNmae = "Ability"),
-	EInteraction UMETA(DisplayNmae = "Interaction"),
+	EIdle UMETA(DisplayName = "Idle"),
+	EWeaponReady UMETA(DisplayName = "WeaponReady"),
+	EWeapon UMETA(DisplayName = "Weapon"),
+	EAbilityReady UMETA(DisplayName = "AbilityReady"),
+	EAbility UMETA(DisplayName = "Ability"),
+	EInteraction UMETA(DisplayName = "Interaction"),
 };
 
 //�÷��̾� ����
 UENUM(BlueprintType)
 enum class EPlayerRole : uint8
 {
-	EDark UMETA(DisplayNmae = "Dark"),
-	ELight UMETA(DisplayNmae = "Light"),
+	EDark UMETA(DisplayName = "Dark"),
+	ELight UMETA(DisplayName = "Light"),
 };
 
 
@@ -62,7 +62,7 @@ enum class EPlayerRole : uint8
 UENUM(BlueprintType)
 enum class EMapName : uint8
 {
-	EWorldMap UMETA(DisplayNmae = "WorldMap"),
-	EKeyStar UMETA(DisplayNmae = "KeyStar"),
+	EWorldMap UMETA(DisplayName = "WorldMap"),
+	EKeyStar UMETA(DisplayName = "KeyStar"),
 };
 

@@ -18,6 +18,7 @@
 #include "CraftingStarGameMode.h"
 #include "DrawDebugHelpers.h"
 #include "NiagaraSystem.h"
+#include "Net/UnrealNetwork.h"
 #include "NiagaraFunctionLibrary.h" 
 #include "NiagaraComponent.h"
 #include "UtilityFunction.h"
@@ -27,6 +28,8 @@
 #include "Ability/WeaponComponent.h"
 #include "Ability/BowComponent.h"
 #include "Object/LightSensingObject.h"
+#include "UObject/Class.h"
+#include "Engine/World.h"
 
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
@@ -173,6 +176,13 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 
 }
+
+//void ACraftingStarCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
+//{
+//	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+//	DOREPLIFETIME(ACraftingStarCharacter , nowObtainingAbility);
+//
+//}
 
 //////////////////////////////////////////////////////////////////////////
 // Input
@@ -594,6 +604,7 @@ void ACraftingStarCharacter::MulticastSelectTarget_Implementation(FHitResult Hit
 	GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("select target")));
 	selectedTarget = Hit.GetComponent();
 }
+
 
 // Deselect Target
 bool ACraftingStarCharacter::ServerDeselectTarget_Validate() {
@@ -1127,4 +1138,36 @@ void ACraftingStarCharacter::LoadSaveData(bool isHost)
 	}
 	
 }
+
+void ACraftingStarCharacter::ServerObtainAbility_Implementation(EPlayerAbility ability) {
+	//GetGameState()->
+	Cast<ACraftingStarGS>(GetWorld()->GetGameState())->nowObtainingAbility = ability;
+	
+	MulticastObtainAbility(ability);
+}
+
+
+void ACraftingStarCharacter::MulticastObtainAbility_Implementation(EPlayerAbility ability) {
+	SetPause(true);
+
+	if ( PaletteObtaingAnimationRef == NULL ) {
+		
+	/*	FString EnumToString = TEXT("Invalid");
+		const UEnum* SEnum = FindObject<UEnum>(ANY_PACKAGE , TEXT("EPlayerAbility") , true);
+		if ( SEnum )
+		{
+			EnumToString =  SEnum->GetNameStringByValue((int64)ability);
+		}
+
+
+
+		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green ,EnumToString );*/
+
+		PaletteObtaingAnimationRef = CreateWidget(GetWorld() , PaletteObtaingAnimationWidget);
+		PaletteObtaingAnimationRef->AddToViewport();
+		PaletteObtaingAnimationRef = NULL;
+		
+	}
+}
+
 

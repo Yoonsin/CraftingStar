@@ -7,6 +7,8 @@
 void ACraftingStarGS::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME(ACraftingStarGS, ProgressData);
+	DOREPLIFETIME(ACraftingStarGS , ProgressData);
+	DOREPLIFETIME(ACraftingStarGS , nowObtainingAbility);
+
 
 }

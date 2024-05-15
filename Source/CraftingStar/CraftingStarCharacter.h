@@ -66,6 +66,8 @@ class ACraftingStarCharacter : public ACharacter
 	EPlayerAbility nowAbility = EPlayerAbility::ENone;
 	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
 	bool abilityReadyStatus = false;
+	
+
 
 	// Telekinesis
 	UPrimitiveComponent* selectedTarget;
@@ -76,6 +78,9 @@ class ACraftingStarCharacter : public ACharacter
 	// Select Target
 	UFUNCTION(Server , Reliable , WithValidation , Category = "Telekinesis")
 	void ServerSelectTarget(FHitResult Hit);
+
+	
+
 	UFUNCTION(NetMulticast , Unreliable , Category = "Telekinesis")
 	void MulticastSelectTarget(FHitResult Hit);
 	// Deselect Target
@@ -117,8 +122,11 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseLookUpRate;
 
-	
+	UFUNCTION(BlueprintCallable , Server , Reliable)
+	void ServerObtainAbility(EPlayerAbility ability);
 
+	UFUNCTION(BlueprintCallable ,NetMulticast , Reliable )
+	void MulticastObtainAbility(EPlayerAbility ability);
 
 
 protected:
@@ -213,6 +221,7 @@ public:
 
 
 	//�Է� �Ͻ�����
+	UFUNCTION(BlueprintCallable)
 	void SetPause(bool isPaused);
 
 

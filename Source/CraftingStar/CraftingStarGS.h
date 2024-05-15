@@ -19,5 +19,6 @@ public:
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
 	FProgressData ProgressData;
 	
-	
+	UPROPERTY(Replicated , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	EPlayerAbility nowObtainingAbility = EPlayerAbility::ENone;
 };
