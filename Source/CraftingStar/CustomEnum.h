@@ -66,3 +66,13 @@ enum class EMapName : uint8
 	EKeyStar UMETA(DisplayName = "KeyStar"),
 };
 
+
+UENUM(BlueprintType)
+enum class EQuestID : uint8
+{
+	EMegetonNotMeet UMETA(DisplayName = "MegetonNotMeet") ,
+	EMegetonMeet UMETA(DisplayName = "MegetonMeet"),
+	EMegetonGetKey UMETA(DisplayName = "MegetonGetKey") ,
+	EMegetonClear UMETA(DisplayName = "MegetonClear") ,
+};
+

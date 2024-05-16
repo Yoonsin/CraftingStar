@@ -68,7 +68,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FTransform GuestPlayerPos;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int ProgressLevel;
+		int ProgressLevel; //replace ProgressData.ProgressDict key
+	UPROPERTY(EditAnywhere , BlueprintReadWrite)
+		EQuestID questID = EQuestID::EMegetonNotMeet;
 };
 
 
