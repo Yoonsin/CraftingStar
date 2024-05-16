@@ -33,9 +33,9 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	class UAssimilationTrigerComponent* TrigerComponent;
 
-	//따라갈 스플라인 컴포넌트
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	class USplineComponent* ChasingSplineComp;
+	////따라갈 스플라인 컴포넌트
+	//UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	//class USplineComponent* ChasingSplineComp;
 
 public:
 	UFUNCTION(BlueprintCallable)
