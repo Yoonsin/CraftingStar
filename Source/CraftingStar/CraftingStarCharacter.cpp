@@ -175,7 +175,7 @@ void ACraftingStarCharacter::GetLifetimeReplicatedProps(TArray< FLifetimePropert
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(ACraftingStarCharacter , OffsetAxis);
-	DOREPLIFETIME(ACraftingStarCharacter , KeepAbility);
+	//DOREPLIFETIME(ACraftingStarCharacter , KeepAbility);
 }
 
 
@@ -299,6 +299,8 @@ void ACraftingStarCharacter::ServerSetKeepAbility_Implementation(bool isKeeping)
 }
 void ACraftingStarCharacter::MulticastSetKeepAbility_Implementation(bool isKeeping) {
 	KeepAbility = isKeeping;
+	if ( KeepAbility )
+		GEngine->AddOnScreenDebugMessage(-1 , 3 , FColor::Red , FString::Printf(TEXT("302.keepAbility")));
 }
 
 void ACraftingStarCharacter::UpdatePlayerAbility(EPlayerAbility playerAbility) {
@@ -561,7 +563,7 @@ void ACraftingStarCharacter::Telekinesis() {
 	Comp_LaserNiagara->SetLaser(Hit , End);
 
 	if ( Hit.bBlockingHit ) {
-
+		//End = Hit.Location;
 		if ( selectedTarget == NULL ) {
 
 			// Grab selectedTarget Component
@@ -602,7 +604,8 @@ void ACraftingStarCharacter::Telekinesis() {
 					break;
 				}
 				// Set CustomDepth Stencil Value to chagne Color
-				Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ActorMesh->SetCustomDepthStencilValue(1);
+				if ( KeepAbility )
+					Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ActorMesh->SetCustomDepthStencilValue(1);
 			}
 		}
 	}
@@ -707,6 +710,9 @@ void ACraftingStarCharacter::CreateTeleObjOutline() {
 	{
 		Cast<ATelekinesisInteractableObject>(TeleActors[i])->ActorMesh->SetRenderCustomDepth(true);
 		Cast<ATelekinesisInteractableObject>(TeleActors[i])->ActorMesh->SetCustomDepthStencilValue(0);
+
+		if ( KeepAbility )
+			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("713.keepAbiliy") , KeepAbility));
 	}
 }
 void ACraftingStarCharacter::RemoveTeleObjOutline() {
@@ -718,6 +724,9 @@ void ACraftingStarCharacter::RemoveTeleObjOutline() {
 	{
 		Cast<ATelekinesisInteractableObject>(TeleActors[i])->ActorMesh->SetCustomDepthStencilValue(0);
 		Cast< ATelekinesisInteractableObject>(TeleActors[i])->ActorMesh->SetRenderCustomDepth(false);
+
+		if ( KeepAbility )
+			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("727.keepAbiliy") , KeepAbility));
 	}
 	GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("removeOutline"));
 
@@ -848,7 +857,7 @@ void ACraftingStarCharacter::MulticastOrientRotationToMove_Implementation(bool r
 
 void ACraftingStarCharacter::MouseLeftPressed() {
 	if ( nowAbility != EPlayerAbility::ENone ) {
-		if ( nowAbility == EPlayerAbility::ETelekinesis ) {
+		if ( nowAbility == EPlayerAbility::ETelekinesis && abilityReadyStatus ) {
 			CameraBoom->SetRelativeLocation(FVector(0.0f , 100.0f , 100.0f));
 			CameraBoom->bUsePawnControlRotation = false; // Does not rotate the arm based on the controller
 
@@ -884,63 +893,62 @@ void ACraftingStarCharacter::MouseLeftPressed() {
 
 void ACraftingStarCharacter::MouseLeftReleased() {
 	if ( nowAbility != EPlayerAbility::ENone ) {
-		if ( nowAbility == EPlayerAbility::ETelekinesis ) {
-			CameraBoom->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
+		if ( nowAbility == EPlayerAbility::ETelekinesis && abilityReadyStatus ) {
 			CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
+			
+			switch ( HasAuthority() ) {
+			case true:
+				KeepAbility = false;
+				break;
+			case false:
+				ServerSetKeepAbility(false);
+				break;
+			}
 
-			if ( abilityReadyStatus ) {
-				switch ( HasAuthority() ) {
-				case true:
-					KeepAbility = false;
-					break;
-				case false:
-					ServerSetKeepAbility(false);
-					break;
-				}
-
-				if ( selectedTarget ) {
-					// Change Tele' Interactive Actor's Color
-					if ( Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner()) )
-					{
-						// Set CustomDepth Stencil Value to chagne Color
-						Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ActorMesh->SetCustomDepthStencilValue(0);
-						GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("here"));
-						switch ( HasAuthority() ) {
-						case true :
-							PhysicsHandle->ReleaseComponent();
-							if ( Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner()) )
-							{
-								selectedTarget->SetSimulatePhysics(false);
-								if ( Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->isPhysicsObj ) {
-									selectedTarget->SetSimulatePhysics(true);
-								}
+			if ( selectedTarget ) {
+				// Change Tele' Interactive Actor's Color
+				if ( Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner()) )
+				{
+					// Set CustomDepth Stencil Value to chagne Color
+					Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ActorMesh->SetCustomDepthStencilValue(0);
+					if ( KeepAbility )
+						GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("913.keepAbiliy") , KeepAbility));
+					GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("here"));
+					switch ( HasAuthority() ) {
+					case true :
+						PhysicsHandle->ReleaseComponent();
+						if ( Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner()) )
+						{
+						selectedTarget->SetSimulatePhysics(false);
+							if ( Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->isPhysicsObj ) {
+								selectedTarget->SetSimulatePhysics(true);
 							}
-							selectedTarget = NULL;
-							break;
-						case false :
-							ServerReleaseComponent();
-							ServerDeselectTarget();
-							break;
 						}
+						selectedTarget = NULL;
+						break;
+					case false :
+						ServerReleaseComponent();
+						ServerDeselectTarget();
+						break;
 					}
 				}
+			}
 
-				if ( DeactiveAbilityMontage ) {
-					// Play Animation
-					bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(DeactiveAbilityMontage);
-					if ( !bIsMontagePlaying ) {
-						ServerAbility(false);	// request ability animation on server
-					}
+			if ( DeactiveAbilityMontage ) {
+				// Play Animation
+				bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(DeactiveAbilityMontage);
+				if ( !bIsMontagePlaying ) {
+					ServerAbility(false);	// request ability animation on server
 				}
+			}
 
-				switch ( HasAuthority() ) {
+			switch ( HasAuthority() ) {
 				case true:
 					GetCharacterMovement()->bOrientRotationToMovement = true; // Character't moves in the direction of input...
 					break;
 				case false:
 					ServerOrientRotationToMove(true);
 					break;
-				}
 			}
 		}
 	}
