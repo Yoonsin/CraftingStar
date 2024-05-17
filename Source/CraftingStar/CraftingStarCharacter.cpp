@@ -175,7 +175,7 @@ void ACraftingStarCharacter::GetLifetimeReplicatedProps(TArray< FLifetimePropert
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(ACraftingStarCharacter , OffsetAxis);
-	//DOREPLIFETIME(ACraftingStarCharacter , KeepAbility);
+	DOREPLIFETIME(ACraftingStarCharacter , KeepAbility);
 }
 
 
@@ -299,8 +299,6 @@ void ACraftingStarCharacter::ServerSetKeepAbility_Implementation(bool isKeeping)
 }
 void ACraftingStarCharacter::MulticastSetKeepAbility_Implementation(bool isKeeping) {
 	KeepAbility = isKeeping;
-	if ( KeepAbility )
-		GEngine->AddOnScreenDebugMessage(-1 , 3 , FColor::Red , FString::Printf(TEXT("302.keepAbility")));
 }
 
 void ACraftingStarCharacter::UpdatePlayerAbility(EPlayerAbility playerAbility) {
@@ -576,6 +574,8 @@ void ACraftingStarCharacter::Telekinesis() {
 					if ( !selectedTarget->IsSimulatingPhysics() ) {
 						selectedTarget->SetSimulatePhysics(true);
 					}
+					// Set CustomDepth Stencil Value to change Color
+					Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ActorMesh->SetCustomDepthStencilValue(1);
 				}
 				break;
 			case false:
@@ -603,9 +603,6 @@ void ACraftingStarCharacter::Telekinesis() {
 					ServerTeleObjLoc(End);
 					break;
 				}
-				// Set CustomDepth Stencil Value to chagne Color
-				if ( KeepAbility )
-					Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ActorMesh->SetCustomDepthStencilValue(1);
 			}
 		}
 	}
@@ -655,6 +652,8 @@ void ACraftingStarCharacter::MulticastGrabComponent_Implementation(FVector End) 
 		else {
 			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Origin Physics true"));
 		}
+		// Set CustomDepth Stencil Value to change Color
+		Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ActorMesh->SetCustomDepthStencilValue(1);
 	}
 }
 
@@ -712,7 +711,7 @@ void ACraftingStarCharacter::CreateTeleObjOutline() {
 		Cast<ATelekinesisInteractableObject>(TeleActors[i])->ActorMesh->SetCustomDepthStencilValue(0);
 
 		if ( KeepAbility )
-			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("713.keepAbiliy") , KeepAbility));
+			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("713.keepAbiliy")));
 	}
 }
 void ACraftingStarCharacter::RemoveTeleObjOutline() {
@@ -726,7 +725,7 @@ void ACraftingStarCharacter::RemoveTeleObjOutline() {
 		Cast< ATelekinesisInteractableObject>(TeleActors[i])->ActorMesh->SetRenderCustomDepth(false);
 
 		if ( KeepAbility )
-			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("727.keepAbiliy") , KeepAbility));
+			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("727.keepAbiliy")));
 	}
 	GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("removeOutline"));
 
@@ -911,9 +910,6 @@ void ACraftingStarCharacter::MouseLeftReleased() {
 				{
 					// Set CustomDepth Stencil Value to chagne Color
 					Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ActorMesh->SetCustomDepthStencilValue(0);
-					if ( KeepAbility )
-						GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("913.keepAbiliy") , KeepAbility));
-					GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("here"));
 					switch ( HasAuthority() ) {
 					case true :
 						PhysicsHandle->ReleaseComponent();
