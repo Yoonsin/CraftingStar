@@ -64,6 +64,7 @@ enum class EMapName : uint8
 {
 	EWorldMap UMETA(DisplayName = "WorldMap"),
 	EKeyStar UMETA(DisplayName = "KeyStar"),
+	EFlameAndIceStar UMETA(DisplayName = "FlameAndIceStar"),
 };
 
 
