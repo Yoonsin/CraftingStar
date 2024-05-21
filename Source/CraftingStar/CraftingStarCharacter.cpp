@@ -192,11 +192,7 @@ void ACraftingStarCharacter::BeginPlay()
 	Super::BeginPlay();
 
 
-	//if (LoadingWidgetRef == nullptr && LoadingWidget)
-	//{
-	//	//LoadingWB
-	//	LoadingWidgetRef = CreateWidget(GetWorld() , LoadingWidget);
-	//	LoadingWidgetRef->AddToViewport();
+	
 	//	//idx++;
 	//}
 
@@ -204,11 +200,23 @@ void ACraftingStarCharacter::BeginPlay()
 	if ( HasAuthority() ) {
 		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("LOAD Server"));
 		LoadSaveData(true);
-		
+		if ( LoadingWidgetRef == nullptr && LoadingWidget )
+		{
+			//LoadingWB
+			LoadingWidgetRef = CreateWidget(GetWorld() , LoadingWidget);
+			LoadingWidgetRef->AddToViewport();
+		}
 	}
 	else {
 		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("LOAD Client"));
-		//ServerRequestLoadSaveData();
+		
+		if ( LoadingWidgetRef == nullptr && LoadingWidget )
+		{
+			//LoadingWB
+			LoadingWidgetRef = CreateWidget(GetWorld() , LoadingWidget);
+			LoadingWidgetRef->AddToViewport();
+		}
+
 		LoadSaveData(false);
 	}
 
