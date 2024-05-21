@@ -76,5 +76,6 @@ DerivedDataCache/*
 
 # Assets
 Content/Assets/*
+Content/Movies/*
 !Content/Assets/Effects/*
 Content/LowPolyCubeWorld/*
