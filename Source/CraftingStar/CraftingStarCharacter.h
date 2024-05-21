@@ -57,8 +57,12 @@ class ACraftingStarCharacter : public ACharacter
 	/* Ability */
 	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
 	EPlayerAbility nowAbility = EPlayerAbility::ENone;
-	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	UPROPERTY(Replicated, VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
 	bool abilityReadyStatus = false;
+	UFUNCTION(Server , Reliable , WithValidation , Category = "Telekinesis")
+	void ServerSetAbilityReadyStatus(bool value);
+	UFUNCTION(NetMulticast , Unreliable , Category = "Telekinesis")
+	void MulticastSetAbilityReadyStatus(bool value);
 
 	// Telekinesis
 	UPrimitiveComponent* selectedTarget;

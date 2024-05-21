@@ -176,6 +176,7 @@ void ACraftingStarCharacter::GetLifetimeReplicatedProps(TArray< FLifetimePropert
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(ACraftingStarCharacter , OffsetAxis);
 	DOREPLIFETIME(ACraftingStarCharacter , KeepAbility);
+	DOREPLIFETIME(ACraftingStarCharacter , abilityReadyStatus);
 }
 
 
@@ -287,7 +288,18 @@ void ACraftingStarCharacter::Tick(float DeltaTime)
 			}
 		}
 	}
+}
 
+// Set Ability Ready Status
+
+bool ACraftingStarCharacter::ServerSetAbilityReadyStatus_Validate(bool value) {
+	return true;
+}
+void ACraftingStarCharacter::ServerSetAbilityReadyStatus_Implementation(bool value) {
+	MulticastSetAbilityReadyStatus(value);
+}
+void ACraftingStarCharacter::MulticastSetAbilityReadyStatus_Implementation(bool value) {
+	abilityReadyStatus = value;
 }
 
 // Select Target
@@ -327,7 +339,12 @@ void ACraftingStarCharacter::UpdatePlayerAbility(EPlayerAbility playerAbility) {
 		GEngine->AddOnScreenDebugMessage(-1 , 3 , FColor::Red , FString::Printf(TEXT("Try To Cancel tele")));
 		if ( abilityReadyStatus ) {
 			MouseLeftReleased();
-			abilityReadyStatus = false;
+			switch ( HasAuthority() ) {
+			case true :
+				abilityReadyStatus = false;
+			case false :
+				ServerSetAbilityReadyStatus(false);
+			}
 		}
 	}
 
@@ -575,6 +592,9 @@ void ACraftingStarCharacter::Telekinesis() {
 						selectedTarget->SetSimulatePhysics(true);
 					}
 					// Set CustomDepth Stencil Value to change Color
+					if ( !Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ActorMesh->bRenderCustomDepth ) {
+						Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ActorMesh->SetRenderCustomDepth(true);
+					}
 					Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ActorMesh->SetCustomDepthStencilValue(1);
 				}
 				break;
@@ -627,9 +647,8 @@ void ACraftingStarCharacter::ServerDeselectTarget_Implementation() {
 	MulticastDeselectTarget();
 }
 void ACraftingStarCharacter::MulticastDeselectTarget_Implementation() {
-	if ( selectedTarget != NULL ) {
-		selectedTarget = NULL;
-	}
+	Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ActorMesh->SetCustomDepthStencilValue(0);
+	selectedTarget = NULL;
 }
 
 // Grab Component on Server
@@ -652,6 +671,12 @@ void ACraftingStarCharacter::MulticastGrabComponent_Implementation(FVector End) 
 		else {
 			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Origin Physics true"));
 		}
+
+		// Set CustomDepth Stencil Value to change Color
+		if ( !Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ActorMesh->bRenderCustomDepth ) {
+			Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ActorMesh->SetRenderCustomDepth(true);
+		}
+
 		// Set CustomDepth Stencil Value to change Color
 		Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ActorMesh->SetCustomDepthStencilValue(1);
 	}
@@ -773,7 +798,12 @@ void ACraftingStarCharacter::ActivateAbility() {
 	else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
 		//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Tele"));
 		if ( !abilityReadyStatus ) {
-			abilityReadyStatus = true;
+			switch ( HasAuthority() ) {
+			case true:
+				abilityReadyStatus = true;
+			case false:
+				ServerSetAbilityReadyStatus(true);
+			}
 
 			CameraBoom->SetRelativeLocation(FVector(0.0f , 100.0f , 100.0f));
 			//CameraBoom->bUsePawnControlRotation = false; // Does not rotate the arm based on the controller
@@ -790,18 +820,25 @@ void ACraftingStarCharacter::ActivateAbility() {
 			//GetCharacterMovement()->bOrientRotationToMovement = false; // Character doesn't moves in the direction of input...
 
 			RemoveTeleObjOutline();
-			switch ( HasAuthority() ) {
-			case true :
-				if ( selectedTarget != NULL ) {
-					selectedTarget = NULL;
+			if ( selectedTarget != NULL ) {
+				switch ( HasAuthority() ) {
+				case true :
+						selectedTarget = NULL;
+					break;
+				case false :
+					ServerDeselectTarget();
+					break;
 				}
-				break;
-			case false :
-				ServerDeselectTarget();
-				break;
 			}
 
-			abilityReadyStatus = false;
+			switch ( HasAuthority() ) {
+			case true:
+				abilityReadyStatus = false;
+				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("abilityReadyStatus false"));
+			case false:
+				ServerSetAbilityReadyStatus(false);
+				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("abilityReadyStatus false"));
+			}
 		}
 	}
 	else if ( nowAbility == EPlayerAbility::EAbility_dummy1 )
@@ -908,8 +945,11 @@ void ACraftingStarCharacter::MouseLeftReleased() {
 				// Change Tele' Interactive Actor's Color
 				if ( Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner()) )
 				{
+
 					// Set CustomDepth Stencil Value to chagne Color
 					Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ActorMesh->SetCustomDepthStencilValue(0);
+
+					// Release Component and Change bRenderCustomDepth
 					switch ( HasAuthority() ) {
 					case true :
 						PhysicsHandle->ReleaseComponent();
@@ -920,10 +960,28 @@ void ACraftingStarCharacter::MouseLeftReleased() {
 								selectedTarget->SetSimulatePhysics(true);
 							}
 						}
-						selectedTarget = NULL;
+
+						if ( !abilityReadyStatus && Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ActorMesh->bRenderCustomDepth ) {
+							Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ActorMesh->SetRenderCustomDepth(false);
+							GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("mouse release: render customdepth false"));
+						}
 						break;
 					case false :
 						ServerReleaseComponent();
+
+						if ( !abilityReadyStatus && Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ActorMesh->bRenderCustomDepth ) {
+							Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ActorMesh->SetRenderCustomDepth(false);
+							GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("mouse release client: render customdepth false"));
+						}
+						break;
+					}
+				
+					// Deseleect Target
+					switch ( HasAuthority() ) {
+					case true:
+						selectedTarget = NULL;
+						break;
+					case false:
 						ServerDeselectTarget();
 						break;
 					}
