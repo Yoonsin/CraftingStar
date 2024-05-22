@@ -143,6 +143,8 @@ public:
 	UFUNCTION(BlueprintCallable ,NetMulticast , Reliable )
 	void MulticastObtainAbility(EPlayerAbility ability);
 
+	UPROPERTY(VisibleAnywhere , BlueprintReadWrite , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	class UUserWidget* GameWidgetRef;
 
 protected:
 	// Called when the game starts or when spawned
