@@ -124,6 +124,18 @@ public:
 
 	UFUNCTION(BlueprintCallable , Server , Reliable)
 	void ServerObtainAbility(EPlayerAbility ability);
+	// Replicate Maintain Wand Skill and control the pitch (vertical)
+	UPROPERTY(Replicated , VisibleAnywhere , BlueprintReadOnly , Category = AimOffset)
+	FRotator OffsetAxis;
+	UFUNCTION(Server , Reliable , WithValidation , BlueprintCallable , Category = "AimOffset")
+	void ServerSetOffsetAxis();
+	UFUNCTION(NetMulticast , Unreliable , Category = "AimOffset")
+	void MulticastSetOffsetAxis();
+	UFUNCTION(BlueprintCallable)
+	void SetOffsetAxis();
+	UFUNCTION(BlueprintCallable)
+	FRotator GetOffsetAxis();
+
 
 	UFUNCTION(BlueprintCallable , Server , Reliable)
 		void ServerObtainAbilityComplete(bool isHost);
@@ -186,16 +198,19 @@ protected:
 	void DeactivateAbility();
 	void ActivateAbility2();
 
+	// Wand Skill Animation: Blast, Telekinesis
+	// Activate Wand Skill
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = AnimMontage)
 	class UAnimMontage* AbilityMontage;
+	// Deactivate Wand Skill
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = AnimMontage)
 	class UAnimMontage* DeactiveAbilityMontage;
 	
 	
 	// Anim Replicate
-	UFUNCTION(Server, Reliable, WithValidation, Category = "CraftingStar Character")
+	UFUNCTION(Server, Reliable, WithValidation, Category = "Ability")
 	void ServerAbility(bool abilityState);
-	UFUNCTION(NetMulticast, Unreliable, Category = "CraftingStar Character")
+	UFUNCTION(NetMulticast, Unreliable, Category = "Ability")
 	void MulticastAbility(bool abilityState);
 
 	//Ability Projection 능력 "투영"
@@ -292,7 +307,13 @@ public:
 	UFUNCTION(Server , Reliable , Category = "UI", BlueprintCallable)
 		void ServerStopLoadingWidget();
 
+	UPROPERTY(Replicated, VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
 	bool KeepAbility;
+	UFUNCTION(Server , Reliable , WithValidation , Category = "Ability")
+	void ServerSetKeepAbility(bool isKeeping);
+	UFUNCTION(NetMulticast , Unreliable , Category = "Ability")
+	void MulticastSetKeepAbility(bool isKeeping);
+
 	bool canUseAbility;
 
 private:

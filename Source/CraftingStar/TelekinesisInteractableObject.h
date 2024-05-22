@@ -26,8 +26,8 @@ public:
 	UPROPERTY(VisibleAnywhere , BlueprintReadWrite , Category = Mesh)
 	class UStaticMeshComponent* ActorMesh;
 
-	UPROPERTY(VisibleAnywhere , BlueprintReadWrite , Category = Physics)
-	bool isPhysics = false;
+	UPROPERTY(EditAnywhere , BlueprintReadWrite , Category = Physics)
+	bool isPhysicsObj = false;
 
 	virtual void Init();
 

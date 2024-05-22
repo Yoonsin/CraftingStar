@@ -19,15 +19,17 @@ ATelekinesisInteractableObject::ATelekinesisInteractableObject()
 	ConstructorHelpers::FObjectFinder<UStaticMesh> ActorSM(TEXT("StaticMesh'/Game/Assets/BaseContent/StarterContent/Shapes/Shape_Cube.Shape_Cube'"));
 	if ( ActorSM.Succeeded() ) {
 		ActorMesh->SetStaticMesh(ActorSM.Object);
+		ActorMesh->SetIsReplicated(true);
 	}
-	ActorMesh->SetIsReplicated(true);
 }
 
 // Called when the game starts or when spawned
 void ATelekinesisInteractableObject::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	// Set Physics
+	ActorMesh->SetSimulatePhysics(isPhysicsObj);
 }
 
 // Called every frame
