@@ -1272,7 +1272,7 @@ void ACraftingStarCharacter::ServerObtainAbility_Implementation(EPlayerAbility a
 
 
 void ACraftingStarCharacter::MulticastObtainAbility_Implementation(EPlayerAbility ability) {
-	SetPause(true);
+	//SetPause(true);
 
 	if ( PaletteObtaingAnimationRef == NULL ) {
 		
@@ -1289,7 +1289,7 @@ void ACraftingStarCharacter::MulticastObtainAbility_Implementation(EPlayerAbilit
 
 		PaletteObtaingAnimationRef = CreateWidget(GetWorld() , PaletteObtaingAnimationWidget);
 		PaletteObtaingAnimationRef->AddToViewport();
-		PaletteObtaingAnimationRef = NULL;
+		//PaletteObtaingAnimationRef = NULL;
 		
 	}
 }
