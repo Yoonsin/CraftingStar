@@ -848,7 +848,7 @@ void ACraftingStarCharacter::MulticastOrientRotationToMove_Implementation(bool r
 
 void ACraftingStarCharacter::MouseLeftPressed() {
 	if ( nowAbility != EPlayerAbility::ENone ) {
-		if ( nowAbility == EPlayerAbility::ETelekinesis ) {
+		if ( nowAbility == EPlayerAbility::ETelekinesis && abilityReadyStatus ) {
 			CameraBoom->SetRelativeLocation(FVector(0.0f , 100.0f , 100.0f));
 			CameraBoom->bUsePawnControlRotation = false; // Does not rotate the arm based on the controller
 
@@ -884,7 +884,7 @@ void ACraftingStarCharacter::MouseLeftPressed() {
 
 void ACraftingStarCharacter::MouseLeftReleased() {
 	if ( nowAbility != EPlayerAbility::ENone ) {
-		if ( nowAbility == EPlayerAbility::ETelekinesis ) {
+		if ( nowAbility == EPlayerAbility::ETelekinesis && KeepAbility ) {
 			CameraBoom->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
 			CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 
@@ -902,8 +902,6 @@ void ACraftingStarCharacter::MouseLeftReleased() {
 					// Change Tele' Interactive Actor's Color
 					if ( Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner()) )
 					{
-						// Set CustomDepth Stencil Value to chagne Color
-						Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ActorMesh->SetCustomDepthStencilValue(0);
 						GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("here"));
 						switch ( HasAuthority() ) {
 						case true :
@@ -915,6 +913,10 @@ void ACraftingStarCharacter::MouseLeftReleased() {
 									selectedTarget->SetSimulatePhysics(true);
 								}
 							}
+
+							// Set CustomDepth Stencil Value to chagne Color
+							Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ActorMesh->SetCustomDepthStencilValue(0);
+
 							selectedTarget = NULL;
 							break;
 						case false :
@@ -966,6 +968,9 @@ void ACraftingStarCharacter::MulticastReleaseComponent_Implementation() {
 			}
 		}
 	}
+
+	// Set CustomDepth Stencil Value to chagne Color
+	Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ActorMesh->SetCustomDepthStencilValue(0);
 }
 
 void ACraftingStarCharacter::ActivateAbility2()
