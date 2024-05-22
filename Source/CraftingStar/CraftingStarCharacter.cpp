@@ -784,7 +784,7 @@ void ACraftingStarCharacter::ActivateAbility() {
 			break;
 		}
 		CameraBoom->SetRelativeLocation(FVector(0.0f , 100.0f , 100.0f));
-		//CameraBoom->bUsePawnControlRotation = false; // Does not rotate the arm based on the controller
+		CameraBoom->bUsePawnControlRotation = false; // Does not rotate the arm based on the controller
 		
 
 		if ( AbilityMontage ) {
@@ -856,7 +856,7 @@ void ACraftingStarCharacter::DeactivateAbility() {
 		}
 
 		CameraBoom->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
-		//CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
+		CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 		if ( DeactiveAbilityMontage ) {
 			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Blast stop montage play"));
 			// Play Animation
