@@ -174,7 +174,20 @@ protected:
 	void MouseLeftPressed();
 	void MouseLeftReleased();
 
+	// Sounds
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Sounds , meta = ( AllowPrivateAccess = "true" ))
+	class USoundWave* SW_EmissionDark;
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Sounds , meta = ( AllowPrivateAccess = "true" ))
+	class USoundWave* SW_EmissionLight;
+
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Sounds , meta = ( AllowPrivateAccess = "true" ))
+	class USoundWave* SW_Telekinesis;
+
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Sounds , meta = ( AllowPrivateAccess = "true" ))
+	class UAudioComponent* audioComp;
+
 	// Ability
+
 	void ActivateAbility();
 	void DeactivateAbility();
 	void ActivateAbility2();

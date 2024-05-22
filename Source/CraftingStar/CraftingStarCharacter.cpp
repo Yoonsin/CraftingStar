@@ -29,7 +29,7 @@
 #include "Ability/WeaponComponent.h"
 #include "Ability/BowComponent.h"
 #include "Object/LightSensingObject.h"
-
+#include "Components/AudioComponent.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "Misc/OutputDeviceNull.h"
@@ -145,7 +145,19 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 
 	Bow_lMesh->SetWandComponent(Weapon_rMesh);
 
-	// Create a camera boom (pulls in towards the player if there is a collision)
+	// Sounds
+	audioComp = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComponent"));
+	audioComp->SetupAttachment(RootComponent);
+
+	static ConstructorHelpers::FObjectFinder<USoundWave> Resource_SW_EmissionDark(TEXT("SoundWave'/Game/Assets/Effects/Sounds/emission_Dark.emission_Dark'"));
+	SW_EmissionDark = Resource_SW_EmissionDark.Object;
+	static ConstructorHelpers::FObjectFinder<USoundWave> Resource_SW_EmissionLight(TEXT("SoundWave'/Game/Assets/Effects/Sounds/emission_Light.emission_Light'"));
+	SW_EmissionLight = Resource_SW_EmissionLight.Object;
+
+	static ConstructorHelpers::FObjectFinder<USoundWave> Resource_SW_Telekinesis(TEXT("SoundWave'/Game/Assets/Effects/Sounds/telekinesis.telekinesis'"));
+	SW_Telekinesis = Resource_SW_Telekinesis.Object;
+
+	// Create a camera boom (pulls in towards the player if there is a collis`ion)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->TargetArmLength = 300.0f; // The camera follows at this distance behind the character	
@@ -743,6 +755,15 @@ FRotator ACraftingStarCharacter::GetOffsetAxis() {
 // Input Ability (Key: E)
 void ACraftingStarCharacter::ActivateAbility() {
 	if ( nowAbility == EPlayerAbility::EBlast ) {
+		// Sound
+		if ( Cast<ACraftingStarPS>(GetPlayerState())->PlayerData.Mode == EPlayerRole::EDark ) {
+			audioComp->SetSound(SW_EmissionDark);
+		}
+		else if ( Cast<ACraftingStarPS>(GetPlayerState())->PlayerData.Mode == EPlayerRole::ELight ) {
+			audioComp->SetSound(SW_EmissionLight);
+		}
+		audioComp->Play();
+
 		switch ( HasAuthority() ) {
 		case true:
 			KeepAbility = true;
@@ -752,8 +773,9 @@ void ACraftingStarCharacter::ActivateAbility() {
 			break;
 		}
 		CameraBoom->SetRelativeLocation(FVector(0.0f , 100.0f , 100.0f));
-		CameraBoom->bUsePawnControlRotation = false; // Does not rotate the arm based on the controller
+		//CameraBoom->bUsePawnControlRotation = false; // Does not rotate the arm based on the controller
 		
+
 		if ( AbilityMontage ) {
 			// Play Animation
 			bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(AbilityMontage);
@@ -769,7 +791,7 @@ void ACraftingStarCharacter::ActivateAbility() {
 
 			CameraBoom->SetRelativeLocation(FVector(0.0f , 100.0f , 100.0f));
 			//CameraBoom->bUsePawnControlRotation = false; // Does not rotate the arm based on the controller
-
+			// 
 			//GetCharacterMovement()->bOrientRotationToMovement = false; // Character doesn't moves in the direction of input...
 			
 			CreateTeleObjOutline();
@@ -808,6 +830,10 @@ void ACraftingStarCharacter::ActivateAbility() {
 }
 void ACraftingStarCharacter::DeactivateAbility() {
 	if ( nowAbility == EPlayerAbility::EBlast ) {
+		// Sound
+		audioComp->Stop();
+		audioComp->SetSound(NULL);
+
 		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Blast deactivate"));
 		switch ( HasAuthority() ) {
 		case true:
@@ -819,7 +845,7 @@ void ACraftingStarCharacter::DeactivateAbility() {
 		}
 
 		CameraBoom->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
-		CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
+		//CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 		if ( DeactiveAbilityMontage ) {
 			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Blast stop montage play"));
 			// Play Animation
@@ -851,6 +877,10 @@ void ACraftingStarCharacter::MouseLeftPressed() {
 		if ( nowAbility == EPlayerAbility::ETelekinesis && abilityReadyStatus ) {
 			CameraBoom->SetRelativeLocation(FVector(0.0f , 100.0f , 100.0f));
 			CameraBoom->bUsePawnControlRotation = false; // Does not rotate the arm based on the controller
+		
+			// Sound
+			audioComp->SetSound(SW_Telekinesis);
+			audioComp->Play();
 
 			switch ( HasAuthority() ) {
 			case true :
@@ -887,6 +917,10 @@ void ACraftingStarCharacter::MouseLeftReleased() {
 		if ( nowAbility == EPlayerAbility::ETelekinesis && KeepAbility ) {
 			CameraBoom->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
 			CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
+
+			// Sound
+			audioComp->Stop();
+			audioComp->SetSound(NULL);
 
 			if ( abilityReadyStatus ) {
 				switch ( HasAuthority() ) {
