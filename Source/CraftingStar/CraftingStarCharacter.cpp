@@ -151,12 +151,12 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 	audioComp = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComponent"));
 	audioComp->SetupAttachment(RootComponent);
 
-	static ConstructorHelpers::FObjectFinder<USoundWave> Resource_SW_EmissionDark(TEXT("SoundWave'/Game/Assets/Effects/Sounds/emission_Dark.emission_Dark'"));
+	static ConstructorHelpers::FObjectFinder<USoundWave> Resource_SW_EmissionDark(TEXT("SoundWave'/Game/Assets/Sound/emission_Dark.emission_Dark'"));
 	SW_EmissionDark = Resource_SW_EmissionDark.Object;
-	static ConstructorHelpers::FObjectFinder<USoundWave> Resource_SW_EmissionLight(TEXT("SoundWave'/Game/Assets/Effects/Sounds/emission_Light.emission_Light'"));
+	static ConstructorHelpers::FObjectFinder<USoundWave> Resource_SW_EmissionLight(TEXT("SoundWave'/Game/Assets/Sound/emission_Light.emission_Light'"));
 	SW_EmissionLight = Resource_SW_EmissionLight.Object;
 
-	static ConstructorHelpers::FObjectFinder<USoundWave> Resource_SW_Telekinesis(TEXT("SoundWave'/Game/Assets/Effects/Sounds/telekinesis.telekinesis'"));
+	static ConstructorHelpers::FObjectFinder<USoundWave> Resource_SW_Telekinesis(TEXT("SoundWave'/Game/Assets/Sound/telekinesis.telekinesis'"));
 	SW_Telekinesis = Resource_SW_Telekinesis.Object;
 
 	// Create a camera boom (pulls in towards the player if there is a collis`ion)
