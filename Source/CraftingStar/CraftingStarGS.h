@@ -28,6 +28,10 @@ public:
 	UPROPERTY(Replicated , BlueprintReadWrite , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
 		bool isGuestObtain = false;
 
-	
+	UPROPERTY(Replicated , BlueprintReadWrite , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+		bool isStartFlag = false;
+
+	UPROPERTY(BlueprintReadWrite , meta = ( AllowPrivateAccess = "true" ))
+		bool isOpenMegetonDoor = false;
 	
 };

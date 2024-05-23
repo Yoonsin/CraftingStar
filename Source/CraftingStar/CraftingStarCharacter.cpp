@@ -204,12 +204,12 @@ void ACraftingStarCharacter::BeginPlay()
 	
 	//	//idx++;
 	//}
-
+	SetPause(false);
 
 	if ( HasAuthority() ) {
 		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("LOAD Server"));
 		LoadSaveData(true);
-		if ( LoadingWidgetRef == nullptr && LoadingWidget )
+		if ( LoadingWidgetRef == nullptr && LoadingWidget  && Cast<ACraftingStarGS>(GetWorld()->GetGameState())->isStartFlag == false)
 		{
 			//LoadingWB
 			LoadingWidgetRef = CreateWidget(GetWorld() , LoadingWidget);
@@ -219,7 +219,7 @@ void ACraftingStarCharacter::BeginPlay()
 	else {
 		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("LOAD Client"));
 		
-		if ( LoadingWidgetRef == nullptr && LoadingWidget )
+		if ( LoadingWidgetRef == nullptr && LoadingWidget && Cast<ACraftingStarGS>(GetWorld()->GetGameState())->isStartFlag == false )
 		{
 			//LoadingWB
 			LoadingWidgetRef = CreateWidget(GetWorld() , LoadingWidget);
@@ -1289,7 +1289,7 @@ void ACraftingStarCharacter::MulticastObtainAbility_Implementation(EPlayerAbilit
 
 		PaletteObtaingAnimationRef = CreateWidget(GetWorld() , PaletteObtaingAnimationWidget);
 		PaletteObtaingAnimationRef->AddToViewport();
-		//PaletteObtaingAnimationRef = NULL;
+		PaletteObtaingAnimationRef = NULL;
 		
 	}
 }
