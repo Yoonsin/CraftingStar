@@ -29,6 +29,13 @@ public:
 	UPROPERTY(EditAnywhere , BlueprintReadWrite , Category = Physics)
 	bool isPhysicsObj = false;
 
+	UPROPERTY(Replicated , VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	bool isSelected = false;
+	UFUNCTION(Server , Reliable , WithValidation , Category = "Ability")
+	void ServerSetIsSeleted(bool value);
+	UFUNCTION(NetMulticast , Unreliable , Category = "Ability")
+	void MulticastSetIsSeleted(bool value);
+
 	virtual void Init();
 
 	virtual void DrawOuline();

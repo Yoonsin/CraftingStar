@@ -23,6 +23,12 @@ ATelekinesisInteractableObject::ATelekinesisInteractableObject()
 	}
 }
 
+void ATelekinesisInteractableObject::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(ATelekinesisInteractableObject , isSelected);
+}
+
 // Called when the game starts or when spawned
 void ATelekinesisInteractableObject::BeginPlay()
 {
@@ -37,6 +43,17 @@ void ATelekinesisInteractableObject::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+// Select Target
+bool ATelekinesisInteractableObject::ServerSetIsSeleted_Validate(bool value) {
+	return true;
+}
+void ATelekinesisInteractableObject::ServerSetIsSeleted_Implementation(bool value) {
+	MulticastSetIsSeleted(value);
+}
+void ATelekinesisInteractableObject::MulticastSetIsSeleted_Implementation(bool value) {
+	isSelected = value;
 }
 
 
