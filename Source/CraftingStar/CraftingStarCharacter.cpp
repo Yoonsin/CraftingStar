@@ -348,7 +348,9 @@ void ACraftingStarCharacter::UpdatePlayerAbility(EPlayerAbility playerAbility) {
 	else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
 		GEngine->AddOnScreenDebugMessage(-1 , 3 , FColor::Red , FString::Printf(TEXT("Try To Cancel tele")));
 		if ( abilityReadyStatus ) {
+			// Deactivate Telekinesis Skill
 			MouseLeftReleased();
+			ActivateAbility();
 			abilityReadyStatus = false;
 		}
 	}
@@ -584,12 +586,13 @@ void ACraftingStarCharacter::Telekinesis() {
 
 	if ( Hit.bBlockingHit ) {
 
-		if ( selectedTarget == NULL ) {
+		if ( selectedTarget == NULL && !Cast<ATelekinesisInteractableObject>(Hit.GetComponent()->GetOwner())->isSelected ) {
 
 			// Grab selectedTarget Component
 			switch ( HasAuthority() ) {
 			case true:
 				selectedTarget = Hit.GetComponent();
+				Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->MulticastSetIsSeleted(true);
 				PhysicsHandle->GrabComponent(selectedTarget , NAME_None , End , true);
 				if ( selectedTarget ) {
 					// Check is the simulate physics true
@@ -639,6 +642,9 @@ void ACraftingStarCharacter::ServerSelectTarget_Implementation(FHitResult Hit) {
 }
 void ACraftingStarCharacter::MulticastSelectTarget_Implementation(FHitResult Hit) {
 	selectedTarget = Hit.GetComponent();
+	if ( selectedTarget ) {
+		Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ServerSetIsSeleted(true);
+	}
 }
 
 
@@ -817,11 +823,13 @@ void ACraftingStarCharacter::ActivateAbility() {
 			RemoveTeleObjOutline();
 			switch ( HasAuthority() ) {
 			case true :
+				Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->MulticastSetIsSeleted(false);
 				if ( selectedTarget != NULL ) {
 					selectedTarget = NULL;
 				}
 				break;
 			case false :
+				Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ServerSetIsSeleted(false);
 				ServerDeselectTarget();
 				break;
 			}
@@ -858,13 +866,9 @@ void ACraftingStarCharacter::DeactivateAbility() {
 		CameraBoom->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
 		CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 		if ( DeactiveAbilityMontage ) {
-			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Blast stop montage play"));
+			ServerAbility(false);	// request ability animation on server
 			// Play Animation
-			bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(DeactiveAbilityMontage);
-			if ( !bIsMontagePlaying ) {
-				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Blast montage stop"));
-				ServerAbility(false);	// request ability animation on server
-			}
+			GetMesh()->GetAnimInstance()->Montage_IsPlaying(DeactiveAbilityMontage);
 		}
 	}
 	else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
@@ -886,7 +890,6 @@ void ACraftingStarCharacter::MulticastOrientRotationToMove_Implementation(bool r
 void ACraftingStarCharacter::MouseLeftPressed() {
 	if ( nowAbility != EPlayerAbility::ENone ) {
 		if ( nowAbility == EPlayerAbility::ETelekinesis && abilityReadyStatus ) {
-			CameraBoom->SetRelativeLocation(FVector(0.0f , 100.0f , 100.0f));
 			CameraBoom->bUsePawnControlRotation = false; // Does not rotate the arm based on the controller
 		
 			// Sound
@@ -912,7 +915,6 @@ void ACraftingStarCharacter::MouseLeftPressed() {
 				}
 
 				if ( AbilityMontage ) {
-					// Play Animation
 					bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(AbilityMontage);
 					if ( !bIsMontagePlaying ) {
 						ServerAbility(true);	// request ability animation on server
@@ -926,13 +928,13 @@ void ACraftingStarCharacter::MouseLeftPressed() {
 void ACraftingStarCharacter::MouseLeftReleased() {
 	if ( nowAbility != EPlayerAbility::ENone ) {
 		if ( nowAbility == EPlayerAbility::ETelekinesis && KeepAbility ) {
-			CameraBoom->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
 			CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 
 			// Sound
 			audioComp->Stop();
 			audioComp->SetSound(NULL);
 
+			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("1"));
 			if ( abilityReadyStatus ) {
 				switch ( HasAuthority() ) {
 				case true:
@@ -943,6 +945,7 @@ void ACraftingStarCharacter::MouseLeftReleased() {
 					break;
 				}
 
+				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("2"));
 				if ( selectedTarget ) {
 					// Change Tele' Interactive Actor's Color
 					if ( Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner()) )
@@ -962,27 +965,31 @@ void ACraftingStarCharacter::MouseLeftReleased() {
 							// Set CustomDepth Stencil Value to chagne Color
 							Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ActorMesh->SetCustomDepthStencilValue(0);
 
+							Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ServerSetIsSeleted(false);
+
 							selectedTarget = NULL;
 							break;
 						case false :
 							ServerReleaseComponent();
+							Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->MulticastSetIsSeleted(false);
 							ServerDeselectTarget();
 							break;
 						}
 					}
 				}
 
+				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("3"));
 				if ( DeactiveAbilityMontage ) {
+					GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("4"));
+					ServerAbility(false);	// request ability animation on server
 					// Play Animation
-					bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(DeactiveAbilityMontage);
-					if ( !bIsMontagePlaying ) {
-						ServerAbility(false);	// request ability animation on server
-					}
+					GetMesh()->GetAnimInstance()->Montage_IsPlaying(DeactiveAbilityMontage);
 				}
 
 				switch ( HasAuthority() ) {
+					GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("5"));
 				case true:
-					GetCharacterMovement()->bOrientRotationToMovement = true; // Character't moves in the direction of input...
+					GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...
 					break;
 				case false:
 					ServerOrientRotationToMove(true);
