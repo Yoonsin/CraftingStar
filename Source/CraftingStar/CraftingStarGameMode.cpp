@@ -127,7 +127,7 @@ void  ACraftingStarGameMode::Logout(AController* Exiting)
 	if (UUtilityFunction::IsHost(Exiting)) {
 		GEngine->AddOnScreenDebugMessage(-1 , 3 , FColor::Red , FString::Printf(TEXT("Host Logout")));
 
-		UGameplayStatics::OpenLevel(GetWorld(), FName("text"),true);
+		//UGameplayStatics::OpenLevel(GetWorld(), FName("text"),true);
 		 
 	}
 	else {
@@ -144,7 +144,7 @@ void  ACraftingStarGameMode::Logout(AController* Exiting)
 		////host->WorldMap();
 		//host->LogoutClient();
 
-		UGameplayStatics::OpenLevel(GetWorld() , FName("text") , true);
+		//UGameplayStatics::OpenLevel(GetWorld() , FName("text") , true);
 		
 		/*
 		if ( Online::GetSessionInterface(GetWorld()).IsValid() ) {
@@ -206,7 +206,7 @@ void ACraftingStarGameMode::RespawnPlayer(ACharacter* NewPlayer)
 		}
 
 
-		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Red , FoundActors[i]->GetName());
+		//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Red , FoundActors[i]->GetName());
 		
 		
 		if ( FoundActors[i]->GetName().Contains(FString("PlayerStart_Origin")) ) {
