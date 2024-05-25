@@ -585,14 +585,11 @@ void ACraftingStarCharacter::Telekinesis() {
 	Comp_LaserNiagara->SetLaser(Hit , End);
 
 	if ( Hit.bBlockingHit ) {
-
-		if ( selectedTarget == NULL && !Cast<ATelekinesisInteractableObject>(Hit.GetComponent()->GetOwner())->isSelected ) {
-
+		if ( selectedTarget == NULL ) {
 			// Grab selectedTarget Component
 			switch ( HasAuthority() ) {
 			case true:
 				selectedTarget = Hit.GetComponent();
-				Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->MulticastSetIsSeleted(true);
 				PhysicsHandle->GrabComponent(selectedTarget , NAME_None , End , true);
 				if ( selectedTarget ) {
 					// Check is the simulate physics true
@@ -642,9 +639,6 @@ void ACraftingStarCharacter::ServerSelectTarget_Implementation(FHitResult Hit) {
 }
 void ACraftingStarCharacter::MulticastSelectTarget_Implementation(FHitResult Hit) {
 	selectedTarget = Hit.GetComponent();
-	if ( selectedTarget ) {
-		Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ServerSetIsSeleted(true);
-	}
 }
 
 
@@ -823,13 +817,11 @@ void ACraftingStarCharacter::ActivateAbility() {
 			RemoveTeleObjOutline();
 			switch ( HasAuthority() ) {
 			case true :
-				Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->MulticastSetIsSeleted(false);
 				if ( selectedTarget != NULL ) {
 					selectedTarget = NULL;
 				}
 				break;
 			case false :
-				Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ServerSetIsSeleted(false);
 				ServerDeselectTarget();
 				break;
 			}
@@ -934,7 +926,6 @@ void ACraftingStarCharacter::MouseLeftReleased() {
 			audioComp->Stop();
 			audioComp->SetSound(NULL);
 
-			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("1"));
 			if ( abilityReadyStatus ) {
 				switch ( HasAuthority() ) {
 				case true:
@@ -945,7 +936,6 @@ void ACraftingStarCharacter::MouseLeftReleased() {
 					break;
 				}
 
-				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("2"));
 				if ( selectedTarget ) {
 					// Change Tele' Interactive Actor's Color
 					if ( Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner()) )
@@ -965,29 +955,23 @@ void ACraftingStarCharacter::MouseLeftReleased() {
 							// Set CustomDepth Stencil Value to chagne Color
 							Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ActorMesh->SetCustomDepthStencilValue(0);
 
-							Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ServerSetIsSeleted(false);
-
 							selectedTarget = NULL;
 							break;
 						case false :
 							ServerReleaseComponent();
-							Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->MulticastSetIsSeleted(false);
 							ServerDeselectTarget();
 							break;
 						}
 					}
 				}
 
-				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("3"));
 				if ( DeactiveAbilityMontage ) {
-					GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("4"));
 					ServerAbility(false);	// request ability animation on server
 					// Play Animation
 					GetMesh()->GetAnimInstance()->Montage_IsPlaying(DeactiveAbilityMontage);
 				}
 
 				switch ( HasAuthority() ) {
-					GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("5"));
 				case true:
 					GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...
 					break;
