@@ -33,6 +33,10 @@ public :
 	void SetLaser(FHitResult Hit , FVector End);
 
 	// Show & Hide
+	UFUNCTION(Server , Reliable , WithValidation , Category = "Visible")
+	void ServerHide();
+	UFUNCTION(NetMulticast , Unreliable , Category = "Visible")
+	void MulticastHide();
 	void Show();
 	void Hide();
 

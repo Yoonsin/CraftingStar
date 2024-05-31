@@ -19,15 +19,23 @@ ATelekinesisInteractableObject::ATelekinesisInteractableObject()
 	ConstructorHelpers::FObjectFinder<UStaticMesh> ActorSM(TEXT("StaticMesh'/Game/Assets/BaseContent/StarterContent/Shapes/Shape_Cube.Shape_Cube'"));
 	if ( ActorSM.Succeeded() ) {
 		ActorMesh->SetStaticMesh(ActorSM.Object);
+		ActorMesh->SetIsReplicated(true);
 	}
-	ActorMesh->SetIsReplicated(true);
+}
+
+void ATelekinesisInteractableObject::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(ATelekinesisInteractableObject , isSelected);
 }
 
 // Called when the game starts or when spawned
 void ATelekinesisInteractableObject::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	// Set Physics
+	ActorMesh->SetSimulatePhysics(isPhysicsObj);
 }
 
 // Called every frame
@@ -35,6 +43,17 @@ void ATelekinesisInteractableObject::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+// Select Target
+bool ATelekinesisInteractableObject::ServerSetIsSeleted_Validate(bool value) {
+	return true;
+}
+void ATelekinesisInteractableObject::ServerSetIsSeleted_Implementation(bool value) {
+	MulticastSetIsSeleted(value);
+}
+void ATelekinesisInteractableObject::MulticastSetIsSeleted_Implementation(bool value) {
+	isSelected = value;
 }
 
 

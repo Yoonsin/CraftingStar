@@ -11,6 +11,7 @@ void ACraftingStarGS::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& Ou
 	DOREPLIFETIME(ACraftingStarGS , nowObtainingAbility);
 	DOREPLIFETIME(ACraftingStarGS , isHostObtain);
 	DOREPLIFETIME(ACraftingStarGS , isGuestObtain);
+	DOREPLIFETIME(ACraftingStarGS , isStartFlag);
 
 
 }

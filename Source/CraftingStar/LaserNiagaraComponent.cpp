@@ -77,6 +77,17 @@ void ULaserNiagaraComponent::Hide() {
 	LaserImpact->SetVisibility(false);
 }
 
+bool ULaserNiagaraComponent::ServerHide_Validate() {
+	return true;
+}
+void ULaserNiagaraComponent::ServerHide_Implementation() {
+
+	MulticastHide();
+}
+void ULaserNiagaraComponent::MulticastHide_Implementation() {
+	Hide();
+}
+
 // Laser Niagara System Replicate
 bool ULaserNiagaraComponent::ServerLaser_Validate(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color) {
 	return true;

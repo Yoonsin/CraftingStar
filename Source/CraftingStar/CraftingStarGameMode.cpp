@@ -9,6 +9,7 @@
 #include "UObject/ConstructorHelpers.h"
 #include "Engine/Engine.h" 
 #include "GameFramework/PlayerStart.h"
+#include "GameFramework/GameSession.h"
 #include "UtilityFunction.h"
 #include "Math/Vector.h"
 
@@ -126,24 +127,30 @@ void  ACraftingStarGameMode::Logout(AController* Exiting)
 	if (UUtilityFunction::IsHost(Exiting)) {
 		GEngine->AddOnScreenDebugMessage(-1 , 3 , FColor::Red , FString::Printf(TEXT("Host Logout")));
 
-
+		//UGameplayStatics::OpenLevel(GetWorld(), FName("text"),true);
 		 
 	}
 	else {
 		GEngine->AddOnScreenDebugMessage(-1 , 3 , FColor::Red , FString::Printf(TEXT("Guest Logout")));
 
-		ACharacter* hostCharacter  = UGameplayStatics::GetPlayerCharacter(GetWorld() , 0);
-		if ( hostCharacter == nullptr ) return;
-		
+		//ACharacter* hostCharacter  = UGameplayStatics::GetPlayerCharacter(GetWorld() , 0);
+		//if ( hostCharacter == nullptr ) return;
+		//
 
-		ACraftingStarCharacter* host = Cast<ACraftingStarCharacter>(hostCharacter);
-		if ( host == nullptr ) return;
+		//ACraftingStarCharacter* host = Cast<ACraftingStarCharacter>(hostCharacter);
+		//if ( host == nullptr ) return;
 
-		
-		//host->WorldMap();
-		host->LogoutClient();
-		
+		//
+		////host->WorldMap();
+		//host->LogoutClient();
 
+		//UGameplayStatics::OpenLevel(GetWorld() , FName("text") , true);
+		
+		/*
+		if ( Online::GetSessionInterface(GetWorld()).IsValid() ) {
+			
+			Online::GetSessionInterface(GetWorld())->DestroySession();
+		}*/
 	}
 	
 }
@@ -189,13 +196,30 @@ void ACraftingStarGameMode::RespawnPlayer(ACharacter* NewPlayer)
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerStart::StaticClass(), FoundActors);
 	GEngine->AddOnScreenDebugMessage(-1 , 2.0f , FColor::Red , FString::Printf(TEXT("FoundActor Num :: %d") , FoundActors.Num()));
 
+	
+
 
 	for (int i = 0; i < FoundActors.Num(); i++) {
 		if (closestDist > FVector::Distance(FoundActors[i]->GetActorLocation(), SpawnLoc)) {
 			closestDist = FVector::Distance(FoundActors[i]->GetActorLocation(), SpawnLoc);
-			NearsIdx = i;
-			
+			NearsIdx = i;		
 		}
+
+
+		//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Red , FoundActors[i]->GetName());
+		
+		
+		if ( FoundActors[i]->GetName().Contains(FString("PlayerStart_Origin")) ) {
+			megetonOriginPlayerStart = Cast<APlayerStart>(FoundActors[i]);
+		}
+	}
+
+
+	//origin spawn
+	if ( Cast<ACraftingStarGS>(GetWorld()->GetGameState())->isOpenMegetonDoor == false ) {
+		
+		NewPlayer->SetActorLocation(megetonOriginPlayerStart->GetActorLocation());
+		return;
 	}
 
 	//�÷��̾� ��ġ ����

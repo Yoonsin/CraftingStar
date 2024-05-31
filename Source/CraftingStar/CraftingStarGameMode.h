@@ -6,6 +6,7 @@
 #include "GameFramework/GameMode.h"
 #include "CraftingStarCharacter.h"
 #include "CustomEnum.h"
+#include "GameFramework/PlayerStart.h"
 #include "CraftingStarGameMode.generated.h"
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerDiedSignature, ACharacter*, Character);
 UCLASS()
@@ -22,6 +23,9 @@ public:
 		EMapName NowMapName;
 	UFUNCTION(BlueprintCallable)
 		void InitGame();
+
+	UPROPERTY(VisibleAnywhere , BlueprintReadWrite)
+		class APlayerStart* megetonOriginPlayerStart;
 
 	const FOnPlayerDiedSignature& GetOnPlayerDied() const { return OnPlayerDied; }
 
