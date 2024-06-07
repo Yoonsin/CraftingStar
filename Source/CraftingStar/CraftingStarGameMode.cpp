@@ -4,6 +4,8 @@
 #include "CraftingStarCharacter.h"
 #include "CraftingStarPC.h"
 #include "CraftingStarGS.h"
+#include "CraftingStarPS.h"
+#include "CraftingStarGameInstance.h"
 #include "Misc/OutputDeviceNull.h"
 #include "Kismet/GameplayStatics.h"
 #include "UObject/ConstructorHelpers.h"
@@ -35,53 +37,6 @@ void ACraftingStarGameMode::PostLogin(APlayerController* newPlayer)
 {
 	Super::PostLogin(newPlayer);
 
-	if ( UUtilityFunction::IsHost(newPlayer) ) {
-		//isHost 일 시
-		//서버의 데이터 로드를 요청한다
-		//Cast<ACraftingStarCharacter>(newPlayer->GetPawn())->LoadSaveData();
-		
-		//캐릭터의 로드 함수를 부른다.
-	}
-	else {
-		//isHost가 아닐 시
-		//클라이언트의 데이터 로드를 요청한다
-		//Cast<ACraftingStarCharacter>(newPlayer->GetPawn())->LoadSaveData();
-	}
-
-	//ACraftingStarGS* CraftingStarGS = Cast<ACraftingStarGS>(UGameplayStatics::GetGameState(this));
-	//if (CraftingStarGS != nullptr) {
-	//	if (CraftingStarGS->PlayerArray.Num() >= 2) {
-
-
-
-	//		//3�� ����� �� �ε�(�ٷ� �ε��ϸ� PlayerState�� �������� ���� ���� ����)
-	//		FTimerHandle DelayTimerHandle;
-	//		float DelayTime = 3.0f;
-
-	//		GetWorld()->GetTimerManager().SetTimer(DelayTimerHandle, FTimerDelegate::CreateLambda([&]()
-	//			{
-	//				//�������Ʈ �Լ��� C++�� ȣ���ؾ���
-	//				auto GameInstance = UGameplayStatics::GetGameInstance(GetWorld());
-	//				UFunction* Function = GameInstance->GetClass()->FindFunctionByName(FName("Load"));
-
-
-	//				if (Function == nullptr)
-	//				{
-	//					return;
-	//				}
-
-	//				struct FLocalParameters{};
-	//				FLocalParameters Parameter;
-
-	//				GameInstance->ProcessEvent(Function,&Parameter);
-
-
-	//				// TimerHandle �ʱ�ȭ
-	//				GetWorld()->GetTimerManager().ClearTimer(DelayTimerHandle);
-	//			}), DelayTime, false);
-	//		
-	//	}
-	//}
 }
 
 void  ACraftingStarGameMode::InitGame()
@@ -126,31 +81,9 @@ void  ACraftingStarGameMode::Logout(AController* Exiting)
 	//���� ����� ���� �������� Ȯ��
 	if (UUtilityFunction::IsHost(Exiting)) {
 		GEngine->AddOnScreenDebugMessage(-1 , 3 , FColor::Red , FString::Printf(TEXT("Host Logout")));
-
-		//UGameplayStatics::OpenLevel(GetWorld(), FName("text"),true);
-		 
 	}
 	else {
 		GEngine->AddOnScreenDebugMessage(-1 , 3 , FColor::Red , FString::Printf(TEXT("Guest Logout")));
-
-		//ACharacter* hostCharacter  = UGameplayStatics::GetPlayerCharacter(GetWorld() , 0);
-		//if ( hostCharacter == nullptr ) return;
-		//
-
-		//ACraftingStarCharacter* host = Cast<ACraftingStarCharacter>(hostCharacter);
-		//if ( host == nullptr ) return;
-
-		//
-		////host->WorldMap();
-		//host->LogoutClient();
-
-		//UGameplayStatics::OpenLevel(GetWorld() , FName("text") , true);
-		
-		/*
-		if ( Online::GetSessionInterface(GetWorld()).IsValid() ) {
-			
-			Online::GetSessionInterface(GetWorld())->DestroySession();
-		}*/
 	}
 	
 }
@@ -167,6 +100,80 @@ void ACraftingStarGameMode::BeginPlay()
 	}
 }
 
+void ACraftingStarGameMode::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	if ( StartFlag ) {
+		if ( LoadFlag == true ) {
+
+			ACraftingStarCharacter* serverCharacter = Cast<ACraftingStarCharacter>(UGameplayStatics::GetPlayerCharacter(this , 0));
+			if ( serverCharacter == nullptr ) return;
+			UCraftingStarGameInstance* gameInstance = Cast<UCraftingStarGameInstance>(GetGameInstance());
+			if ( gameInstance == nullptr ) return;
+
+
+			serverCharacter->PlayerOutfit(gameInstance->nowSaveGame->HostData , gameInstance->nowSaveGame->GuestData);
+			serverCharacter->PlayerUIInit();
+			LoadFlag = false;
+		}
+		
+	}
+	else {
+		
+		ACraftingStarGS* gameState = Cast<ACraftingStarGS>(UGameplayStatics::GetGameState(this));
+		if ( gameState == nullptr ) return;
+
+		if ( gameState->isHostInit && gameState->isGuestInit ) {
+
+
+			StartFlag = true;
+			gameState->isStartFlag = true;
+			
+			//플레이어 데이터 로드
+
+		
+			
+
+			//플레이어 모드에 맞는 메쉬와 UI 적용
+			//for ( auto& playerPS : gameState->PlayerArray ) {
+			//	ACraftingStarPS* playerState = Cast<ACraftingStarPS>(playerPS);
+			//	if ( playerState == nullptr ) {
+			//		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("playerState is nullptr"));
+			//		continue;
+			//	}
+
+			//	if ( UUtilityFunction::IsHost(Cast<APlayerController>(playerPS->GetOwner())) ) {	
+			//		playerState->PlayerData = gameInstance->nowSaveGame->HostData;
+			//	}
+			//	else {
+			//		playerState->PlayerData = gameInstance->nowSaveGame->GuestData;
+			//	}
+			//}
+
+
+			
+			GetWorld()->GetTimerManager().SetTimer(myTimerHandle , FTimerDelegate::CreateLambda([ & ] ()
+			{
+					LoadFlag = true;
+
+					GetWorld()->GetTimerManager().ClearTimer(myTimerHandle);
+			}) , 10.0f , false); // 반복 실행을 하고 싶으면 false 대신 true 대입
+			
+			
+
+			//월드 내용 적용
+			//worldStateLoad()
+		
+		}
+
+		
+		
+		// 타이머 초기화
+
+	}
+}
+
+
 void ACraftingStarGameMode::RestartPlayer(AController* NewPlayer) {
 	Super::RestartPlayer(NewPlayer);
 
@@ -181,8 +188,14 @@ void ACraftingStarGameMode::RestartPlayer(AController* NewPlayer) {
 	//GetWorld()->GetFirstPlayerController()->Possess(Player_Character);
 }
 
+void ACraftingStarGameMode::PlayerDied(ACharacter* Character)
+{
+	//ĳ������ �÷��̾� ��Ʈ�ѷ��� ���� ���۷��� ���ϱ�
+	AController* CharacterController = Character->GetController();
+	RestartPlayer(CharacterController);
 
 
+}
 
 void ACraftingStarGameMode::RespawnPlayer(ACharacter* NewPlayer)
 {
@@ -229,11 +242,3 @@ void ACraftingStarGameMode::RespawnPlayer(ACharacter* NewPlayer)
 
 
 
-void ACraftingStarGameMode::PlayerDied(ACharacter* Character)
-{
-	//ĳ������ �÷��̾� ��Ʈ�ѷ��� ���� ���۷��� ���ϱ�
-	AController* CharacterController = Character->GetController();
-	RestartPlayer(CharacterController);
-
-
-}

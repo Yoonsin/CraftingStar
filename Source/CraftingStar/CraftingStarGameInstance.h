@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AdvancedFriendsGameInstance.h"
+#include "CraftingStarSaveGame.h"
 #include "CraftingStarGameInstance.generated.h"
 
 /**
@@ -13,5 +14,52 @@ UCLASS()
 class CRAFTINGSTAR_API UCraftingStarGameInstance : public UAdvancedFriendsGameInstance
 {
 	GENERATED_BODY()
+
 	
+	
+public:
+
+	
+	UCraftingStarGameInstance(const FObjectInitializer& ObjectInitializer);
+	
+	UPROPERTY(EditAnywhere , BlueprintReadWrite)
+	class UCraftingStarSaveGame* nowSaveGame;
+	UPROPERTY(EditAnywhere , BlueprintReadWrite)
+	class UCraftingStarSaveGame* debugSaveGame;
+
+	UPROPERTY(EditAnywhere , BlueprintReadWrite)
+	TArray<class UCraftingStarSaveGame*> SaveGames;
+	
+	UPROPERTY(EditAnywhere , BlueprintReadWrite)
+	int NowSaveIdx;
+
+	UPROPERTY(EditAnywhere , BlueprintReadWrite)
+	TMap<EMapName , FSpawnTransform> MapSpawnDict;
+	
+	UFUNCTION(BlueprintCallable)
+	bool SetDebugFile();
+
+	UFUNCTION(BlueprintCallable)
+	bool SetNowFile(int targetIdx);
+
+	UFUNCTION(BlueprintCallable)
+	bool SaveFile(int targetIdx);
+
+	UFUNCTION(BlueprintCallable)
+	bool CreateFile(int targetIdx, EPlayerRole ServerMode, EPlayerRole GuestMode);
+
+	UFUNCTION(BlueprintCallable)
+	bool CheckFile(int targetIdx);
+
+	UFUNCTION(BlueprintCallable)
+	bool DeleteFile(int targetIdx);
+
+	UFUNCTION(BlueprintCallable)
+	bool StartServer(int numPublicConnections , bool isLanMatch);
+
+	UFUNCTION(BlueprintCallable)
+	bool JoinSession();
+
+	//( FOnSessionUserInviteAccepted , const bool , const int32 , FUniqueNetIdPtr , const FOnlineSessionSearchResult& );
+	void OnSessionInviteAccepted(const bool bWasSuccessful , const int32 ControllerId , FUniqueNetIdPtr UserId , const FOnlineSessionSearchResult& InviteResult);
 };

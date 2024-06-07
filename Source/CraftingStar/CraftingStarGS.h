@@ -33,5 +33,10 @@ public:
 
 	UPROPERTY(BlueprintReadWrite , meta = ( AllowPrivateAccess = "true" ))
 		bool isOpenMegetonDoor = false;
+
+
+	bool isHostInit = false;
+	bool isGuestInit = false;
+
 	
 };

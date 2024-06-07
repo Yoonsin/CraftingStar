@@ -29,14 +29,19 @@ public:
 
 	const FOnPlayerDiedSignature& GetOnPlayerDied() const { return OnPlayerDied; }
 
-	//�÷��̾��� ���� ���� �õ�.
 	void RespawnPlayer(ACharacter* NewPlayer);
 
 	virtual void RestartPlayer(AController* NewPlayer) override;
 
+	bool StartFlag = false;
+	bool LoadFlag = false;
+	FTimerHandle myTimerHandle;
 
 protected:
 	virtual void BeginPlay() override;
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+
 
 	//�÷��̾� ĳ���Ͱ� ������ ȣ��.
 	UFUNCTION()
@@ -49,6 +54,7 @@ protected:
 private:
 	virtual void PostLogin(APlayerController* newPlayer) override;
 	virtual void Logout(AController* Exiting) override;
+
 
 	TSubclassOf<ACraftingStarCharacter> CharClass;
 
