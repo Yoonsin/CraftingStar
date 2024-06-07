@@ -566,7 +566,7 @@ void ACraftingStarCharacter::Telekinesis() {
 	// Start point and End point of LineTrace
 	FVector Start = SpawnLocation;
 	//FVector End = SpawnLocation + ( FollowCamera->GetForwardVector() * 750 );
-	FVector End = SpawnLocation + ( SpawnLocSource->GetUpVector() * 750 );
+	FVector End = SpawnLocation + ( SpawnLocSource->GetUpVector() * teleDistance );
 
 	// Trace Channel: Custom Trace Channel - AbilitySpawn
 	ECollisionChannel Channel = ECollisionChannel::ECC_GameTraceChannel1;
@@ -578,19 +578,23 @@ void ACraftingStarCharacter::Telekinesis() {
 	GetWorld()->LineTraceSingleByChannel(Hit , Start , End , Channel , QueryParams);
 
 	// Visualize LineTrace
-	//DrawDebugLine(GetWorld() , Start , End , FColor::Green);
+	DrawDebugLine(GetWorld() , Start , End , FColor::Green);
 
 	// Draw Laser
 	//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("x : %f  y : %f  z : %f ") , End.X , End.Y , End.Z));
-	Comp_LaserNiagara->SetLaser(Hit , End);
+	//Comp_LaserNiagara->SetLaser(Hit , End);
 
 	if ( Hit.bBlockingHit ) {
 		if ( selectedTarget == NULL ) {
+			teleDistance = Hit.Distance;
 			// Grab selectedTarget Component
 			switch ( HasAuthority() ) {
 			case true:
 				selectedTarget = Hit.GetComponent();
-				PhysicsHandle->GrabComponent(selectedTarget , NAME_None , End , true);
+
+				//PhysicsHandle->GrabComponent(selectedTarget , NAME_None , End , true);
+				PhysicsHandle->GrabComponentAtLocationWithRotation(selectedTarget , NAME_None , Hit.Component->GetRelativeLocation(), FRotator(0, 0, 0));
+
 				if ( selectedTarget ) {
 					// Check is the simulate physics true
 					if ( !selectedTarget->IsSimulatingPhysics() ) {
@@ -798,6 +802,7 @@ void ACraftingStarCharacter::ActivateAbility() {
 	else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
 		//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Tele"));
 		if ( !abilityReadyStatus ) {
+			teleDistance = 750;
 			abilityReadyStatus = true;
 
 			CameraBoom->SetRelativeLocation(FVector(0.0f , 100.0f , 100.0f));
@@ -970,6 +975,8 @@ void ACraftingStarCharacter::MouseLeftReleased() {
 					// Play Animation
 					GetMesh()->GetAnimInstance()->Montage_IsPlaying(DeactiveAbilityMontage);
 				}
+
+				teleDistance = 750;
 
 				switch ( HasAuthority() ) {
 				case true:

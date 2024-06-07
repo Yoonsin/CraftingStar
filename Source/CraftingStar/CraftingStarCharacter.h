@@ -72,6 +72,8 @@ class ACraftingStarCharacter : public ACharacter
 	// Telekinesis
 	UPrimitiveComponent* selectedTarget;
 
+	float teleDistance = 750.0f;
+
 	void Telekinesis();
 	void CreateTeleObjOutline();
 	void RemoveTeleObjOutline();
