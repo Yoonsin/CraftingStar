@@ -28,7 +28,7 @@ void UCraftingStarSubsystem::CreateSession(int numPublicConnections , bool isLan
 	LastSessionSettings->bAllowInvites = true;
 	LastSessionSettings->bAllowJoinInProgress = true;
 	LastSessionSettings->bAllowJoinViaPresence = true;
-	LastSessionSettings->bAllowJoinViaPresenceFriendsOnly = true;
+	LastSessionSettings->bAllowJoinViaPresenceFriendsOnly = false;
 	LastSessionSettings->bIsDedicated = false;
 	LastSessionSettings->bUsesPresence = true;
 	LastSessionSettings->bIsLANMatch = isLanMatch;
@@ -44,6 +44,9 @@ void UCraftingStarSubsystem::CreateSession(int numPublicConnections , bool isLan
 		sessionInterface->ClearOnCreateSessionCompleteDelegate_Handle(CreateSessionCompleteDelegateHandle);
 
 		OnCreateSessionCompleteEvent.Broadcast(false);
+	}
+	else {
+		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Create Server"));
 	}
 }
 
