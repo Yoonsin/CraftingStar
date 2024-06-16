@@ -1,6 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
+#include "CraftingStarGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "Interfaces/OnlineSessionInterface.h"
 #include "CraftingStarGS.h"
@@ -8,7 +8,7 @@
 #include "CraftingStarPS.h"
 #include "CraftingStarPC.h"
 #include "CraftingStarSubsystem.h"
-#include "CraftingStarGameInstance.h"
+
 
 UCraftingStarGameInstance::UCraftingStarGameInstance(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {

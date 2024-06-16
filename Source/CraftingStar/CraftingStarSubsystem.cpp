@@ -1,8 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+#include "CraftingStarSubsystem.h"
 #include "OnlineSubsystemUtils.h"
 #include "Kismet/GameplayStatics.h"
-#include "CraftingStarSubsystem.h"
+
 
 UCraftingStarSubsystem::UCraftingStarSubsystem() 
 	: CreateSessionCompleteDelegate(FOnCreateSessionCompleteDelegate::CreateUObject(this,&ThisClass::OnCreateSessionCompleted)),
@@ -32,9 +33,12 @@ void UCraftingStarSubsystem::CreateSession(int numPublicConnections , bool isLan
 	LastSessionSettings->bIsDedicated = false;
 	LastSessionSettings->bUsesPresence = true;
 	LastSessionSettings->bIsLANMatch = isLanMatch;
+	LastSessionSettings->bIsDedicated = false;
 	LastSessionSettings->bShouldAdvertise = true;
+	LastSessionSettings->bUseLobbiesIfAvailable = true;
 
-	LastSessionSettings->Set(SETTING_MAPNAME , FString("L_MatchingMenu") , EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
+	//LastSessionSettings->Set(SETTING_MAPNAME , FString("L_MatchingMenu") , EOnlineDataAdvertisementType::ViaOnlineService);
+
 
 	CreateSessionCompleteDelegateHandle = sessionInterface->AddOnCreateSessionCompleteDelegate_Handle(CreateSessionCompleteDelegate);
 
@@ -57,7 +61,8 @@ void UCraftingStarSubsystem::OnCreateSessionCompleted(FName SessionName , bool S
 		sessionInterface->ClearOnCreateSessionCompleteDelegate_Handle(CreateSessionCompleteDelegateHandle);
 	}
 
-	UGameplayStatics::OpenLevel(GetWorld() , FName("/Game/Maps/L_MatchingMenu") , true , ( (FString)( L"Listen" ) ));
+	FString levelName = L"/Game/Maps/L_MatchingMenu";
+	UGameplayStatics::OpenLevel(GetWorld() , *levelName , true , ( (FString)( L"Listen" ) ));
 	OnCreateSessionCompleteEvent.Broadcast(Successful);
 }
 
