@@ -35,6 +35,9 @@ public:
 
 	UPROPERTY(EditAnywhere , BlueprintReadWrite)
 	TMap<EMapName , FSpawnTransform> MapSpawnDict;
+
+	UPROPERTY(EditAnywhere , BlueprintReadWrite)
+	bool isDebug = false;
 	
 	UFUNCTION(BlueprintCallable)
 	bool SetDebugFile();

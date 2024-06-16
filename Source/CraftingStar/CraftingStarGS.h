@@ -35,6 +35,16 @@ public:
 		bool isOpenMegetonDoor = false;
 
 
+	UPROPERTY(Replicated , BlueprintReadWrite , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+		bool isHostInInteractionRange = false;
+	UPROPERTY(Replicated , BlueprintReadWrite , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+		bool isGuestInInteractionRange = false;
+
+
+
+	UFUNCTION(BlueprintCallable)
+	void InteractChange(bool isHost,bool isInteraction);
+
 	bool isHostInit = false;
 	bool isGuestInit = false;
 

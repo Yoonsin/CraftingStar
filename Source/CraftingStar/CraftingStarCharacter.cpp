@@ -8,6 +8,7 @@
 #include "CraftingStarGameInstance.h"
 #include "CustomEnum.h"
 #include "UtilityFunction.h"
+#include "Components/WidgetComponent.h"
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -237,6 +238,9 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 	Comp_LaserNiagara->SetIsReplicated(true);
 
 	
+	interactTag = CreateDefaultSubobject<UWidgetComponent>(TEXT("InteractTag Source"));
+	interactTag->SetupAttachment(GetMesh() , FName(TEXT("InteractTag")));
+	
 
 	// Sounds
 	audioComp = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComponent"));
@@ -292,6 +296,7 @@ void ACraftingStarCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	SetPause(false);
+	interactTag->SetVisibility(false);
 
 	if ( HasAuthority() ) {
 		if ( LoadingWidgetRef == nullptr   && Cast<ACraftingStarGS>(GetWorld()->GetGameState())->isStartFlag == false)
@@ -956,6 +961,8 @@ void ACraftingStarCharacter::DeactivateAbility() {
 			// Play Animation
 			GetMesh()->GetAnimInstance()->Montage_IsPlaying(DeactiveAbilityMontage);
 		}
+
+	
 	}
 	else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
 		// blank
@@ -1012,6 +1019,7 @@ void ACraftingStarCharacter::MouseLeftPressed() {
 }
 
 void ACraftingStarCharacter::MouseLeftReleased() {
+
 	if ( nowAbility != EPlayerAbility::ENone ) {
 		if ( nowAbility == EPlayerAbility::ETelekinesis && KeepAbility ) {
 			CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
@@ -1343,7 +1351,9 @@ void ACraftingStarCharacter::LoadSaveData(bool isHost)
 
 	
 	if ( gameInstance->nowSaveGame == nullptr && isHost) {
+		//디버그 모드 표시
 		gameInstance->SetDebugFile();
+		gameInstance->isDebug = true;
 	}
 	
 	ACraftingStarGS* gameState = Cast<ACraftingStarGS>(GetWorld()->GetGameState());
@@ -1480,6 +1490,52 @@ void ACraftingStarCharacter::PlayerUIInit_Implementation()
 	SetPause(false);
 }
 
+void ACraftingStarCharacter::SetInteractionFlag_Implementation(bool isHost , bool isInteraction) {
+	ACraftingStarCharacter* targetPlayer = this;
+	ACraftingStarGS* gameState = Cast<ACraftingStarGS>(GetWorld()->GetGameState());
+	if ( gameState == nullptr ) return;
+
+	if ( UUtilityFunction::IsHost(GetController())) {
+		//호스트
+		
+		for ( APlayerState* playerState : gameState->PlayerArray ) {
+			AController* controller = Cast<AController>(playerState->GetOwner());
+			if ( controller == nullptr ) return;
+			
+			if ( UUtilityFunction::IsHost(controller) && isHost ) {
+				//호스트 쪽의 호스트 캐릭터
+				targetPlayer = Cast<ACraftingStarCharacter>(playerState->GetPawn());
+				break;
+			}
+			else if(!UUtilityFunction::IsHost(controller) && !isHost ) {
+				//호스트 쪽의 게스트 캐릭터
+				targetPlayer = Cast<ACraftingStarCharacter>(playerState->GetPawn());
+				break;
+			}
+
+		}
+	}
+	else {
+		//게스트
+		for ( APlayerState* playerState : gameState->PlayerArray ) {
+			AController* controller = Cast<AController>(playerState->GetOwner());
+			
+			if ( controller == nullptr && isHost ) {
+				//게스트 쪽의 호스트 캐릭터
+				targetPlayer = Cast<ACraftingStarCharacter>(playerState->GetPawn());
+				break;
+			}
+			else if ( controller != nullptr && !isHost ) {
+				//게스트 쪽의 게스트 캐릭터
+				targetPlayer = Cast<ACraftingStarCharacter>(playerState->GetPawn());
+				break;
+			}
+		}
+	}
+	
+	if ( targetPlayer == nullptr ) return;
+	targetPlayer->interactTag->SetVisibility(isInteraction);
+}
 
 void ACraftingStarCharacter::ServerObtainAbility_Implementation(EPlayerAbility ability) {
 	//GetGameState()->

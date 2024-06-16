@@ -153,6 +153,8 @@ public:
 
 	UPROPERTY(EditAnywhere , BlueprintReadOnly)
 		class UUserWidget* GameWidgetRef;
+	UPROPERTY(EditAnywhere , BlueprintReadOnly)
+		class UWidgetComponent* interactTag;
 	
 
 protected:
@@ -234,7 +236,7 @@ protected:
 	// Anim Replicate
 	UFUNCTION(Server, Reliable, WithValidation, Category = "Ability")
 	void ServerAbility(bool abilityState);
-	UFUNCTION(NetMulticast, Unreliable, Category = "Ability")
+	UFUNCTION(NetMulticast, Reliable, Category = "Ability")
 	void MulticastAbility(bool abilityState);
 
 	//Ability Projection 능력 "투영"
@@ -261,7 +263,9 @@ public:
 
 	
 
-
+	UFUNCTION(NetMulticast , Reliable)
+	void SetInteractionFlag(bool isHost , bool isInteraction);
+	
 	//�Է� �Ͻ�����
 	UFUNCTION(BlueprintCallable)
 	void SetPause(bool isPaused);
