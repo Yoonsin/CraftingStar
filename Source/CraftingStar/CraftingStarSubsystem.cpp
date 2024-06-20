@@ -199,5 +199,8 @@ void UCraftingStarSubsystem::OnSessionUserInviteAccepted(const bool bWasSuccessf
 			JoinSession(InviteResult);
 		}
 	}
+	else {
+		GEngine->AddOnScreenDebugMessage(-1 , 3 , FColor::Red , FString::Printf(TEXT("Session Invite Accepted fail")));
+	}
 	
 }
