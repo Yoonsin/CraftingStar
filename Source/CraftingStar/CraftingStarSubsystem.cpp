@@ -9,7 +9,8 @@ UCraftingStarSubsystem::UCraftingStarSubsystem()
 	: CreateSessionCompleteDelegate(FOnCreateSessionCompleteDelegate::CreateUObject(this,&ThisClass::OnCreateSessionCompleted)),
 	UpdateSessionCompleteDelegate(FOnUpdateSessionCompleteDelegate::CreateUObject(this, &ThisClass::OnUpdateSessionCompleted)),
 	DestroySessionCompleteDelegate(FOnDestroySessionCompleteDelegate::CreateUObject(this , &ThisClass::OnDestroySessionCompleted)),
-	JoinSessionCompleteDelegate(FOnJoinSessionCompleteDelegate::CreateUObject(this , &ThisClass::OnJoinSessionCompleted))
+	JoinSessionCompleteDelegate(FOnJoinSessionCompleteDelegate::CreateUObject(this , &ThisClass::OnJoinSessionCompleted)),
+	InviteAcceptedDelegate(FOnSessionUserInviteAcceptedDelegate::CreateUObject(this, &ThisClass::OnSessionUserInviteAccepted))
 {
 
 }
@@ -180,4 +181,10 @@ bool  UCraftingStarSubsystem::TryTravelToCurrentSession()
 	APlayerController* playerController = GetWorld()->GetFirstPlayerController();
 	playerController->ClientTravel(connectString , TRAVEL_Absolute);
 	return true;
+}
+
+void UCraftingStarSubsystem::OnSessionUserInviteAccepted(const bool bWasSuccessful , const int32 ControllerId , FUniqueNetIdPtr  UserId , const FOnlineSessionSearchResult& InviteResult) {
+
+	GEngine->AddOnScreenDebugMessage(-1 , 3 , FColor::Red , FString::Printf(TEXT("Session Invite Accepted")));
+	JoinSession(InviteResult);
 }

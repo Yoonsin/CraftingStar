@@ -170,6 +170,8 @@ bool UCraftingStarGameInstance::JoinSession()
 
 void UCraftingStarGameInstance::OnSessionInviteAccepted(const bool bWasSuccessful , const int32 ControllerId , FUniqueNetIdPtr UserId , const FOnlineSessionSearchResult& InviteResult) {
 
+	GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("InvitedAccepted"));
+
 	UCraftingStarSubsystem* subSystem = GetSubsystem<UCraftingStarSubsystem>();
 	if ( subSystem == nullptr ) return;
 
