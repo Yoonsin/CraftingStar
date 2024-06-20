@@ -146,10 +146,16 @@ void UCraftingStarSubsystem::JoinSession(const FOnlineSessionSearchResult& Sessi
 	const ULocalPlayer* localPlayer = GetWorld()->GetFirstLocalPlayerFromController();
 	if ( !sessionInterface->JoinSession(*localPlayer->GetPreferredUniqueNetId() , NAME_GameSession , SessionResult) )
 	{
+		GEngine->AddOnScreenDebugMessage(-1 , 3 , FColor::Red , FString::Printf(TEXT("JoinSession Fail")));
 		sessionInterface->ClearOnJoinSessionCompleteDelegate_Handle(JoinSessionCompleteDelegateHandle);
 
 		OnJoinGameSessionCompleteEvent.Broadcast(EOnJoinSessionCompleteResult::UnknownError);
 	}
+	else {
+		GEngine->AddOnScreenDebugMessage(-1 , 3 , FColor::Red , FString::Printf(TEXT("JoinSession Success")));
+	}
+
+	
 
 }
 
