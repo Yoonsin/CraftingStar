@@ -630,14 +630,16 @@ void ACraftingStarCharacter::Telekinesis() {
 					
 					//PhysicsHandle->SetTargetLocation(End);
 					teleComponentDistance = ( End - selectedTarget->GetComponentLocation() ).Size();
-					if ( teleComponentDistance <= 10 ) {
-						teleForce = teleComponentDistance;
+					if ( teleComponentDistance <= 50 ) {
+						teleForce = 0;
+						GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("selected object distance: %f") , teleForce));
 					}
 					else {
 						teleForce = 5000.0f;
 					}
-					selectedTarget->MoveComponent(UKismetMathLibrary::GetDirectionUnitVector(selectedTarget->GetComponentLocation() , End) * teleForce);
-					//selectedTarget->AddForce(UKismetMathLibrary::GetDirectionUnitVector(selectedTarget->GetComponentLocation(), End) * teleForce * selectedTarget->GetMass());
+					
+					//selectedTarget->MoveComponent(UKismetMathLibrary::GetDirectionUnitVector(selectedTarget->GetComponentLocation() , End) * teleForce);
+					selectedTarget->AddForce(UKismetMathLibrary::GetDirectionUnitVector(selectedTarget->GetComponentLocation() , End) * teleForce * selectedTarget->GetMass());
 					break;
 				case false:
 					ServerTeleObjLoc(End);
