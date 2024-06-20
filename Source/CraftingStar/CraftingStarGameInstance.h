@@ -60,9 +60,13 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool StartServer(int numPublicConnections , bool isLanMatch);
 
-	UFUNCTION(BlueprintCallable)
-	bool JoinSession();
+
+	bool JoinSession(FOnlineSessionSearchResult InviteResult);
 
 	//( FOnSessionUserInviteAccepted , const bool , const int32 , FUniqueNetIdPtr , const FOnlineSessionSearchResult& );
 	void OnSessionInviteAccepted(const bool bWasSuccessful , const int32 ControllerId , FUniqueNetIdPtr UserId , const FOnlineSessionSearchResult& InviteResult);
+
+	UFUNCTION(BlueprintCallable)
+	void ChangeSessionResultBlueprint(FBlueprintSessionResult SearchResult);
+
 };

@@ -25,7 +25,7 @@ UCraftingStarGameInstance::UCraftingStarGameInstance(const FObjectInitializer& O
 	MapSpawnDict.Add(EMapName::EKeyStar , KeyStarTransform);
 
 	//SessionInviteAcceptedDelegate(FOnSessionUserInviteAcceptedDelegate::CreateUObject(this , &ThisClass::OnSessionInviteAccepted)
-	SessionInviteAcceptedDelegate.BindUObject(this,&ThisClass::OnSessionInviteAccepted);
+	//SessionInviteAcceptedDelegate.BindUObject(this,&ThisClass::OnSessionInviteAccepted);
 
 	
 }
@@ -159,12 +159,12 @@ bool UCraftingStarGameInstance::StartServer(int numPublicConnections , bool isLa
 	return true;
 }
 
-bool UCraftingStarGameInstance::JoinSession()
+bool UCraftingStarGameInstance::JoinSession(FOnlineSessionSearchResult result)
 {
 	UCraftingStarSubsystem* subSystem = GetSubsystem<UCraftingStarSubsystem>();
 	if ( subSystem == nullptr ) return false;
 
-	//subSystem->JoinSession();
+	subSystem->JoinSession(result);
 	return true;
 }
 
@@ -178,7 +178,7 @@ void UCraftingStarGameInstance::OnSessionInviteAccepted(const bool bWasSuccessfu
 
 			UCraftingStarSubsystem* subSystem = GetSubsystem<UCraftingStarSubsystem>();
 			if ( subSystem == nullptr ) return;
-
+			
 			subSystem->JoinSession(InviteResult);
 		}
 	}
@@ -190,3 +190,9 @@ void UCraftingStarGameInstance::OnSessionInviteAccepted(const bool bWasSuccessfu
 	
 }
 
+void UCraftingStarGameInstance::ChangeSessionResultBlueprint(FBlueprintSessionResult SearchResult) {
+	FOnlineSessionSearchResult result;
+
+	result = SearchResult.OnlineResult;
+	JoinSession(result);
+}

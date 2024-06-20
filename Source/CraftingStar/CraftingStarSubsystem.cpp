@@ -144,7 +144,10 @@ void UCraftingStarSubsystem::JoinSession(const FOnlineSessionSearchResult& Sessi
 	JoinSessionCompleteDelegateHandle = sessionInterface->AddOnJoinSessionCompleteDelegate_Handle(JoinSessionCompleteDelegate);
 
 	const ULocalPlayer* localPlayer = GetWorld()->GetFirstLocalPlayerFromController();
-	if ( !sessionInterface->JoinSession(*localPlayer->GetPreferredUniqueNetId() , NAME_GameSession , SessionResult) )
+	//sessionInterface->JoinSession
+	//!sessionInterface->JoinSession(*localPlayer->GetPreferredUniqueNetId() , NAME_GameSession , SessionResult) 
+	
+	if ( !sessionInterface->JoinSession(*localPlayer->GetPreferredUniqueNetId() , NAME_GameSession , SessionResult))
 	{
 		GEngine->AddOnScreenDebugMessage(-1 , 3 , FColor::Red , FString::Printf(TEXT("JoinSession Fail")));
 		sessionInterface->ClearOnJoinSessionCompleteDelegate_Handle(JoinSessionCompleteDelegateHandle);
