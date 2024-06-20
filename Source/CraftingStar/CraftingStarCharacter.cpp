@@ -566,7 +566,7 @@ void ACraftingStarCharacter::Telekinesis() {
 	// Start point and End point of LineTrace
 	FVector Start = SpawnLocation;
 	//FVector End = SpawnLocation + ( FollowCamera->GetForwardVector() * 750 );
-	FVector End = SpawnLocation + ( SpawnLocSource->GetUpVector() * teleDistance );
+	FVector End = SpawnLocation + ( SpawnLocSource->GetUpVector() * teleLaserDistance );
 
 	// Trace Channel: Custom Trace Channel - AbilitySpawn
 	ECollisionChannel Channel = ECollisionChannel::ECC_GameTraceChannel1;
@@ -586,14 +586,16 @@ void ACraftingStarCharacter::Telekinesis() {
 
 	if ( Hit.bBlockingHit ) {
 		if ( selectedTarget == NULL ) {
-			teleDistance = Hit.Distance;
+			teleLaserDistance = Hit.Distance;
+			teleComponentDistance = Hit.Distance;
+			teleForce = 5000.0f;
 			// Grab selectedTarget Component
 			switch ( HasAuthority() ) {
 			case true:
 				selectedTarget = Hit.GetComponent();
 
 				//PhysicsHandle->GrabComponent(selectedTarget , NAME_None , End , true);
-				PhysicsHandle->GrabComponentAtLocationWithRotation(selectedTarget , NAME_None , Hit.Component->GetRelativeLocation(), FRotator(0, 0, 0));
+				//PhysicsHandle->GrabComponentAtLocationWithRotation(selectedTarget , NAME_None , Hit.Component->GetRelativeLocation(), FRotator(0, 0, 0));
 
 				if ( selectedTarget ) {
 					// Check is the simulate physics true
@@ -621,7 +623,21 @@ void ACraftingStarCharacter::Telekinesis() {
 			// Move selectedTarget Component
 				switch ( HasAuthority() ) {
 				case true:
-					PhysicsHandle->SetTargetLocation(End);
+					//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("teleObj RPC")));
+					//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("x : %f  y : %f  z : %f ") , End.X , End.Y , End.Z));
+					//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("x : %f  y : %f  z : %f ") , UKismetMathLibrary::GetDirectionUnitVector(selectedTarget->GetComponentLocation() , End).X , UKismetMathLibrary::GetDirectionUnitVector(selectedTarget->GetComponentLocation() , End).Y , UKismetMathLibrary::GetDirectionUnitVector(selectedTarget->GetComponentLocation() , End).Z));
+					//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("x : %f  y : %f  z : %f ") , selectedTarget->GetComponentLocation().X , selectedTarget->GetComponentLocation().Y , selectedTarget->GetComponentLocation().Z));
+					
+					//PhysicsHandle->SetTargetLocation(End);
+					teleComponentDistance = ( End - selectedTarget->GetComponentLocation() ).Size();
+					if ( teleComponentDistance <= 10 ) {
+						teleForce = teleComponentDistance;
+					}
+					else {
+						teleForce = 5000.0f;
+					}
+					selectedTarget->MoveComponent(UKismetMathLibrary::GetDirectionUnitVector(selectedTarget->GetComponentLocation() , End) * teleForce);
+					//selectedTarget->AddForce(UKismetMathLibrary::GetDirectionUnitVector(selectedTarget->GetComponentLocation(), End) * teleForce * selectedTarget->GetMass());
 					break;
 				case false:
 					ServerTeleObjLoc(End);
@@ -667,7 +683,7 @@ void ACraftingStarCharacter::ServerGrabComponent_Implementation(FVector End) {
 	MulticastGrabComponent(End);
 }
 void ACraftingStarCharacter::MulticastGrabComponent_Implementation(FVector End) {
-	PhysicsHandle->GrabComponent(selectedTarget , NAME_None , End , true);
+	//PhysicsHandle->GrabComponentAtLocationWithRotation(selectedTarget , NAME_None , Hit.Component->GetRelativeLocation(), FRotator(0, 0, 0));
 	GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Grab Component"));
 
 	if ( selectedTarget ) {
@@ -693,7 +709,8 @@ void ACraftingStarCharacter::MulticastTeleObjLoc_Implementation(FVector End) {
 	//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("teleObj RPC")));
 	//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("x : %f  y : %f  z : %f ") , End.X , End.Y , End.Z));
 	
-	PhysicsHandle->SetTargetLocation(End);
+	//PhysicsHandle->SetTargetLocation(End);
+	selectedTarget->AddForce(UKismetMathLibrary::GetDirectionUnitVector(selectedTarget->GetComponentLocation(), End) * teleForce * selectedTarget->GetMass());
 }
 
 // Ability Animaition Replicate
@@ -802,7 +819,10 @@ void ACraftingStarCharacter::ActivateAbility() {
 	else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
 		//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Tele"));
 		if ( !abilityReadyStatus ) {
-			teleDistance = 750;
+			teleLaserDistance = 750;
+			teleComponentDistance = 0;
+			teleForce = 5000.0f;
+
 			abilityReadyStatus = true;
 
 			CameraBoom->SetRelativeLocation(FVector(0.0f , 100.0f , 100.0f));
@@ -948,7 +968,7 @@ void ACraftingStarCharacter::MouseLeftReleased() {
 						GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("here"));
 						switch ( HasAuthority() ) {
 						case true :
-							PhysicsHandle->ReleaseComponent();
+							//PhysicsHandle->ReleaseComponent();
 							if ( Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner()) )
 							{
 								selectedTarget->SetSimulatePhysics(false);
@@ -976,7 +996,9 @@ void ACraftingStarCharacter::MouseLeftReleased() {
 					GetMesh()->GetAnimInstance()->Montage_IsPlaying(DeactiveAbilityMontage);
 				}
 
-				teleDistance = 750;
+				teleLaserDistance = 750;
+				teleComponentDistance = 0;
+				teleForce = 5000.0f;
 
 				switch ( HasAuthority() ) {
 				case true:
@@ -999,7 +1021,7 @@ void ACraftingStarCharacter::ServerReleaseComponent_Implementation() {
 	MulticastReleaseComponent();
 }
 void ACraftingStarCharacter::MulticastReleaseComponent_Implementation() {
-	PhysicsHandle->ReleaseComponent();
+	//PhysicsHandle->ReleaseComponent();
 
 	// Set Simulate Physics to false
 	if ( selectedTarget ) {
