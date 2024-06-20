@@ -25,7 +25,7 @@ UCraftingStarGameInstance::UCraftingStarGameInstance(const FObjectInitializer& O
 	MapSpawnDict.Add(EMapName::EKeyStar , KeyStarTransform);
 
 	//SessionInviteAcceptedDelegate(FOnSessionUserInviteAcceptedDelegate::CreateUObject(this , &ThisClass::OnSessionInviteAccepted)
-	SessionInviteAcceptedDelegate.BindUObject(this,&ThisClass::OnSessionInviteAccepted);
+	//SessionInviteAcceptedDelegate.BindUObject(this,&ThisClass::OnSessionInviteAccepted);
 
 	
 }

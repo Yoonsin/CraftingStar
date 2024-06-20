@@ -197,7 +197,6 @@ void UCraftingStarSubsystem::OnSessionUserInviteAccepted(const bool bWasSuccessf
 			GEngine->AddOnScreenDebugMessage(-1 , 3 , FColor::Red , FString::Printf(TEXT("Session isVaild")));
 			
 			JoinSession(InviteResult);
-
 		}
 	}
 	
