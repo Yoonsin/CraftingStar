@@ -25,7 +25,7 @@ UCraftingStarGameInstance::UCraftingStarGameInstance(const FObjectInitializer& O
 	MapSpawnDict.Add(EMapName::EKeyStar , KeyStarTransform);
 
 	//SessionInviteAcceptedDelegate(FOnSessionUserInviteAcceptedDelegate::CreateUObject(this , &ThisClass::OnSessionInviteAccepted)
-	//SessionInviteAcceptedDelegate.BindUObject(this,&ThisClass::OnSessionInviteAccepted);
+	SessionInviteAcceptedDelegate.BindUObject(this,&ThisClass::OnSessionInviteAccepted);
 
 	
 }
@@ -170,11 +170,23 @@ bool UCraftingStarGameInstance::JoinSession()
 
 void UCraftingStarGameInstance::OnSessionInviteAccepted(const bool bWasSuccessful , const int32 ControllerId , FUniqueNetIdPtr UserId , const FOnlineSessionSearchResult& InviteResult) {
 
+	if ( bWasSuccessful ) {
+		GEngine->AddOnScreenDebugMessage(-1 , 3 , FColor::Red , FString::Printf(TEXT("Session Invite Accepted")));
+
+		if ( InviteResult.IsValid() ) {
+			GEngine->AddOnScreenDebugMessage(-1 , 3 , FColor::Red , FString::Printf(TEXT("Session isVaild")));
+
+			UCraftingStarSubsystem* subSystem = GetSubsystem<UCraftingStarSubsystem>();
+			if ( subSystem == nullptr ) return;
+
+			subSystem->JoinSession(InviteResult);
+		}
+	}
+	else {
+		GEngine->AddOnScreenDebugMessage(-1 , 3 , FColor::Red , FString::Printf(TEXT("Session Invite Accepted fail")));
+	}
 	GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("InvitedAccepted"));
 
-	UCraftingStarSubsystem* subSystem = GetSubsystem<UCraftingStarSubsystem>();
-	if ( subSystem == nullptr ) return;
-
-	subSystem->JoinSession(InviteResult);
+	
 }
 
