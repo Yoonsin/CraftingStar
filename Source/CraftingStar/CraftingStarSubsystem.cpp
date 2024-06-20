@@ -38,7 +38,7 @@ void UCraftingStarSubsystem::CreateSession(int numPublicConnections , bool isLan
 	LastSessionSettings->bShouldAdvertise = true;
 	LastSessionSettings->bUseLobbiesIfAvailable = true;
 
-	//LastSessionSettings->Set(SETTING_MAPNAME , FString("L_MatchingMenu") , EOnlineDataAdvertisementType::ViaOnlineService);
+	LastSessionSettings->Set(SETTING_MAPNAME , FString("L_MatchingMenu") , EOnlineDataAdvertisementType::ViaOnlineService);
 
 
 	CreateSessionCompleteDelegateHandle = sessionInterface->AddOnCreateSessionCompleteDelegate_Handle(CreateSessionCompleteDelegate);
@@ -77,7 +77,7 @@ void UCraftingStarSubsystem::UpdateSession()
 
 	TSharedPtr<FOnlineSessionSettings> updatedSessionSettings = MakeShareable(new FOnlineSessionSettings(*LastSessionSettings));
 	//Update
-	//updatedSessionSettings->Set(SETTING_MAPNAME , FString("Updated Level Name") , EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
+	updatedSessionSettings->Set(SETTING_MAPNAME , FString("Updated Level Name") , EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
     
 	UpdateSessionCompleteDelegateHandle = sessionInterface->AddOnUpdateSessionCompleteDelegate_Handle(UpdateSessionCompleteDelegate);
 
@@ -190,7 +190,15 @@ bool  UCraftingStarSubsystem::TryTravelToCurrentSession()
 }
 
 void UCraftingStarSubsystem::OnSessionUserInviteAccepted(const bool bWasSuccessful , const int32 ControllerId , FUniqueNetIdPtr  UserId , const FOnlineSessionSearchResult& InviteResult) {
+	if ( bWasSuccessful ) {
+		GEngine->AddOnScreenDebugMessage(-1 , 3 , FColor::Red , FString::Printf(TEXT("Session Invite Accepted")));
 
-	GEngine->AddOnScreenDebugMessage(-1 , 3 , FColor::Red , FString::Printf(TEXT("Session Invite Accepted")));
-	JoinSession(InviteResult);
+		if ( InviteResult.IsValid() ) {
+			GEngine->AddOnScreenDebugMessage(-1 , 3 , FColor::Red , FString::Printf(TEXT("Session isVaild")));
+			
+			JoinSession(InviteResult);
+
+		}
+	}
+	
 }
