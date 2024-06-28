@@ -150,7 +150,18 @@ void UCraftingStarSubsystem::JoinSession(const FOnlineSessionSearchResult& Sessi
 
 	JoinSessionCompleteDelegateHandle = sessionInterface->AddOnJoinSessionCompleteDelegate_Handle(JoinSessionCompleteDelegate);
 
-	const ULocalPlayer* localPlayer = GetWorld()->GetFirstLocalPlayerFromController();
+	UWorld* world = GetWorld();
+	if ( world == nullptr ) {
+		GEngine->AddOnScreenDebugMessage(-1 , 3 , FColor::Red , FString::Printf(TEXT("world null")));
+		return;
+	}
+
+	const ULocalPlayer * localPlayer = world->GetFirstLocalPlayerFromController();
+	if ( localPlayer == nullptr ) {
+		GEngine->AddOnScreenDebugMessage(-1 , 3 , FColor::Red , FString::Printf(TEXT("localplayer is null")));
+		return;
+	}
+	
 	//sessionInterface->JoinSession
 	//!sessionInterface->JoinSession(*localPlayer->GetPreferredUniqueNetId() , NAME_GameSession , SessionResult) 
 	
