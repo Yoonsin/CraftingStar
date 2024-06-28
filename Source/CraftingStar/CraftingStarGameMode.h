@@ -37,6 +37,9 @@ public:
 	bool LoadFlag = false;
 	FTimerHandle myTimerHandle;
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void LoadWorldData();
+
 protected:
 	virtual void BeginPlay() override;
 	// Called every frame

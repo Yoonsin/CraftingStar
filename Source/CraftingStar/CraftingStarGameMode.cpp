@@ -114,7 +114,14 @@ void ACraftingStarGameMode::Tick(float DeltaTime)
 
 			serverCharacter->PlayerOutfit(gameInstance->nowSaveGame->HostData , gameInstance->nowSaveGame->GuestData);
 			serverCharacter->PlayerUIInit();
+			LoadWorldData();
 			LoadFlag = false;
+		}
+		else {
+			
+
+
+
 		}
 		
 	}
@@ -130,25 +137,6 @@ void ACraftingStarGameMode::Tick(float DeltaTime)
 			gameState->isStartFlag = true;
 			
 			//플레이어 데이터 로드
-
-		
-			
-
-			//플레이어 모드에 맞는 메쉬와 UI 적용
-			//for ( auto& playerPS : gameState->PlayerArray ) {
-			//	ACraftingStarPS* playerState = Cast<ACraftingStarPS>(playerPS);
-			//	if ( playerState == nullptr ) {
-			//		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("playerState is nullptr"));
-			//		continue;
-			//	}
-
-			//	if ( UUtilityFunction::IsHost(Cast<APlayerController>(playerPS->GetOwner())) ) {	
-			//		playerState->PlayerData = gameInstance->nowSaveGame->HostData;
-			//	}
-			//	else {
-			//		playerState->PlayerData = gameInstance->nowSaveGame->GuestData;
-			//	}
-			//}
 
 
 			

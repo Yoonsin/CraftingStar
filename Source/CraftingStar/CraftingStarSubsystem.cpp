@@ -12,7 +12,14 @@ UCraftingStarSubsystem::UCraftingStarSubsystem()
 	JoinSessionCompleteDelegate(FOnJoinSessionCompleteDelegate::CreateUObject(this , &ThisClass::OnJoinSessionCompleted)),
 	InviteAcceptedDelegate(FOnSessionUserInviteAcceptedDelegate::CreateUObject(this, &ThisClass::OnSessionUserInviteAccepted))
 {
+	//SessionInviteAcceptedDelegate(FOnSessionUserInviteAcceptedDelegate::CreateUObject(this , &ThisClass::OnSessionInviteAccepted)
+	//SessionInviteAcceptedDelegate.BindUObject(this,&ThisClass::OnSessionInviteAccepted);
 
+	const IOnlineSessionPtr sessionInterface = Online::GetSessionInterface(GetWorld());
+	if ( sessionInterface.IsValid() ) {
+		sessionInterface->AddOnSessionUserInviteAcceptedDelegate_Handle(InviteAcceptedDelegate);
+	}
+	
 }
 
 

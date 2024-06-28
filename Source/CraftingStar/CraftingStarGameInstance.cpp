@@ -8,6 +8,7 @@
 #include "CraftingStarPS.h"
 #include "CraftingStarPC.h"
 #include "CraftingStarSubsystem.h"
+#include "CraftingStarCharacter.h"
 
 
 UCraftingStarGameInstance::UCraftingStarGameInstance(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
@@ -81,19 +82,24 @@ bool UCraftingStarGameInstance::SaveFile( int targetIdx )
 		ACraftingStarPS* playerState = Cast<ACraftingStarPS>(ps);
 		if ( playerState == nullptr ) return false;
 		ACraftingStarPC* playerController = Cast<ACraftingStarPC>(playerState->GetOwner());
+
+		 ACraftingStarCharacter* character = Cast<ACraftingStarCharacter>(ps->GetPawn());
 		if ( playerController == nullptr ) return false;
 
 		if ( UUtilityFunction::IsHost(playerController) ) {
-			savingFile->ProgressData.HostPlayerPos = playerState->SaveTransform;
+			savingFile->ProgressData.HostPlayerPos = character->GetTransform();
 			savingFile->HostData = playerState->PlayerData;
 		}
 		else {
-			savingFile->ProgressData.GuestPlayerPos = playerState->SaveTransform;
+			savingFile->ProgressData.GuestPlayerPos = character->GetTransform();
 			savingFile->GuestData = playerState->PlayerData;
 		}
 	}
+
+	FString creatingFileName = "CraftingStarGame";
+	creatingFileName.Append(FString::FromInt(targetIdx));
 	
-	return true;
+	return UGameplayStatics::SaveGameToSlot(savingFile , creatingFileName , 0);
 	
 }
 
