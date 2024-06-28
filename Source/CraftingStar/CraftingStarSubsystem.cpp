@@ -156,6 +156,7 @@ void UCraftingStarSubsystem::JoinSession(const FOnlineSessionSearchResult& Sessi
 	}
 	else {
 		GEngine->AddOnScreenDebugMessage(-1 , 3 , FColor::Red , FString::Printf(TEXT("JoinSession Success")));
+		TryTravelToCurrentSession();
 	}
 
 	
