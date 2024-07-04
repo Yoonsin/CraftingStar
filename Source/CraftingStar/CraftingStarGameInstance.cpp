@@ -88,11 +88,15 @@ bool UCraftingStarGameInstance::SaveFile( int targetIdx )
 
 		if ( UUtilityFunction::IsHost(playerController) ) {
 			savingFile->ProgressData.HostPlayerPos = character->GetTransform();
+			FVector pos = character->GetTransform().GetLocation();
+			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("Host transform %f / %f / %f") , pos.X , pos.Y , pos.Z));
 			savingFile->HostData = playerState->PlayerData;
 		}
 		else {
 			savingFile->ProgressData.GuestPlayerPos = character->GetTransform();
 			savingFile->GuestData = playerState->PlayerData;
+			FVector pos = character->GetTransform().GetLocation();
+			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("Guest transform %f / %f / %f") , pos.X , pos.Y , pos.Z));
 		}
 	}
 
@@ -123,7 +127,7 @@ bool UCraftingStarGameInstance::CreateFile( int targetIdx , EPlayerRole ServerMo
 	creatingFile->ProgressData.questID = EQuestID::EMegetonNotMeet;
 	creatingFile->ProgressData.HostPlayerPos = MapSpawnDict[EMapName::EKeyStar].HostPlayerPos;
 	creatingFile->ProgressData.GuestPlayerPos = MapSpawnDict[EMapName::EKeyStar].GuestPlayerPos;
-
+	//creatingFile->ProgressData.WorldObjects.Init()
 
 	SaveGames[targetIdx] = creatingFile;
 	return UGameplayStatics::SaveGameToSlot(SaveGames[targetIdx] , creatingFileName , 0);

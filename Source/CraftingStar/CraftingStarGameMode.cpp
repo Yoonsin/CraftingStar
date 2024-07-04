@@ -111,9 +111,10 @@ void ACraftingStarGameMode::Tick(float DeltaTime)
 			UCraftingStarGameInstance* gameInstance = Cast<UCraftingStarGameInstance>(GetGameInstance());
 			if ( gameInstance == nullptr ) return;
 
-
+			//플레이어 데이터 로드
 			serverCharacter->PlayerOutfit(gameInstance->nowSaveGame->HostData , gameInstance->nowSaveGame->GuestData);
 			serverCharacter->PlayerUIInit();
+			
 			LoadWorldData();
 			LoadFlag = false;
 		}
@@ -130,15 +131,15 @@ void ACraftingStarGameMode::Tick(float DeltaTime)
 		ACraftingStarGS* gameState = Cast<ACraftingStarGS>(UGameplayStatics::GetGameState(this));
 		if ( gameState == nullptr ) return;
 
+		
+
 		if ( gameState->isHostInit && gameState->isGuestInit ) {
 
 
 			StartFlag = true;
 			gameState->isStartFlag = true;
-			
-			//플레이어 데이터 로드
 
-
+		
 			
 			GetWorld()->GetTimerManager().SetTimer(myTimerHandle , FTimerDelegate::CreateLambda([ & ] ()
 			{
@@ -147,10 +148,8 @@ void ACraftingStarGameMode::Tick(float DeltaTime)
 					GetWorld()->GetTimerManager().ClearTimer(myTimerHandle);
 			}) , 10.0f , false); // 반복 실행을 하고 싶으면 false 대신 true 대입
 			
-			
+			//타이머 콜백 불리기 전 게임 종료시 타이머 꺼야 오류안남
 
-			//월드 내용 적용
-			//worldStateLoad()
 		
 		}
 

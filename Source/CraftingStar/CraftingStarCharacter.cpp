@@ -298,12 +298,15 @@ void ACraftingStarCharacter::BeginPlay()
 	SetPause(false);
 	interactTag->SetVisibility(false);
 
-	if ( HasAuthority() ) {
+
+	AController* controller = GetController();
+
+	if ( UUtilityFunction::IsHost (controller)) {
 		if ( LoadingWidgetRef == nullptr   && Cast<ACraftingStarGS>(GetWorld()->GetGameState())->isStartFlag == false)
 		{
 			//LoadingWB
-			LoadingWidgetRef = CreateWidget(GetWorld() , LoadingWidget);
-			LoadingWidgetRef->AddToViewport();
+			//LoadingWidgetRef = CreateWidget(GetWorld() , LoadingWidget);
+			//LoadingWidgetRef->AddToViewport();
 		}
 
 		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("LOAD Server"));
@@ -315,8 +318,8 @@ void ACraftingStarCharacter::BeginPlay()
 		if ( LoadingWidgetRef == nullptr  && Cast<ACraftingStarGS>(GetWorld()->GetGameState())->isStartFlag == false )
 		{
 			//LoadingWB
-			LoadingWidgetRef = CreateWidget(GetWorld() , LoadingWidget);
-			LoadingWidgetRef->AddToViewport();
+			//LoadingWidgetRef = CreateWidget(GetWorld() , LoadingWidget);
+			//LoadingWidgetRef->AddToViewport();
 		}
 
 		//호스트는 리플리케이션 문제로 통신지연이 되면 데이터 로드를 온전히 못할 수도 있으므로
@@ -329,7 +332,7 @@ void ACraftingStarCharacter::BeginPlay()
 	}
 
 	// Hide Laser
-	switch ( HasAuthority() ) {
+	switch ( UUtilityFunction::IsHost(controller) ) {
 	case true:
 		Comp_LaserNiagara->Hide();
 		break;
@@ -1358,20 +1361,25 @@ void ACraftingStarCharacter::LoadSaveData(bool isHost)
 	
 	ACraftingStarGS* gameState = Cast<ACraftingStarGS>(GetWorld()->GetGameState());
 
-	//진행도 데이터 적용
-	if ( isHost ) gameState->ProgressData = gameInstance->nowSaveGame->ProgressData;
-
-	//각각의 플레이어 데이터 적용
-	//FPlayerData data = ( isHost ) ? gameInstance->nowSaveGame->HostData : gameInstance->nowSaveGame->GuestData;
-
-	//ACraftingStarPS* playerState = Cast<ACraftingStarPS>(GetPlayerState());
-	//playerState->PlayerData = data;
+	if (isHost ) {
+		//호스트일 경우 진행도 데이터도 저장
+		//여기 부분에서 클라이언트 나갈 수도 있음. 주의깊게 보기
+		gameState->ProgressData = gameInstance->nowSaveGame->ProgressData;
+	}
 
 	//플레이어 위치 적용
 	FTransform transform = ( isHost ) ? gameInstance->nowSaveGame->ProgressData.HostPlayerPos : gameInstance->nowSaveGame->ProgressData.GuestPlayerPos;
 	GetCapsuleComponent()->SetWorldTransform(transform);
 
-	
+
+	if ( isHost ) {
+		FVector pos = transform.GetLocation();
+		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("Host transform %f / %f / %f") ,pos.X,pos.Y,pos.Z ));
+	}
+	else {
+		FVector pos = transform.GetLocation();
+		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("Guest transform %f / %f / %f") , pos.X , pos.Y , pos.Z));
+	}
 	
 	if ( isHost )gameState->isHostInit = true;
 	else gameState->isGuestInit = true;
