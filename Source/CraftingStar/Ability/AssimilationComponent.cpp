@@ -20,7 +20,7 @@ UAssimilationComponent::UAssimilationComponent()
 	HaloEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Assimilation Effect"));
 	HaloEffect->SetupAttachment(this);
 
-	ConstructorHelpers::FObjectFinder<UNiagaraSystem> HaloAsset(TEXT("NiagaraSystem'/Game/Object/Assimilate.Assimilate'"));
+	ConstructorHelpers::FObjectFinder<UNiagaraSystem> HaloAsset(TEXT("NiagaraSystem'/Game/CraftingStarCharacter/Abilities/NS_Assimilate.NS_Assimilate'"));
 	if ( HaloAsset.Succeeded() ) 
 	{
 		HaloEffect->SetAsset(HaloAsset.Object);
