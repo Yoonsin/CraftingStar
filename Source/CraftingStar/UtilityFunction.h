@@ -17,4 +17,7 @@ class CRAFTINGSTAR_API UUtilityFunction : public UBlueprintFunctionLibrary
 public:
 	UFUNCTION(BlueprintCallable)
 	static bool IsHost(AController* Controller);
+
+	UFUNCTION(BlueprintCallable)
+		static bool Save(UGameInstance* instance);
 };

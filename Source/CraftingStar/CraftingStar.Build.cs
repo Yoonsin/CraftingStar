@@ -9,7 +9,7 @@ public class CraftingStar : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "UMG", "Niagara", "GameplayTasks" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "UMG", "Niagara", "GameplayTasks", "OnlineSubsystem", "OnlineSubsystemUtils", });
         PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
     }
 }

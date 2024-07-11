@@ -21,6 +21,7 @@ void ACraftingStarPS::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& Ou
 	DOREPLIFETIME(ACraftingStarPS, NowDisplayState);
 	DOREPLIFETIME(ACraftingStarPS, Health);
 	DOREPLIFETIME(ACraftingStarPS, PlayerData);
+	DOREPLIFETIME(ACraftingStarPS , SaveTransform);
 }
 
 // Called when the game starts or when spawned
@@ -28,17 +29,12 @@ void ACraftingStarPS::BeginPlay()
 {
 	Super::BeginPlay();
 
-	//this->SetReplicates(true);
-	//bAlwaysRelevant = true;
-
-	//PlayerData.Mode = EPlayerRole::EDark;
-	//PlayerData.PlayerName = FString("DefalultName");
+	PlayerData.Mode = EPlayerRole::EDark;
+	PlayerData.PlayerName = FString("DefalultName");
 	
 	//원래는 전부 false이지만 디버그를 위해 서버로 바꿔줌
-	//PlayerData.AbleAbility.Init(false, (int)EPlayerAbility::ENone+1);
+	PlayerData.AbleAbility.Init(false, (int)EPlayerAbility::ENone+1);
 	
-	
-	//�켱 ����� ������ �ɷ¸� �����ϵ��� ����
 	//PlayerData.AbleAbility[(int)EPlayerAbility::EBlast] = true;
 	//PlayerData.AbleAbility[(int)EPlayerAbility::ETelekinesis] = true;
 

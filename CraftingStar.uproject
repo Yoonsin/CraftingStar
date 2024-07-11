@@ -12,7 +12,8 @@
 				"Engine",
 				"UMG",
 				"Niagara",
-				"AIModule"
+				"AIModule",
+				"AdvancedSessions"
 			]
 		}
 	],
