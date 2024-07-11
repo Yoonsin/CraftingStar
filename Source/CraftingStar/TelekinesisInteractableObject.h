@@ -42,5 +42,4 @@ public:
 	virtual void EraseOuline();
 
 	virtual void ChangeOutlineColor();
-
 };

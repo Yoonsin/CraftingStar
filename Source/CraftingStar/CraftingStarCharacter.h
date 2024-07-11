@@ -75,7 +75,7 @@ class ACraftingStarCharacter : public ACharacter
 	float teleLaserDistance = 750.0f;
 	float teleComponentDistance = 0.0f;
 	UPROPERTY(EditAnywhere , Category = "Forces")
-	float teleForce = 5000.0f;
+	float teleForce = 1000.0f;
 
 	void Telekinesis();
 	void CreateTeleObjOutline();

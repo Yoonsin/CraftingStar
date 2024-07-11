@@ -15,6 +15,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
+#include "TelekinesisInteractableObject.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "CraftingStarGameMode.h"
 #include "DrawDebugHelpers.h"
@@ -620,6 +621,8 @@ void ACraftingStarCharacter::Telekinesis() {
 			// Change Tele' Interactive Actor's Outline Color
 			if ( Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner()) )
 			{
+				FLatentActionInfo LatentInfo;
+				LatentInfo.CallbackTarget = this;
 			// Move selectedTarget Component
 				switch ( HasAuthority() ) {
 				case true:
@@ -630,16 +633,21 @@ void ACraftingStarCharacter::Telekinesis() {
 					
 					//PhysicsHandle->SetTargetLocation(End);
 					teleComponentDistance = ( End - selectedTarget->GetComponentLocation() ).Size();
-					if ( teleComponentDistance <= 50 ) {
+					if ( teleComponentDistance <= 100 ) {
 						teleForce = 0;
-						GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("selected object distance: %f") , teleForce));
+						//selectedTarget->GetOwner()->GetRootComponent()->ComponentVelocity = FVector(0 , 0 , 0);
+						GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("selected object distance: %f") , teleComponentDistance));
 					}
 					else {
-						teleForce = 5000.0f;
+						teleForce = 3000.0f;
+						//selectedTarget->GetOwner()->GetRootComponent()->ComponentVelocity = UKismetMathLibrary::GetDirectionUnitVector(selectedTarget->GetComponentLocation() , End);
+						GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("selected object distance: %f") , teleComponentDistance));
 					}
 					
-					//selectedTarget->MoveComponent(UKismetMathLibrary::GetDirectionUnitVector(selectedTarget->GetComponentLocation() , End) * teleForce);
-					selectedTarget->AddForce(UKismetMathLibrary::GetDirectionUnitVector(selectedTarget->GetComponentLocation() , End) * teleForce * selectedTarget->GetMass());
+					//selectedTarget->MoveComponent(UKismetMathLibrary::GetDirectionUnitVector(selectedTarget->GetComponentLocation() , End) * selectedTarget->GetMass() * teleForce , selectedTarget->GetComponentRotation() , true);
+					
+					UKismetSystemLibrary::MoveComponentTo(selectedTarget , End , selectedTarget->GetRelativeRotation(), false, false, 0.1f, true, EMoveComponentAction::Type::Move , LatentInfo);
+					//selectedTarget->AddForce(UKismetMathLibrary::GetDirectionUnitVector(selectedTarget->GetComponentLocation() , End) * selectedTarget->GetMass() * teleForce);
 					break;
 				case false:
 					ServerTeleObjLoc(End);

@@ -56,7 +56,6 @@ void ATelekinesisInteractableObject::MulticastSetIsSeleted_Implementation(bool v
 	isSelected = value;
 }
 
-
 void ATelekinesisInteractableObject::Init() {
 	
 }
