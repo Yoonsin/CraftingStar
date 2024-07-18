@@ -75,5 +75,8 @@ enum class EQuestID : uint8
 	EMegetonMeet UMETA(DisplayName = "MegetonMeet"),
 	EMegetonGetKey UMETA(DisplayName = "MegetonGetKey") ,
 	EMegetonClear UMETA(DisplayName = "MegetonClear") ,
+	EMegetonTransition UMETA(DisplayName = "MegetonTransition"),
+	EIncendieDefault UMETA(DisplayName = "IncendieDefault"),
+	 
 };
 

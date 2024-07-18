@@ -115,7 +115,12 @@ void ACraftingStarGameMode::Tick(float DeltaTime)
 			serverCharacter->PlayerOutfit(gameInstance->nowSaveGame->HostData , gameInstance->nowSaveGame->GuestData);
 			serverCharacter->PlayerUIInit();
 			
+			//월드 데이터 로드
 			LoadWorldData();
+
+			//데이터 전부 로드하면 세이브
+			UUtilityFunction::Save(gameInstance);
+
 			LoadFlag = false;
 		}
 		else {
@@ -144,7 +149,7 @@ void ACraftingStarGameMode::Tick(float DeltaTime)
 			GetWorld()->GetTimerManager().SetTimer(myTimerHandle , FTimerDelegate::CreateLambda([ & ] ()
 			{
 					LoadFlag = true;
-
+					
 					GetWorld()->GetTimerManager().ClearTimer(myTimerHandle);
 			}) , 10.0f , false); // 반복 실행을 하고 싶으면 false 대신 true 대입
 			
@@ -188,16 +193,11 @@ void ACraftingStarGameMode::RespawnPlayer(ACharacter* NewPlayer)
 {
 	SpawnLoc = NewPlayer->GetActorLocation();
 	
-	//��� �÷��̾� ��ŸƮ �迭�� ��ȸ
-	//�÷��̾�� ���� ����� ���� ����
 	TArray<AActor*> FoundActors;
 	float closestDist = 20000000.0f;
 	int NearsIdx = 0;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerStart::StaticClass(), FoundActors);
 	GEngine->AddOnScreenDebugMessage(-1 , 2.0f , FColor::Red , FString::Printf(TEXT("FoundActor Num :: %d") , FoundActors.Num()));
-
-	
-
 
 	for (int i = 0; i < FoundActors.Num(); i++) {
 		if (closestDist > FVector::Distance(FoundActors[i]->GetActorLocation(), SpawnLoc)) {
@@ -215,17 +215,20 @@ void ACraftingStarGameMode::RespawnPlayer(ACharacter* NewPlayer)
 	}
 
 
+
 	//origin spawn
-	if ( Cast<ACraftingStarGS>(GetWorld()->GetGameState())->isOpenMegetonDoor == false ) {
+	if ( Cast<ACraftingStarGS>(GetWorld()->GetGameState())->isOpenMegetonDoor == false && megetonOriginPlayerStart != nullptr) {
 		
 		NewPlayer->SetActorLocation(megetonOriginPlayerStart->GetActorLocation());
+		megetonOriginPlayerStart = nullptr;
 		return;
 	}
 
-	//�÷��̾� ��ġ ����
+	megetonOriginPlayerStart = nullptr;
 	NewPlayer->SetActorLocation(FoundActors[NearsIdx]->GetActorLocation());
-
 }
+
+
 
 
 

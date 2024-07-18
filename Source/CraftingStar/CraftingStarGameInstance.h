@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "AdvancedFriendsGameInstance.h"
 #include "CraftingStarSaveGame.h"
+#include "MoviePlayer.h"
 #include "CraftingStarGameInstance.generated.h"
 
 /**
@@ -60,6 +61,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool StartServer(int numPublicConnections , bool isLanMatch);
 
+	FTransform GetClosestDistTransform(FVector NowPlayerPos);
 
 	bool JoinSession(FOnlineSessionSearchResult InviteResult);
 
@@ -68,5 +70,10 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void ChangeSessionResultBlueprint(FBlueprintSessionResult SearchResult);
+
+	UFUNCTION(BlueprintCallable)
+    void BeginLoadingScreen();
+	UFUNCTION(BlueprintCallable)
+    void EndLoadingScreen();
 
 };

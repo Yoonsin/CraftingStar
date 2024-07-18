@@ -5,10 +5,12 @@
 #include "Interfaces/OnlineSessionInterface.h"
 #include "CraftingStarGS.h"
 #include "UtilityFunction.h"
+#include "GameFramework/PlayerStart.h"
 #include "CraftingStarPS.h"
 #include "CraftingStarPC.h"
 #include "CraftingStarSubsystem.h"
 #include "CraftingStarCharacter.h"
+#include "MoviePlayer.h"
 
 
 UCraftingStarGameInstance::UCraftingStarGameInstance(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
@@ -81,30 +83,49 @@ bool UCraftingStarGameInstance::SaveFile( int targetIdx )
 	for( APlayerState * ps : gameState->PlayerArray ) {
 		ACraftingStarPS* playerState = Cast<ACraftingStarPS>(ps);
 		if ( playerState == nullptr ) return false;
-		ACraftingStarPC* playerController = Cast<ACraftingStarPC>(playerState->GetOwner());
 
+		ACraftingStarPC* playerController = Cast<ACraftingStarPC>(playerState->GetOwner());
 		 ACraftingStarCharacter* character = Cast<ACraftingStarCharacter>(ps->GetPawn());
 		if ( playerController == nullptr ) return false;
 
 		if ( UUtilityFunction::IsHost(playerController) ) {
-			savingFile->ProgressData.HostPlayerPos = character->GetTransform();
-			FVector pos = character->GetTransform().GetLocation();
-			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("Host transform %f / %f / %f") , pos.X , pos.Y , pos.Z));
+			//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("Host transform %f / %f / %f") , pos.X , pos.Y , pos.Z));
 			savingFile->HostData = playerState->PlayerData;
+
+			if ( savingFile->ProgressData.questID == EQuestID::EMegetonTransition ) continue;
+
+			FTransform PlayerStartPos = GetClosestDistTransform(character->GetTransform().GetLocation());
+
+			//플레이어 스타트에서 살짝 떨어진 위치로 각각 설정
+			FTransform HostPlayerPos = PlayerStartPos;
+			HostPlayerPos.SetLocation(PlayerStartPos.GetLocation() - FVector(100 , 0 , 0));
+
+			FTransform GuestPlayerPos = PlayerStartPos;
+			GuestPlayerPos.SetLocation(PlayerStartPos.GetLocation() + FVector(100 , 0 , 0));
+
+			savingFile->ProgressData.HostPlayerPos = HostPlayerPos;
+			savingFile->ProgressData.GuestPlayerPos = GuestPlayerPos;
+
 		}
 		else {
-			savingFile->ProgressData.GuestPlayerPos = character->GetTransform();
 			savingFile->GuestData = playerState->PlayerData;
-			FVector pos = character->GetTransform().GetLocation();
-			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("Guest transform %f / %f / %f") , pos.X , pos.Y , pos.Z));
 		}
 	}
+
+
 
 	FString creatingFileName = "CraftingStarGame";
 	creatingFileName.Append(FString::FromInt(targetIdx));
 	
+
+	//인게임 -> 인게임 전환시에는 NowSaveGame을 설정해 줘야함
+	//(Load는 로비->인게임 넘어갈 때 한번밖에 안하기 때문)
+	if ( savingFile->ProgressData.questID == EQuestID::EMegetonTransition ) {
+		savingFile->ProgressData.questID = EQuestID::EIncendieDefault;
+		nowSaveGame = savingFile;
+	}
+
 	return UGameplayStatics::SaveGameToSlot(savingFile , creatingFileName , 0);
-	
 }
 
 bool UCraftingStarGameInstance::CreateFile( int targetIdx , EPlayerRole ServerMode , EPlayerRole GuestMode)
@@ -205,4 +226,64 @@ void UCraftingStarGameInstance::ChangeSessionResultBlueprint(FBlueprintSessionRe
 
 	result = SearchResult.OnlineResult;
 	JoinSession(result);
+}
+
+FTransform UCraftingStarGameInstance::GetClosestDistTransform(FVector NowPlayerPos) {
+	
+	APlayerStart* megetonOriginPlayerStart = nullptr;
+	TArray<AActor*> FoundActors;
+	float closestDist = 20000000.0f;
+	int NearsIdx = 0;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld() , APlayerStart::StaticClass() , FoundActors);
+	
+
+
+	for ( int i = 0; i < FoundActors.Num(); i++ ) {
+		if ( closestDist > FVector::Distance(FoundActors[i]->GetActorLocation() , NowPlayerPos) ) {
+			closestDist = FVector::Distance(FoundActors[i]->GetActorLocation() , NowPlayerPos);
+			NearsIdx = i;
+		}
+
+		if ( FoundActors[i]->GetName().Contains(FString("PlayerStart_Origin")) ) {
+			megetonOriginPlayerStart = Cast<APlayerStart>(FoundActors[i]);
+		}
+	}
+
+
+
+	if ( Cast<ACraftingStarGS>(GetWorld()->GetGameState())->isOpenMegetonDoor == false && megetonOriginPlayerStart != nullptr) {
+		return megetonOriginPlayerStart->GetActorTransform();
+	}
+
+	
+	return FoundActors[NearsIdx]->GetActorTransform();
+
+
+}
+
+
+void UCraftingStarGameInstance::BeginLoadingScreen()
+{
+	if ( !IsRunningDedicatedServer() )
+	{
+		FLoadingScreenAttributes LoadingScreen;
+		LoadingScreen.MinimumLoadingScreenDisplayTime = -1.0f;
+		LoadingScreen.bAutoCompleteWhenLoadingCompletes = false;
+		LoadingScreen.bAllowEngineTick = true;
+		LoadingScreen.bMoviesAreSkippable = false;
+		LoadingScreen.PlaybackType = EMoviePlaybackType::MT_Normal;
+
+		//LoadingScreen.MoviePaths.Add(TEXT("example"));
+		LoadingScreen.WidgetLoadingScreen = FLoadingScreenAttributes::NewTestLoadingScreenWidget();
+
+		GetMoviePlayer()->SetupLoadingScreen(LoadingScreen);
+
+		GEngine->AddOnScreenDebugMessage(-1 , 5.0f , FColor::Red , FString::Printf(TEXT("Set Loading Screen")));
+	}
+
+}
+
+void UCraftingStarGameInstance::EndLoadingScreen()
+{
+	GetMoviePlayer()->StopMovie();
 }

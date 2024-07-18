@@ -110,6 +110,10 @@ void ACraftingStarPS::ServerObtainingAbilityUpdate_Implementation(EPlayerAbility
 {
 	if(ability != EPlayerAbility::ENone ){
 	  PlayerData.AbleAbility[(uint8)ability] = true;
+	  
+	  auto GameInstance = UGameplayStatics::GetGameInstance(GetWorld());
+	  if ( GameInstance != nullptr ) UUtilityFunction::Save(GameInstance);
+	
 	}
 }
 

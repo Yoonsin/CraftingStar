@@ -305,21 +305,21 @@ void ACraftingStarCharacter::BeginPlay()
 		if ( LoadingWidgetRef == nullptr   && Cast<ACraftingStarGS>(GetWorld()->GetGameState())->isStartFlag == false)
 		{
 			//LoadingWB
-			//LoadingWidgetRef = CreateWidget(GetWorld() , LoadingWidget);
-			//LoadingWidgetRef->AddToViewport();
+			LoadingWidgetRef = CreateWidget(GetWorld() , LoadingWidget);
+			LoadingWidgetRef->AddToViewport();
 		}
 
 		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("LOAD Server"));
 		LoadSaveData(true);
 	}
-	else {
+	else if(controller != nullptr &&!controller->HasAuthority() && controller->IsLocalPlayerController()) {
 		
 		
 		if ( LoadingWidgetRef == nullptr  && Cast<ACraftingStarGS>(GetWorld()->GetGameState())->isStartFlag == false )
 		{
 			//LoadingWB
-			//LoadingWidgetRef = CreateWidget(GetWorld() , LoadingWidget);
-			//LoadingWidgetRef->AddToViewport();
+			LoadingWidgetRef = CreateWidget(GetWorld() , LoadingWidget);
+			LoadingWidgetRef->AddToViewport();
 		}
 
 		//호스트는 리플리케이션 문제로 통신지연이 되면 데이터 로드를 온전히 못할 수도 있으므로
@@ -1370,7 +1370,15 @@ void ACraftingStarCharacter::LoadSaveData(bool isHost)
 	//플레이어 위치 적용
 	FTransform transform = ( isHost ) ? gameInstance->nowSaveGame->ProgressData.HostPlayerPos : gameInstance->nowSaveGame->ProgressData.GuestPlayerPos;
 	GetCapsuleComponent()->SetWorldTransform(transform);
-
+	
+	////플레이어 위치에 제일 가까운 플레이어 스타트에 위치
+	//if ( UWorld* World = GetWorld() )
+	//{
+	//	if ( ACraftingStarGameMode* GameMode = Cast<ACraftingStarGameMode>(World->GetAuthGameMode()) )
+	//	{
+	//		GameMode->RespawnPlayer(this);
+	//	}
+	//}
 
 	if ( isHost ) {
 		FVector pos = transform.GetLocation();
