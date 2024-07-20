@@ -1479,7 +1479,9 @@ void ACraftingStarCharacter::PlayerOutfit_Implementation(FPlayerData hostData , 
 			//머리
 			playerCharacter->HeadMesh->SetStaticMesh(HeadMesh_Dark);
 			//헤어
+			
 			playerCharacter->HairAndHatMesh->SetStaticMesh(HairAndHatMesh_Dark);
+
 			if ( HairMat_Dark == nullptr ) {
 				GEngine->AddOnScreenDebugMessage(-1 , 3 , FColor::Red , TEXT("HairMat_Dark is nullptr"));
 			}
@@ -1487,7 +1489,7 @@ void ACraftingStarCharacter::PlayerOutfit_Implementation(FPlayerData hostData , 
 			playerCharacter->HairAndHatMesh->SetMaterial(0 , HairMat_Dark);
 			//눈
 			playerCharacter->EyesMesh->SetStaticMesh(EyesMesh_Dark);
-			playerCharacter->HairAndHatMesh->SetMaterial(0 , EyesMat_Dark);
+			//playerCharacter->HairAndHatMesh->SetMaterial(0 , EyesMat_Dark);
 			//입
 			playerCharacter->MouthMesh->SetStaticMesh(MouthMesh_Dark);
 			//망토
