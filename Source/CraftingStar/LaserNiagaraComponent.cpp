@@ -17,15 +17,33 @@ ULaserNiagaraComponent::ULaserNiagaraComponent()
 	if ( LaserBodyAsset.Succeeded() ) {
 		LaserBody->SetAsset(LaserBodyAsset.Object);
 		LaserBody->SetupAttachment(this);
+		DarkLaser = LaserBodyAsset.Object;
 	}
+
+	//Light Materials Append
+	ConstructorHelpers::FObjectFinder<UNiagaraSystem> LaserBodyAsset_Light(TEXT("NiagaraSystem'/Game/Assets/Effects/Laser/NS_Laser_Light.NS_Laser_Light'"));
+	if ( LaserBodyAsset.Succeeded() ) {
+		LightLaser = LaserBodyAsset_Light.Object;
+	}
+
+
 	LaserBody->SetIsReplicated(true);
 
 	LaserImpact = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Laser Impact"));
 	ConstructorHelpers::FObjectFinder<UNiagaraSystem> LaserImpactAsset(TEXT("NiagaraSystem'/Game/Assets/Effects/Laser/NS_LaserImpact.NS_LaserImpact'"));
 	if ( LaserBodyAsset.Succeeded() ) {
+		DarkLaserImpact = LaserImpactAsset.Object;
 		LaserImpact->SetAsset(LaserImpactAsset.Object);
 		LaserImpact->SetupAttachment(this);
 	}
+
+	//Light Materials Append
+	ConstructorHelpers::FObjectFinder<UNiagaraSystem> LaserImpactAsset_Light(TEXT("NiagaraSystem'/Game/Assets/Effects/Laser/NS_LaserImpact_Light.NS_LaserImpact_Light'"));
+	if ( LaserBodyAsset.Succeeded() ) {
+		LightLaserImpact = LaserImpactAsset_Light.Object;
+	}
+
+
 	LaserImpact->SetIsReplicated(true);
 
 	SetOwner();
@@ -75,6 +93,32 @@ void ULaserNiagaraComponent::Show() {
 void ULaserNiagaraComponent::Hide() {
 	LaserBody->SetVisibility(false);
 	LaserImpact->SetVisibility(false);
+}
+
+void ULaserNiagaraComponent::SystemChange(bool bIsLight)
+{
+	if ( bIsLight )
+	{
+		if ( LightLaser && LightLaserImpact )
+		{
+			LaserBody->SetAsset(LightLaser);
+			LaserImpact->SetAsset(LightLaserImpact);
+		}
+		else UE_LOG(LogTemp , Display , TEXT("Light Laser System Null"));
+
+		
+	}
+	else
+	{
+		if ( DarkLaser && DarkLaserImpact )
+		{
+			LaserBody->SetAsset(DarkLaser);
+			LaserImpact->SetAsset(DarkLaserImpact);
+		}
+		else UE_LOG(LogTemp , Display , TEXT("Dark Laser System Null"));
+	}
+
+	
 }
 
 bool ULaserNiagaraComponent::ServerHide_Validate() {

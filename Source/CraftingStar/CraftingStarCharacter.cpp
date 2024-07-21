@@ -1469,6 +1469,9 @@ void ACraftingStarCharacter::PlayerOutfit_Implementation(FPlayerData hostData , 
 			//망토
 			playerCharacter->CloakMesh->SetSkeletalMesh(CloakMesh_Light);
 			playerCharacter->CloakMesh->SetMaterial(0 , CloakMat_Light);
+
+			//레이저 
+			playerCharacter->Comp_LaserNiagara->SystemChange(true);
 			
 		}
 		else if ( playerState->PlayerData.Mode == EPlayerRole::EDark){
@@ -1495,6 +1498,9 @@ void ACraftingStarCharacter::PlayerOutfit_Implementation(FPlayerData hostData , 
 			//망토
 			playerCharacter->CloakMesh->SetSkeletalMesh(CloakMesh_Dark);
 			playerCharacter->CloakMesh->SetMaterial(0 , CloakMat_Dark);
+
+			//레이저 
+			playerCharacter->Comp_LaserNiagara->SystemChange(false);
 		}
 	}
 

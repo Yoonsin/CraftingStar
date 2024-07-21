@@ -19,6 +19,11 @@ class CRAFTINGSTAR_API ULaserNiagaraComponent : public UNiagaraComponent
 private :
 	class ACraftingStarCharacter* owner;
 	void SetOwner();
+	class UNiagaraSystem* LightLaser;
+	class UNiagaraSystem* DarkLaser;
+	class UNiagaraSystem* LightLaserImpact;
+	class UNiagaraSystem* DarkLaserImpact;
+
 
 protected :
 
@@ -45,5 +50,7 @@ public :
 	void ServerLaser(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color);
 	UFUNCTION(NetMulticast , Unreliable , Category = "CraftingStar Character")
 	void MulticastLaser(UNiagaraComponent* NiagaraComp , bool isBody , bool isHit , FVector end , FLinearColor color);
+
+	void SystemChange(bool bIsLight);
 
 };
