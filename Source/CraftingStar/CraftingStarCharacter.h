@@ -95,9 +95,9 @@ class ACraftingStarCharacter : public ACharacter
 	void MulticastDeselectTarget();
 	// Server Grab Component
 	UFUNCTION(Server , Reliable , WithValidation , Category = "Telekinesis")
-	void ServerGrabComponent(FVector End);
+	void ServerGrabComponent(FVector End, FHitResult Hit);
 	UFUNCTION(NetMulticast , Unreliable , Category = "Telekinesis")
-	void MulticastGrabComponent(FVector End);
+	void MulticastGrabComponent(FVector End, FHitResult Hit);
 	// Object Locate Replication
 	UFUNCTION(Server , Reliable , WithValidation , Category = "Telekinesis")
 	void ServerTeleObjLoc(FVector End);

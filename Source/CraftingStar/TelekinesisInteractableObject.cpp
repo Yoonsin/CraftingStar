@@ -11,6 +11,7 @@ ATelekinesisInteractableObject::ATelekinesisInteractableObject()
 
 	// Set this Component's Replication Property
 	SetReplicates(true);
+	bReplicates = true;
 
 	// Set Rotation
 
