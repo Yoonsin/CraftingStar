@@ -108,13 +108,6 @@ class ACraftingStarCharacter : public ACharacter
 	void ServerReleaseComponent();
 	UFUNCTION(NetMulticast , Unreliable , Category = "Telekinesis")
 	void MulticastReleaseComponent();
-
-	// Anim Replicate
-	UFUNCTION(Server , Reliable , WithValidation , Category = "CraftingStar Character")
-	void ServerOrientRotationToMove(bool rotateToMove);
-	UFUNCTION(NetMulticast , Unreliable , Category = "CraftingStar Character")
-	void MulticastOrientRotationToMove(bool rotateToMove);
-
 	
 public:
 	ACraftingStarCharacter();
