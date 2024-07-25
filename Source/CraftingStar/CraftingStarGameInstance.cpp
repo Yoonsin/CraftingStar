@@ -267,8 +267,8 @@ void UCraftingStarGameInstance::BeginLoadingScreen()
 	if ( !IsRunningDedicatedServer() )
 	{
 		FLoadingScreenAttributes LoadingScreen;
-		LoadingScreen.MinimumLoadingScreenDisplayTime = -1.0f;
-		LoadingScreen.bAutoCompleteWhenLoadingCompletes = false;
+		LoadingScreen.MinimumLoadingScreenDisplayTime = 5.0f;
+		LoadingScreen.bAutoCompleteWhenLoadingCompletes = true;
 		LoadingScreen.bAllowEngineTick = true;
 		LoadingScreen.bMoviesAreSkippable = false;
 		LoadingScreen.PlaybackType = EMoviePlaybackType::MT_Normal;

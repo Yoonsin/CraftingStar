@@ -151,7 +151,7 @@ void ACraftingStarGameMode::Tick(float DeltaTime)
 					LoadFlag = true;
 					
 					GetWorld()->GetTimerManager().ClearTimer(myTimerHandle);
-			}) , 10.0f , false); // 반복 실행을 하고 싶으면 false 대신 true 대입
+			}) , 5.0f , false); // 반복 실행을 하고 싶으면 false 대신 true 대입
 			
 			//타이머 콜백 불리기 전 게임 종료시 타이머 꺼야 오류안남
 
