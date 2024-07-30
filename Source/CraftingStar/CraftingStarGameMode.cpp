@@ -141,12 +141,9 @@ void ACraftingStarGameMode::Tick(float DeltaTime)
 		
 
 		if ( gameState->isHostInit && gameState->isGuestInit ) {
-
-
 			StartFlag = true;
 			gameState->isStartFlag = true;
 
-		
 			
 			GetWorld()->GetTimerManager().SetTimer(myTimerHandle , FTimerDelegate::CreateLambda([ & ] ()
 			{
