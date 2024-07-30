@@ -20,4 +20,5 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 		static bool Save(UGameInstance* instance);
+
 };
