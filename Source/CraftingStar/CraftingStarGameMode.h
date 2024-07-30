@@ -38,7 +38,7 @@ public:
 	FTimerHandle myTimerHandle;
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void LoadWorldData();
+	void LoadWorldData(UCraftingStarSaveGame* saveGame);
 
 protected:
 	virtual void BeginPlay() override;

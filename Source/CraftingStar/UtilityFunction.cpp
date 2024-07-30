@@ -22,3 +22,4 @@ bool UUtilityFunction::Save(UGameInstance * instance) {
 
 	return gameInstance->SaveFile(gameInstance->NowSaveIdx);
 }
+

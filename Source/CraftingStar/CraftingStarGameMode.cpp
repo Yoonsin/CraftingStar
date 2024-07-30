@@ -113,10 +113,12 @@ void ACraftingStarGameMode::Tick(float DeltaTime)
 
 			//플레이어 데이터 로드
 			serverCharacter->PlayerOutfit(gameInstance->nowSaveGame->HostData , gameInstance->nowSaveGame->GuestData);
-			serverCharacter->PlayerUIInit();
-			
+			serverCharacter->PlayerUIInit(gameInstance->nowSaveGame->ProgressData.questID);
+			if ( gameInstance->nowSaveGame->ProgressData.questID == EQuestID::EIncendieStartMovie ) gameInstance->nowSaveGame->ProgressData.questID = EQuestID::EIncendieEndMovie;
+
 			//월드 데이터 로드
-			LoadWorldData();
+			LoadWorldData(gameInstance->nowSaveGame);
+
 
 			//데이터 전부 로드하면 세이브
 			UUtilityFunction::Save(gameInstance);
@@ -151,7 +153,7 @@ void ACraftingStarGameMode::Tick(float DeltaTime)
 					LoadFlag = true;
 					
 					GetWorld()->GetTimerManager().ClearTimer(myTimerHandle);
-			}) , 10.0f , false); // 반복 실행을 하고 싶으면 false 대신 true 대입
+			}) , 5.0f , false); // 반복 실행을 하고 싶으면 false 대신 true 대입
 			
 			//타이머 콜백 불리기 전 게임 종료시 타이머 꺼야 오류안남
 

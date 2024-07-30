@@ -121,7 +121,7 @@ bool UCraftingStarGameInstance::SaveFile( int targetIdx )
 	//인게임 -> 인게임 전환시에는 NowSaveGame을 설정해 줘야함
 	//(Load는 로비->인게임 넘어갈 때 한번밖에 안하기 때문)
 	if ( savingFile->ProgressData.questID == EQuestID::EMegetonTransition ) {
-		savingFile->ProgressData.questID = EQuestID::EIncendieDefault;
+		savingFile->ProgressData.questID = EQuestID::EIncendieStartMovie;
 		nowSaveGame = savingFile;
 	}
 
@@ -267,8 +267,8 @@ void UCraftingStarGameInstance::BeginLoadingScreen()
 	if ( !IsRunningDedicatedServer() )
 	{
 		FLoadingScreenAttributes LoadingScreen;
-		LoadingScreen.MinimumLoadingScreenDisplayTime = -1.0f;
-		LoadingScreen.bAutoCompleteWhenLoadingCompletes = false;
+		LoadingScreen.MinimumLoadingScreenDisplayTime = 5.0f;
+		LoadingScreen.bAutoCompleteWhenLoadingCompletes = true;
 		LoadingScreen.bAllowEngineTick = true;
 		LoadingScreen.bMoviesAreSkippable = false;
 		LoadingScreen.PlaybackType = EMoviePlaybackType::MT_Normal;
