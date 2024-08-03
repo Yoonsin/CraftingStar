@@ -75,6 +75,11 @@ class ACraftingStarCharacter : public ACharacter
 	// Telekinesis
 	UPrimitiveComponent* selectedTarget;
 
+	float teleLaserDistance = 750.0f;
+	float teleComponentDistance = 0.0f;
+	UPROPERTY(EditAnywhere , Category = "Forces")
+	float teleForce = 1000.0f;
+
 	void Telekinesis();
 	void CreateTeleObjOutline();
 	void RemoveTeleObjOutline();
@@ -93,9 +98,9 @@ class ACraftingStarCharacter : public ACharacter
 	void MulticastDeselectTarget();
 	// Server Grab Component
 	UFUNCTION(Server , Reliable , WithValidation , Category = "Telekinesis")
-	void ServerGrabComponent(FVector End);
+	void ServerGrabComponent(FVector End, FHitResult Hit);
 	UFUNCTION(NetMulticast , Unreliable , Category = "Telekinesis")
-	void MulticastGrabComponent(FVector End);
+	void MulticastGrabComponent(FVector End, FHitResult Hit);
 	// Object Locate Replication
 	UFUNCTION(Server , Reliable , WithValidation , Category = "Telekinesis")
 	void ServerTeleObjLoc(FVector End);
@@ -106,13 +111,6 @@ class ACraftingStarCharacter : public ACharacter
 	void ServerReleaseComponent();
 	UFUNCTION(NetMulticast , Unreliable , Category = "Telekinesis")
 	void MulticastReleaseComponent();
-
-	// Anim Replicate
-	UFUNCTION(Server , Reliable , WithValidation , Category = "CraftingStar Character")
-	void ServerOrientRotationToMove(bool rotateToMove);
-	UFUNCTION(NetMulticast , Unreliable , Category = "CraftingStar Character")
-	void MulticastOrientRotationToMove(bool rotateToMove);
-
 	
 public:
 	ACraftingStarCharacter();

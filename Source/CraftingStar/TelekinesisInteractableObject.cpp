@@ -11,6 +11,7 @@ ATelekinesisInteractableObject::ATelekinesisInteractableObject()
 
 	// Set this Component's Replication Property
 	SetReplicates(true);
+	bReplicates = true;
 
 	// Set Rotation
 
@@ -55,7 +56,6 @@ void ATelekinesisInteractableObject::ServerSetIsSeleted_Implementation(bool valu
 void ATelekinesisInteractableObject::MulticastSetIsSeleted_Implementation(bool value) {
 	isSelected = value;
 }
-
 
 void ATelekinesisInteractableObject::Init() {
 	

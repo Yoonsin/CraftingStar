@@ -18,6 +18,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
+#include "TelekinesisInteractableObject.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "CraftingStarGameMode.h"
 #include "DrawDebugHelpers.h"
@@ -668,7 +669,7 @@ void ACraftingStarCharacter::Telekinesis() {
 	// Start point and End point of LineTrace
 	FVector Start = SpawnLocation;
 	//FVector End = SpawnLocation + ( FollowCamera->GetForwardVector() * 750 );
-	FVector End = SpawnLocation + ( SpawnLocSource->GetUpVector() * 750 );
+	FVector End = SpawnLocation + ( SpawnLocSource->GetUpVector() * teleLaserDistance );
 
 	// Trace Channel: Custom Trace Channel - AbilitySpawn
 	ECollisionChannel Channel = ECollisionChannel::ECC_GameTraceChannel1;
@@ -680,19 +681,25 @@ void ACraftingStarCharacter::Telekinesis() {
 	GetWorld()->LineTraceSingleByChannel(Hit , Start , End , Channel , QueryParams);
 
 	// Visualize LineTrace
-	//DrawDebugLine(GetWorld() , Start , End , FColor::Green);
+	DrawDebugLine(GetWorld() , Start , End , FColor::Green);
 
 	// Draw Laser
 	//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("x : %f  y : %f  z : %f ") , End.X , End.Y , End.Z));
-	Comp_LaserNiagara->SetLaser(Hit , End);
+	//Comp_LaserNiagara->SetLaser(Hit , End);
 
 	if ( Hit.bBlockingHit ) {
-		if ( selectedTarget == NULL ) {
+		if ( selectedTarget == NULL && Cast<ATelekinesisInteractableObject>(Hit.GetComponent()->GetOwner()) ) {
+			teleLaserDistance = Hit.Distance;
+			teleComponentDistance = Hit.Distance;
+			//teleForce = 5000.0f;
 			// Grab selectedTarget Component
 			switch ( HasAuthority() ) {
 			case true:
 				selectedTarget = Hit.GetComponent();
+
 				PhysicsHandle->GrabComponent(selectedTarget , NAME_None , End , true);
+				PhysicsHandle->GrabComponentAtLocationWithRotation(selectedTarget , NAME_None , Hit.Component->GetRelativeLocation(), FRotator(0, 0, 0));
+
 				if ( selectedTarget ) {
 					// Check is the simulate physics true
 					if ( !selectedTarget->IsSimulatingPhysics() ) {
@@ -702,7 +709,7 @@ void ACraftingStarCharacter::Telekinesis() {
 				break;
 			case false:
 				ServerSelectTarget(Hit);
-				ServerGrabComponent(End);
+				ServerGrabComponent(End, Hit);
 				break;
 			}
 		}
@@ -716,10 +723,33 @@ void ACraftingStarCharacter::Telekinesis() {
 			// Change Tele' Interactive Actor's Outline Color
 			if ( Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner()) )
 			{
+				FLatentActionInfo LatentInfo;
+				LatentInfo.CallbackTarget = this;
 			// Move selectedTarget Component
 				switch ( HasAuthority() ) {
 				case true:
+					//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("teleObj RPC")));
+					//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("x : %f  y : %f  z : %f ") , End.X , End.Y , End.Z));
+					//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("x : %f  y : %f  z : %f ") , UKismetMathLibrary::GetDirectionUnitVector(selectedTarget->GetComponentLocation() , End).X , UKismetMathLibrary::GetDirectionUnitVector(selectedTarget->GetComponentLocation() , End).Y , UKismetMathLibrary::GetDirectionUnitVector(selectedTarget->GetComponentLocation() , End).Z));
+					//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("x : %f  y : %f  z : %f ") , selectedTarget->GetComponentLocation().X , selectedTarget->GetComponentLocation().Y , selectedTarget->GetComponentLocation().Z));
+					
 					PhysicsHandle->SetTargetLocation(End);
+					teleComponentDistance = ( End - selectedTarget->GetComponentLocation() ).Size();
+					if ( teleComponentDistance <= 100 ) {
+						//teleForce = 0;
+						//selectedTarget->GetOwner()->GetRootComponent()->ComponentVelocity = FVector(0 , 0 , 0);
+						GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("selected object distance: %f") , teleComponentDistance));
+					}
+					else {
+						//teleForce = 3000.0f;
+						//selectedTarget->GetOwner()->GetRootComponent()->ComponentVelocity = UKismetMathLibrary::GetDirectionUnitVector(selectedTarget->GetComponentLocation() , End);
+						GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("selected object distance: %f") , teleComponentDistance));
+					}
+					
+					//selectedTarget->MoveComponent(UKismetMathLibrary::GetDirectionUnitVector(selectedTarget->GetComponentLocation() , End) * selectedTarget->GetMass() * teleForce , selectedTarget->GetComponentRotation() , true);
+					
+					//UKismetSystemLibrary::MoveComponentTo(selectedTarget , End , selectedTarget->GetRelativeRotation(), false, false, 0.1f, true, EMoveComponentAction::Type::Move , LatentInfo);
+					//selectedTarget->AddForce(UKismetMathLibrary::GetDirectionUnitVector(selectedTarget->GetComponentLocation() , End) * selectedTarget->GetMass() * teleForce);
 					break;
 				case false:
 					ServerTeleObjLoc(End);
@@ -758,14 +788,14 @@ void ACraftingStarCharacter::MulticastDeselectTarget_Implementation() {
 }
 
 // Grab Component on Server
-bool ACraftingStarCharacter::ServerGrabComponent_Validate(FVector End) {
+bool ACraftingStarCharacter::ServerGrabComponent_Validate(FVector End, FHitResult Hit) {
 	return true;
 }
-void ACraftingStarCharacter::ServerGrabComponent_Implementation(FVector End) {
-	MulticastGrabComponent(End);
+void ACraftingStarCharacter::ServerGrabComponent_Implementation(FVector End, FHitResult Hit) {
+	MulticastGrabComponent(End, Hit);
 }
-void ACraftingStarCharacter::MulticastGrabComponent_Implementation(FVector End) {
-	PhysicsHandle->GrabComponent(selectedTarget , NAME_None , End , true);
+void ACraftingStarCharacter::MulticastGrabComponent_Implementation(FVector End, FHitResult Hit) {
+	PhysicsHandle->GrabComponentAtLocationWithRotation(selectedTarget , NAME_None , Hit.Component->GetRelativeLocation(), FRotator(0, 0, 0));
 	GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Grab Component"));
 
 	if ( selectedTarget ) {
@@ -792,6 +822,7 @@ void ACraftingStarCharacter::MulticastTeleObjLoc_Implementation(FVector End) {
 	//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("x : %f  y : %f  z : %f ") , End.X , End.Y , End.Z));
 	
 	PhysicsHandle->SetTargetLocation(End);
+	//selectedTarget->AddForce(UKismetMathLibrary::GetDirectionUnitVector(selectedTarget->GetComponentLocation(), End) * teleForce * selectedTarget->GetMass());
 }
 
 // Ability Animaition Replicate
@@ -808,7 +839,9 @@ void ACraftingStarCharacter::MulticastAbility_Implementation(bool abilityState) 
 	}
 	else {
 		// Deactivate Ability
-		bUseControllerRotationYaw = false;	// Not Rotate the player based on the controller
+		if ( nowAbility == EPlayerAbility::EBlast ) {	// No: Tele
+			bUseControllerRotationYaw = false;	// Not Rotate the player based on the controller
+		}
 		GetMesh()->GetAnimInstance()->Montage_Play(DeactiveAbilityMontage , 1.0f);
 		// Hide Laser
 		switch ( HasAuthority() ) {
@@ -900,13 +933,17 @@ void ACraftingStarCharacter::ActivateAbility() {
 	else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
 		//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Tele"));
 		if ( !abilityReadyStatus ) {
+			teleComponentDistance = 0;
+			//teleForce = 5000.0f;
+
 			abilityReadyStatus = true;
 
 			CameraBoom->SetRelativeLocation(FVector(0.0f , 100.0f , 100.0f));
 			//CameraBoom->bUsePawnControlRotation = false; // Does not rotate the arm based on the controller
-			// 
-			//GetCharacterMovement()->bOrientRotationToMovement = false; // Character doesn't moves in the direction of input...
 			
+			bUseControllerRotationYaw = true;
+			GetCharacterMovement()->bOrientRotationToMovement = false; // Character doesn't move in the direction of input...
+
 			CreateTeleObjOutline();
 		}
 		else {
@@ -914,7 +951,8 @@ void ACraftingStarCharacter::ActivateAbility() {
 			CameraBoom->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
 			//CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 
-			//GetCharacterMovement()->bOrientRotationToMovement = false; // Character doesn't moves in the direction of input...
+			bUseControllerRotationYaw = false;
+			GetCharacterMovement()->bOrientRotationToMovement = true; // Character  moves in the direction of input...
 
 			RemoveTeleObjOutline();
 			switch ( HasAuthority() ) {
@@ -972,34 +1010,17 @@ void ACraftingStarCharacter::DeactivateAbility() {
 	}
 }
 
-// Replicate Orient Roation to Move
-bool ACraftingStarCharacter::ServerOrientRotationToMove_Validate(bool rotateToMove) {
-	return true;
-}
-void ACraftingStarCharacter::ServerOrientRotationToMove_Implementation(bool rotateToMove) {
-	MulticastOrientRotationToMove(rotateToMove);
-}
-void ACraftingStarCharacter::MulticastOrientRotationToMove_Implementation(bool rotateToMove) {
-	GetCharacterMovement()->bOrientRotationToMovement = rotateToMove;	// false: fix , true: rotate
-}
-
 void ACraftingStarCharacter::MouseLeftPressed() {
 	if ( nowAbility != EPlayerAbility::ENone ) {
 		if ( nowAbility == EPlayerAbility::ETelekinesis && abilityReadyStatus ) {
-			CameraBoom->bUsePawnControlRotation = false; // Does not rotate the arm based on the controller
+			//CameraBoom->bUsePawnControlRotation = false; // Does not rotate the arm based on the controller
 		
 			// Sound
 			audioComp->SetSound(SW_Telekinesis);
 			audioComp->Play();
 
-			switch ( HasAuthority() ) {
-			case true :
-				GetCharacterMovement()->bOrientRotationToMovement = false; // Character doesn't moves in the direction of input...
-				break;
-			case false :
-				ServerOrientRotationToMove(false);
-				break;
-			}
+			//GetCharacterMovement()->bOrientRotationToMovement = false; // Character doesn't moves in the direction of input...
+			
 			if ( abilityReadyStatus ) {
 				switch ( HasAuthority() ) {
 				case true:
@@ -1025,7 +1046,7 @@ void ACraftingStarCharacter::MouseLeftReleased() {
 
 	if ( nowAbility != EPlayerAbility::ENone ) {
 		if ( nowAbility == EPlayerAbility::ETelekinesis && KeepAbility ) {
-			CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
+			//CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 
 			// Sound
 			audioComp->Stop();
@@ -1076,14 +1097,12 @@ void ACraftingStarCharacter::MouseLeftReleased() {
 					GetMesh()->GetAnimInstance()->Montage_IsPlaying(DeactiveAbilityMontage);
 				}
 
-				switch ( HasAuthority() ) {
-				case true:
-					GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...
-					break;
-				case false:
-					ServerOrientRotationToMove(true);
-					break;
-				}
+				teleLaserDistance = 750;
+				teleComponentDistance = 0;
+				//teleForce = 5000.0f;
+
+				//GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...
+				
 			}
 		}
 	}
