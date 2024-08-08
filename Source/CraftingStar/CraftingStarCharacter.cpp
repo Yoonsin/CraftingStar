@@ -1539,7 +1539,7 @@ void ACraftingStarCharacter::PlayerUIInit_Implementation(EQuestID questId)
 
 		//재생하면서 바로 퀘스트 진행
 		if ( UUtilityFunction::IsHost(GetController()) ) {
-			gameState->ProgressData.questID = EQuestID::EIncendieEndMovie;
+			gameState->ProgressData.questID = EQuestID::EIncendiePengdoNotMeet;
 		}
 	}
 
