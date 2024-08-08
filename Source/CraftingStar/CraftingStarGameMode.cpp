@@ -114,7 +114,7 @@ void ACraftingStarGameMode::Tick(float DeltaTime)
 			//플레이어 데이터 로드
 			serverCharacter->PlayerOutfit(gameInstance->nowSaveGame->HostData , gameInstance->nowSaveGame->GuestData);
 			serverCharacter->PlayerUIInit(gameInstance->nowSaveGame->ProgressData.questID);
-			if ( gameInstance->nowSaveGame->ProgressData.questID == EQuestID::EIncendieStartMovie ) gameInstance->nowSaveGame->ProgressData.questID = EQuestID::EIncendieEndMovie;
+			if ( gameInstance->nowSaveGame->ProgressData.questID == EQuestID::EIncendieStartMovie ) gameInstance->nowSaveGame->ProgressData.questID = EQuestID::EIncendiePengdoNotMeet;
 
 			//월드 데이터 로드
 			LoadWorldData(gameInstance->nowSaveGame);
