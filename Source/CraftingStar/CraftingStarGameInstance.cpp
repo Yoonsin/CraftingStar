@@ -121,6 +121,7 @@ bool UCraftingStarGameInstance::SaveFile( int targetIdx )
 	//인게임 -> 인게임 전환시에는 NowSaveGame을 설정해 줘야함
 	//(Load는 로비->인게임 넘어갈 때 한번밖에 안하기 때문)
 	if ( savingFile->ProgressData.questID == EQuestID::EMegetonTransition ) {
+		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("MegetonTransition ")));
 		savingFile->ProgressData.questID = EQuestID::EIncendieStartMovie;
 		nowSaveGame = savingFile;
 	}
