@@ -359,4 +359,8 @@ private:
 	class UAssimilationComponent* AssimilationComponent;
 
 	int idx = 0;
+
+	// Control CameraBoom Rotation
+	float CameraBoomMinPitch = -30.0f;
+	float CameraBoomMaxPitch = 30.0f;
 };

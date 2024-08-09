@@ -584,7 +584,8 @@ void ACraftingStarCharacter::Telekinesis() {
 	// Draw Laser
 	//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("x : %f  y : %f  z : %f ") , End.X , End.Y , End.Z));
 	//Comp_LaserNiagara->SetLaser(Hit , End);
-
+	
+	
 	if ( Hit.bBlockingHit ) {
 		if ( selectedTarget == NULL && Cast<ATelekinesisInteractableObject>(Hit.GetComponent()->GetOwner()) ) {
 			teleLaserDistance = Hit.Distance;
@@ -596,7 +597,7 @@ void ACraftingStarCharacter::Telekinesis() {
 				selectedTarget = Hit.GetComponent();
 
 				PhysicsHandle->GrabComponent(selectedTarget , NAME_None , End , true);
-				PhysicsHandle->GrabComponentAtLocationWithRotation(selectedTarget , NAME_None , Hit.Component->GetRelativeLocation(), FRotator(0, 0, 0));
+				PhysicsHandle->GrabComponentAtLocationWithRotation(selectedTarget , NAME_None , Hit.Location , FRotator(0 , 0 , 0));
 
 				if ( selectedTarget ) {
 					// Check is the simulate physics true
@@ -636,12 +637,12 @@ void ACraftingStarCharacter::Telekinesis() {
 					if ( teleComponentDistance <= 100 ) {
 						//teleForce = 0;
 						//selectedTarget->GetOwner()->GetRootComponent()->ComponentVelocity = FVector(0 , 0 , 0);
-						GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("selected object distance: %f") , teleComponentDistance));
+						//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("selected object distance: %f") , teleComponentDistance));
 					}
 					else {
 						//teleForce = 3000.0f;
 						//selectedTarget->GetOwner()->GetRootComponent()->ComponentVelocity = UKismetMathLibrary::GetDirectionUnitVector(selectedTarget->GetComponentLocation() , End);
-						GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("selected object distance: %f") , teleComponentDistance));
+						//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("selected object distance: %f") , teleComponentDistance));
 					}
 					
 					//selectedTarget->MoveComponent(UKismetMathLibrary::GetDirectionUnitVector(selectedTarget->GetComponentLocation() , End) * selectedTarget->GetMass() * teleForce , selectedTarget->GetComponentRotation() , true);
@@ -837,18 +838,18 @@ void ACraftingStarCharacter::ActivateAbility() {
 			abilityReadyStatus = true;
 
 			CameraBoom->SetRelativeLocation(FVector(0.0f , 100.0f , 100.0f));
-			//CameraBoom->bUsePawnControlRotation = false; // Does not rotate the arm based on the controller
+			CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 			
 			bUseControllerRotationYaw = true;
 			GetCharacterMovement()->bOrientRotationToMovement = false; // Character doesn't move in the direction of input...
-
+			
 			CreateTeleObjOutline();
 		}
 		else {
 			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Cancel"));
 			CameraBoom->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
-			//CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
-
+			//CameraBoom->bUsePawnControlRotation = false; // Does not rotate the arm based on the controller
+			
 			bUseControllerRotationYaw = false;
 			GetCharacterMovement()->bOrientRotationToMovement = true; // Character  moves in the direction of input...
 
@@ -1082,11 +1083,27 @@ void ACraftingStarCharacter::TurnAtRate(float Rate)
 
 void ACraftingStarCharacter::LookUpAtRate(float Rate)
 {
+	//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("cameraBoomRate: %f") , Rate));
+
 	// forbid to look up while keeping using ability
 	if ( nowAbility == EPlayerAbility::EBlast ) {
 		if ( !KeepAbility ) {
 			// calculate delta for this frame from the rate information
 			AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
+		}
+	}
+	else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
+		if ( KeepAbility ) {
+			if ( Rate != 0.0f && CameraBoom )
+			{
+				float CurrentPitch = CameraBoom->GetRelativeRotation().Pitch;
+
+				float NewPitch = CurrentPitch + ( Rate * GetWorld()->GetDeltaSeconds() );
+
+				NewPitch = FMath::Clamp(NewPitch , CameraBoomMinPitch , CameraBoomMaxPitch);
+
+				CameraBoom->SetRelativeRotation(FRotator(NewPitch , CameraBoom->GetRelativeRotation().Yaw , CameraBoom->GetRelativeRotation().Roll));
+			}
 		}
 	}
 }
