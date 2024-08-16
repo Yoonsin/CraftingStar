@@ -119,7 +119,6 @@ void ACraftingStarGameMode::Tick(float DeltaTime)
 			//월드 데이터 로드
 			LoadWorldData(gameInstance->nowSaveGame);
 
-
 			//데이터 전부 로드하면 세이브
 			UUtilityFunction::Save(gameInstance);
 

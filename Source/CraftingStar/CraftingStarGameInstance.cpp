@@ -36,19 +36,36 @@ UCraftingStarGameInstance::UCraftingStarGameInstance(const FObjectInitializer& O
 //얘는 블프가 더 편할 것 같기도 하고
 bool UCraftingStarGameInstance::SetDebugFile()
 {
-
 	debugSaveGame =  Cast< UCraftingStarSaveGame>(UGameplayStatics::CreateSaveGameObject(UCraftingStarSaveGame::StaticClass()));
-	debugSaveGame->HostData.AbleAbility.Init(false , (int)EPlayerAbility::ENone + 1);
-	debugSaveGame->HostData.Mode = EPlayerRole::EDark;
+	
+	UWorld* world = GetWorld();
+	if ( world == nullptr ) return false;
+	FString currentLevelName = UGameplayStatics::GetCurrentLevelName(GetWorld());
 
-	debugSaveGame->GuestData.AbleAbility.Init(false , (int)EPlayerAbility::ENone + 1);
-	debugSaveGame->GuestData.Mode = EPlayerRole::ELight;
+	if ( currentLevelName.Contains(FString("L_Map_Megeton")) ) {
+		debugSaveGame->HostData.AbleAbility.Init(false , (int)EPlayerAbility::ENone + 1);
+		debugSaveGame->HostData.Mode = EPlayerRole::EDark;
+		debugSaveGame->GuestData.AbleAbility.Init(false , (int)EPlayerAbility::ENone + 1);
+		debugSaveGame->GuestData.Mode = EPlayerRole::ELight;
 
-	debugSaveGame->ProgressData.NowMapName = EMapName::EKeyStar;
-	debugSaveGame->ProgressData.ProgressLevel = 0;
-	debugSaveGame->ProgressData.questID = EQuestID::EMegetonNotMeet;
-	debugSaveGame->ProgressData.HostPlayerPos = MapSpawnDict[EMapName::EKeyStar].HostPlayerPos;
-	debugSaveGame->ProgressData.GuestPlayerPos = MapSpawnDict[EMapName::EKeyStar].GuestPlayerPos;
+		debugSaveGame->ProgressData.NowMapName = EMapName::EKeyStar;
+		debugSaveGame->ProgressData.ProgressLevel = 0;
+		debugSaveGame->ProgressData.questID = EQuestID::EMegetonNotMeet;
+		debugSaveGame->ProgressData.HostPlayerPos = MapSpawnDict[EMapName::EKeyStar].HostPlayerPos;
+		debugSaveGame->ProgressData.GuestPlayerPos = MapSpawnDict[EMapName::EKeyStar].GuestPlayerPos;
+	}
+    else if ( currentLevelName.Contains(FString("L_Map_Incendie")) ) {
+		debugSaveGame->HostData.AbleAbility.Init(true , (int)EPlayerAbility::ENone + 1);
+		debugSaveGame->HostData.Mode = EPlayerRole::EDark;
+		debugSaveGame->GuestData.AbleAbility.Init(true , (int)EPlayerAbility::ENone + 1);
+		debugSaveGame->GuestData.Mode = EPlayerRole::ELight;
+
+		debugSaveGame->ProgressData.NowMapName = EMapName::EFlameAndIceStar;
+		debugSaveGame->ProgressData.ProgressLevel = 0;
+		debugSaveGame->ProgressData.questID = EQuestID::EIncendieStartMovie;
+		debugSaveGame->ProgressData.HostPlayerPos = MapSpawnDict[EMapName::EFlameAndIceStar].HostPlayerPos;
+		debugSaveGame->ProgressData.GuestPlayerPos = MapSpawnDict[EMapName::EFlameAndIceStar].GuestPlayerPos;
+	}
 
 	nowSaveGame = debugSaveGame;
 	return true;
