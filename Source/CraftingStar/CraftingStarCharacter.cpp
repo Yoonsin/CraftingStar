@@ -184,6 +184,10 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	// Ability
+	KeepAbility = false;
+	WandReadySign = false;
 }
 
 void ACraftingStarCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
@@ -257,7 +261,7 @@ void ACraftingStarCharacter::SetupPlayerInputComponent(class UInputComponent* Pl
 	// "turnrate" is for devices that we choose to treat as a rate of change, such as an analog joystick
 	PlayerInputComponent->BindAxis("Turn" , this , &APawn::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("TurnRate" , this , &ACraftingStarCharacter::TurnAtRate);
-	PlayerInputComponent->BindAxis("LookUp" , this , &APawn::AddControllerPitchInput);
+	PlayerInputComponent->BindAxis("LookUp" , this , &ACraftingStarCharacter::LookUp);
 	PlayerInputComponent->BindAxis("LookUpRate" , this , &ACraftingStarCharacter::LookUpAtRate);
 
 	// handle touch devices
@@ -296,8 +300,10 @@ void ACraftingStarCharacter::Tick(float DeltaTime)
 {
 	//          Ӹ          ɷ              ʿ        Ʈ
 	Super::Tick(DeltaTime);
-
-	if ( KeepAbility  ) {
+	
+	//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("current anim: %s") , GetMesh()->GetAnimInstance()->GetCurrentActiveMontage()));
+	
+	if ( KeepAbility && WandReadySign ) {
 		// Activate Ability
 		if ( nowAbility != EPlayerAbility::ENone ) {
 			if ( nowAbility == EPlayerAbility::EBlast ) {
@@ -322,6 +328,7 @@ void ACraftingStarCharacter::ServerSetKeepAbility_Implementation(bool isKeeping)
 }
 void ACraftingStarCharacter::MulticastSetKeepAbility_Implementation(bool isKeeping) {
 	KeepAbility = isKeeping;
+
 }
 
 void ACraftingStarCharacter::UpdatePlayerAbility(EPlayerAbility playerAbility) {
@@ -335,6 +342,7 @@ void ACraftingStarCharacter::UpdatePlayerAbility(EPlayerAbility playerAbility) {
 	// cancel previous skill if it is running
 	if ( nowAbility == EPlayerAbility::EBlast ) {
 		if ( KeepAbility ) {
+			WandReadySign = false;
 			DeactivateAbility();
 			switch ( HasAuthority() ) {
 			case true :
@@ -583,7 +591,7 @@ void ACraftingStarCharacter::Telekinesis() {
 
 	// Draw Laser
 	//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("x : %f  y : %f  z : %f ") , End.X , End.Y , End.Z));
-	//Comp_LaserNiagara->SetLaser(Hit , End);
+	Comp_LaserNiagara->SetLaser(Hit , End);
 	
 	
 	if ( Hit.bBlockingHit ) {
@@ -627,11 +635,6 @@ void ACraftingStarCharacter::Telekinesis() {
 			// Move selectedTarget Component
 				switch ( HasAuthority() ) {
 				case true:
-					//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("teleObj RPC")));
-					//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("x : %f  y : %f  z : %f ") , End.X , End.Y , End.Z));
-					//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("x : %f  y : %f  z : %f ") , UKismetMathLibrary::GetDirectionUnitVector(selectedTarget->GetComponentLocation() , End).X , UKismetMathLibrary::GetDirectionUnitVector(selectedTarget->GetComponentLocation() , End).Y , UKismetMathLibrary::GetDirectionUnitVector(selectedTarget->GetComponentLocation() , End).Z));
-					//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("x : %f  y : %f  z : %f ") , selectedTarget->GetComponentLocation().X , selectedTarget->GetComponentLocation().Y , selectedTarget->GetComponentLocation().Z));
-					
 					PhysicsHandle->SetTargetLocation(End);
 					teleComponentDistance = ( End - selectedTarget->GetComponentLocation() ).Size();
 					if ( teleComponentDistance <= 100 ) {
@@ -807,19 +810,7 @@ void ACraftingStarCharacter::ActivateAbility() {
 		else if ( Cast<ACraftingStarPS>(GetPlayerState())->PlayerData.Mode == EPlayerRole::ELight ) {
 			audioComp->SetSound(SW_EmissionLight);
 		}
-		audioComp->Play();
-
-		switch ( HasAuthority() ) {
-		case true:
-			KeepAbility = true;
-			break;
-		case false:
-			ServerSetKeepAbility(true);
-			break;
-		}
-		CameraBoom->SetRelativeLocation(FVector(0.0f , 100.0f , 100.0f));
-		CameraBoom->bUsePawnControlRotation = false; // Does not rotate the arm based on the controller
-		
+		audioComp->Play();		
 
 		if ( AbilityMontage ) {
 			// Play Animation
@@ -828,6 +819,20 @@ void ACraftingStarCharacter::ActivateAbility() {
 				ServerAbility(true);	// request ability animation on server
 			}
 		}
+
+		if ( !GetMesh()->GetAnimInstance()->Montage_IsPlaying(AbilityMontage) ) {
+			switch ( HasAuthority() ) {
+			case true:
+				KeepAbility = true;
+				break;
+			case false:
+				ServerSetKeepAbility(true);
+				break;
+			}
+		}
+
+		CameraBoom->SetRelativeLocation(FVector(0.0f , 100.0f , 100.0f));
+		CameraBoom->bUsePawnControlRotation = false; // Does not rotate the arm based on the controller
 	}
 	else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
 		//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Tele"));
@@ -880,6 +885,7 @@ void ACraftingStarCharacter::ActivateAbility() {
 }
 void ACraftingStarCharacter::DeactivateAbility() {
 	if ( nowAbility == EPlayerAbility::EBlast ) {
+		WandReadySign = false;
 		// Sound
 		audioComp->Stop();
 		audioComp->SetSound(NULL);
@@ -949,6 +955,7 @@ void ACraftingStarCharacter::MouseLeftReleased() {
 			audioComp->SetSound(NULL);
 
 			if ( abilityReadyStatus ) {
+				WandReadySign = false;
 				switch ( HasAuthority() ) {
 				case true:
 					KeepAbility = false;
@@ -1081,29 +1088,82 @@ void ACraftingStarCharacter::TurnAtRate(float Rate)
 	AddControllerYawInput(Rate * BaseTurnRate * GetWorld()->GetDeltaSeconds());
 }
 
+void  ACraftingStarCharacter::LookUp(float Value) {
+	//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("LookUpValue: %f") , Value));
+	// Add Pitch Input Value of Controller
+
+	if ( nowAbility == EPlayerAbility::ETelekinesis && KeepAbility ) {
+		if ( Value != 0.0f && CameraBoom ) {
+			
+			//float CameraBoomYaw = CameraBoom->GetComponentRotation().Yaw;
+
+			float CurrentPitch = Cast<ACraftingStarPC>(GetController())->GetControlRotation().Pitch;
+
+			//APlayerController* const PC = Cast<APlayerController>(Controller);
+			//float CurrentYaw = PC->RotationInput.Yaw;
+
+			//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("PC Rot: %f %f %f") , Cast<ACraftingStarPC>(GetController())->GetControlRotation().Pitch , Cast<ACraftingStarPC>(GetController())->GetControlRotation().Yaw , Cast<ACraftingStarPC>(GetController())->GetControlRotation().Roll));
+			/*
+			if ( CameraBoomYaw >= CameraBoomMinPitch && CameraBoomYaw <= CameraBoomMaxPitch ) {
+				//Cast<ACraftingStarPC>(GetController())->AddPitchInput(Value);
+				//RotationInput.Pitch += !IsLookInputIgnored() ? Val * InputPitchScale : 0.f;
+				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("if문 진입")));
+				AddControllerPitchInput(Value);
+
+			}
+			*/
+
+			float NewPitch = 0.f;
+			if ( /*0 <= CurrentPitch && */CurrentPitch <= -CameraBoomMinPitch ) {
+				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("1")));
+				NewPitch = FMath::Clamp(CurrentPitch - Value , 0.f , -CameraBoomMinPitch);
+
+				if ( CurrentPitch <= 0 ) {
+					NewPitch = 360.f - Value;
+				}
+			}
+			else if ( 360 - CameraBoomMaxPitch <= CurrentPitch/* && CurrentPitch < 360*/ ) {
+				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("2")));
+				NewPitch = FMath::Clamp(CurrentPitch - Value , 360 - CameraBoomMaxPitch , 360.f);
+				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("%f") , NewPitch));
+
+				if ( 360 <= CurrentPitch ) {
+					NewPitch = -Value;
+				}
+			}/*
+			else {
+				if ( -CameraBoomMinPitch < CurrentPitch && CurrentPitch <= 180 ) {
+					GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("3")));
+					NewPitch = -CameraBoomMinPitch;			// Apply to Equal to or Less than 180 (excluded 0~CameraBoomMinPitch)
+				}
+				else if ( 180 < CurrentPitch && CurrentPitch < 360 - CameraBoomMaxPitch ) {
+					GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("4")));
+					NewPitch = 360.f - CameraBoomMaxPitch;	// Apply to Greater than 180 (excluded CameraBoomMaxPitch~360)
+				}
+			}*/
+			Cast<ACraftingStarPC>(GetController())->SetControlRotation(FRotator(NewPitch , Cast<ACraftingStarPC>(GetController())->GetControlRotation().Yaw , Cast<ACraftingStarPC>(GetController())->GetControlRotation().Roll));
+			
+			/*
+			float NewPitch = CurrentPitch + Value;
+
+			NewPitch = FMath::Clamp(NewPitch , CameraBoomMinPitch , CameraBoomMaxPitch);
+
+			CameraBoom->SetRelativeRotation(FRotator(NewPitch , CameraBoom->GetRelativeRotation().Yaw , CameraBoom->GetRelativeRotation().Roll));
+			*/
+		}
+	}
+	else {
+		AddControllerPitchInput(Value);
+	}
+}
+
 void ACraftingStarCharacter::LookUpAtRate(float Rate)
 {
-	//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("cameraBoomRate: %f") , Rate));
-
 	// forbid to look up while keeping using ability
 	if ( nowAbility == EPlayerAbility::EBlast ) {
 		if ( !KeepAbility ) {
 			// calculate delta for this frame from the rate information
 			AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
-		}
-	}
-	else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
-		if ( KeepAbility ) {
-			if ( Rate != 0.0f && CameraBoom )
-			{
-				float CurrentPitch = CameraBoom->GetRelativeRotation().Pitch;
-
-				float NewPitch = CurrentPitch + ( Rate * GetWorld()->GetDeltaSeconds() );
-
-				NewPitch = FMath::Clamp(NewPitch , CameraBoomMinPitch , CameraBoomMaxPitch);
-
-				CameraBoom->SetRelativeRotation(FRotator(NewPitch , CameraBoom->GetRelativeRotation().Yaw , CameraBoom->GetRelativeRotation().Roll));
-			}
 		}
 	}
 }

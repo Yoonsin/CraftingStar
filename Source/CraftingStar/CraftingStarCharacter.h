@@ -8,6 +8,7 @@
 #include "CustomEnum.h"
 #include "Net/UnrealNetwork.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
+#include "GameFramework/PlayerController.h"
 #include "CraftingStarCharacter.generated.h"
 
 UCLASS(config=Game)
@@ -60,14 +61,6 @@ class ACraftingStarCharacter : public ACharacter
 	class UUserWidget* WorldMapWidgetRef;
 	class UUserWidget* SystemMenuWidgetRef;
 	class UUserWidget* LoadingWidgetRef;
-
-	/* Ability */
-	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
-	EPlayerAbility nowAbility = EPlayerAbility::ENone;
-	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
-	bool abilityReadyStatus = false;
-	
-
 
 	// Telekinesis
 	UPrimitiveComponent* selectedTarget;
@@ -171,6 +164,7 @@ protected:
 	 * @param Rate	This is a normalized rate, i.e. 1.0 means 100% of desired turn rate
 	 */
 	void LookUpAtRate(float Rate);
+	void LookUp(float Value);
 
 	/** Handler for when a touch input begins. */
 	void TouchStarted(ETouchIndex::Type FingerIndex, FVector Location);
@@ -310,6 +304,16 @@ public:
 	void UpdatePlayerAbility(EPlayerAbility playerAbility);
 	UFUNCTION(BlueprintCallable)
 	void UpdatePlayerGMState(EPlayerGMState playerGMState);
+
+	/* Ability */
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	EPlayerAbility nowAbility = EPlayerAbility::ENone;
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	bool abilityReadyStatus = false;
+
+	// Wand Ability
+	UPROPERTY(Replicated , VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	bool WandReadySign;
 
 	// LineTrace: Set Wand Ability Vector
 	bool WandLineTrace(float distance);

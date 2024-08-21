@@ -40,31 +40,43 @@ void ULaserNiagaraComponent::SetOwner() {
 void ULaserNiagaraComponent::SetLaser(FHitResult Hit , FVector End) {
 	// Set the End of Laser Body
 	if ( Hit.bBlockingHit && owner) {
-		if ( Cast<ACraftingStarPS>(owner->GetPlayerState())->PlayerData.Mode == EPlayerRole::EDark ) {
-			ServerLaser(LaserBody , true , Hit.bBlockingHit , Hit.Location , FLinearColor::Black);
+		if ( owner->nowAbility == EPlayerAbility::EBlast ) {
+			if ( Cast<ACraftingStarPS>(owner->GetPlayerState())->PlayerData.Mode == EPlayerRole::EDark ) {
+				ServerLaser(LaserBody , true , Hit.bBlockingHit , Hit.Location , FLinearColor::Black);
+			}
+			else if ( Cast<ACraftingStarPS>(owner->GetPlayerState())->PlayerData.Mode == EPlayerRole::ELight ) {
+				ServerLaser(LaserBody , true , Hit.bBlockingHit , Hit.Location , FLinearColor::White);
+			}
 		}
-		else if ( Cast<ACraftingStarPS>(owner->GetPlayerState())->PlayerData.Mode == EPlayerRole::ELight ) {
-			ServerLaser(LaserBody , true , Hit.bBlockingHit , Hit.Location , FLinearColor::White);
+		else if ( owner->nowAbility == EPlayerAbility::ETelekinesis ) {
+			ServerLaser(LaserBody , true , Hit.bBlockingHit , Hit.Location , FLinearColor(0.66, 1, 0, 1));
 		}
 	}
 	else {
+		if ( owner->nowAbility == EPlayerAbility::EBlast ) {
+			if ( Cast<ACraftingStarPS>(owner->GetPlayerState())->PlayerData.Mode == EPlayerRole::EDark ) {
+				ServerLaser(LaserBody , true , Hit.bBlockingHit , End , FLinearColor::Black);
+			}
+			else if ( Cast<ACraftingStarPS>(owner->GetPlayerState())->PlayerData.Mode == EPlayerRole::ELight ) {
+				ServerLaser(LaserBody , true , Hit.bBlockingHit , End , FLinearColor::White);
+			}
+		} else if ( owner->nowAbility == EPlayerAbility::ETelekinesis ) {
+			ServerLaser(LaserBody , true , Hit.bBlockingHit , End , FLinearColor(0.66 , 1 , 0 , 1));
+		}
+	}
+
+
+	if ( owner->nowAbility == EPlayerAbility::EBlast ) {
 		if ( Cast<ACraftingStarPS>(owner->GetPlayerState())->PlayerData.Mode == EPlayerRole::EDark ) {
-			ServerLaser(LaserBody , true , Hit.bBlockingHit , End , FLinearColor::Black);
+			ServerLaser(LaserImpact , false , Hit.bBlockingHit , Hit.Location , FLinearColor::Black);
 		}
 		else if ( Cast<ACraftingStarPS>(owner->GetPlayerState())->PlayerData.Mode == EPlayerRole::ELight ) {
-			ServerLaser(LaserBody , true , Hit.bBlockingHit , End , FLinearColor::White);
+			ServerLaser(LaserImpact , false , Hit.bBlockingHit , Hit.Location , FLinearColor::White);
 		}
 	}
-
-
-
-	if ( Cast<ACraftingStarPS>(owner->GetPlayerState())->PlayerData.Mode == EPlayerRole::EDark ) {
-		ServerLaser(LaserImpact , false , Hit.bBlockingHit , Hit.Location , FLinearColor::Black);
+	else if ( owner->nowAbility == EPlayerAbility::ETelekinesis ) {
+		ServerLaser(LaserImpact , false , Hit.bBlockingHit , Hit.Location , FLinearColor(0.66 , 1 , 0 , 1));
 	}
-	else if ( Cast<ACraftingStarPS>(owner->GetPlayerState())->PlayerData.Mode == EPlayerRole::ELight ) {
-		ServerLaser(LaserImpact , false , Hit.bBlockingHit , Hit.Location , FLinearColor::White);
-	}
-
 }
 
 // Show & Hide
