@@ -63,7 +63,6 @@ class ACraftingStarCharacter : public ACharacter
 	class UUserWidget* LoadingWidgetRef;
 
 	// Telekinesis
-	UPrimitiveComponent* selectedTarget;
 
 	float teleLaserDistance = 750.0f;
 	float teleComponentDistance = 0.0f;
@@ -136,6 +135,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere , BlueprintReadWrite , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
 	class UUserWidget* GameWidgetRef;
+
+	// Telekinesis
+	UPrimitiveComponent* selectedTarget;
 
 protected:
 	// Called when the game starts or when spawned

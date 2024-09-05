@@ -75,7 +75,16 @@ void ULaserNiagaraComponent::SetLaser(FHitResult Hit , FVector End) {
 		}
 	}
 	else if ( owner->nowAbility == EPlayerAbility::ETelekinesis ) {
-		ServerLaser(LaserImpact , false , Hit.bBlockingHit , Hit.Location , FLinearColor(0.66 , 1 , 0 , 1));
+		if ( owner->selectedTarget ) {
+			if ( Hit.Component == owner->selectedTarget ) {
+				ServerLaser(LaserImpact , false , true , Hit.Location , FLinearColor(0.66 , 1 , 0 , 1));
+			} else {
+				ServerLaser(LaserImpact , false , false , Hit.Location , FLinearColor(0.66 , 1 , 0 , 1));
+			}
+		}
+		else {
+			ServerLaser(LaserImpact , false , Hit.bBlockingHit , Hit.Location , FLinearColor(0.66 , 1 , 0 , 1));
+		}
 	}
 }
 
