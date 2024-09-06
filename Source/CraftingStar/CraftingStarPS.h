@@ -44,6 +44,8 @@ public:
 	  EPlayerAbility NowDisplayAbility = EPlayerAbility::ENone;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
 	  EPlayerGMState NowDisplayState = EPlayerGMState::EIdle;
+	UPROPERTY(Replicated , EditAnywhere , BlueprintReadWrite)
+		FTransform SaveTransform;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		EPlayerAbility NowAbility = EPlayerAbility::ENone;

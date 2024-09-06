@@ -4,8 +4,11 @@
 #include "CraftingStarPC.h"
 #include "CraftingStarPS.h"
 #include "CraftingStarGS.h"
+#include "UtilityFunction.h"
+#include "CraftingStarGameInstance.h"
 #include "CustomEnum.h"
 #include "UtilityFunction.h"
+#include "Components/WidgetComponent.h"
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -60,17 +63,43 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 0.2f;
 
-	ConstructorHelpers::FObjectFinder<USkeletalMesh> BodySM(TEXT("SkeletalMesh'/Game/Assets/BaseContent/RPGTinyHeroWavePolyart/Mesh/BodyPart/Body10_SK.Body10_SK'"));
-	if ( BodySM.Succeeded() ) {
-		GetMesh()->SetSkeletalMesh(BodySM.Object);
-	}
 
+	ConstructorHelpers::FObjectFinder<USkeletalMesh> BodySM_Light(TEXT("SkeletalMesh'/Game/Assets/BaseContent/RPGTinyHeroWavePolyart/Mesh/BodyPart/Body10_SK.Body10_SK'"));
+	if ( BodySM_Light.Succeeded() ) {
+		GetMesh()->SetSkeletalMesh(BodySM_Light.Object);
+		BodyMesh_Light = BodySM_Light.Object;
+	}
+	ConstructorHelpers::FObjectFinder<UMaterialInterface> BodySMMat_Light(TEXT("Material'/Game/Assets/PlayerMaterial/Material/Light/MaskTintPolyart_Light_Body.MaskTintPolyart_Light_Body'"));
+	if ( BodySMMat_Light.Succeeded() ) {
+		BodyMat_Light = BodySMMat_Light.Object;
+;	}
+
+	ConstructorHelpers::FObjectFinder<USkeletalMesh> BodySM_Dark(TEXT("SkeletalMesh'/Game/Assets/BaseContent/RPGTinyHeroWavePolyart/Mesh/BodyPart/Body09_SK.Body09_SK'"));
+	if ( BodySM_Dark.Succeeded() ) {
+		BodyMesh_Dark = BodySM_Dark.Object;
+	}
+	ConstructorHelpers::FObjectFinder<UMaterialInterface> BodySMMat_Dark(TEXT("Material'/Game/Assets/PlayerMaterial/Material/Dark/MaskTintPolyart_suit.MaskTintPolyart_suit'"));
+
+	if ( BodySMMat_Dark.Succeeded() ) {
+		BodyMat_Dark = BodySMMat_Dark.Object;
+	}
+	
+    
 	// Character Mesh
 	HeadMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Head"));
-	ConstructorHelpers::FObjectFinder<UStaticMesh> HeadSM(TEXT("StaticMesh'/Game/Assets/BaseContent/RPGTinyHeroWavePolyart/Mesh/HeadPart/Head02_Female_SM.Head02_Female_SM'"));
-	if ( HeadSM.Succeeded() ) {
-		HeadMesh->SetStaticMesh(HeadSM.Object);
+	ConstructorHelpers::FObjectFinder<UStaticMesh> HeadSM_Light(TEXT("StaticMesh'/Game/Assets/BaseContent/RPGTinyHeroWavePolyart/Mesh/HeadPart/Head02_Female_SM.Head02_Female_SM'"));
+	if ( HeadSM_Light.Succeeded() ) {
+		HeadMesh->SetStaticMesh(HeadSM_Light.Object);
+		HeadMesh_Light = HeadSM_Light.Object;
 	}
+
+
+	ConstructorHelpers::FObjectFinder<UStaticMesh> HeadSM_Dark(TEXT("StaticMesh'/Game/Assets/BaseContent/RPGTinyHeroWavePolyart/Mesh/HeadPart/Head01_Male_SM.Head01_Male_SM'"));
+	if ( HeadSM_Dark.Succeeded() ) {
+		HeadMesh_Dark = HeadSM_Dark.Object;
+	}
+
+
 	HeadMesh->SetupAttachment(GetMesh() , FName(TEXT("Head")));
 	HeadMesh->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
 	HeadMesh->SetRelativeRotation(FRotator(-90.0f , 0.0f , 0.0f));
@@ -78,37 +107,100 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 	HeadMesh->SetRelativeRotation(FRotator(-90.0f , 0.0f , 0.0f));
 
 	HairAndHatMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("HairAndHatMesh"));
-	ConstructorHelpers::FObjectFinder<UStaticMesh> HairAndHatSM(TEXT("StaticMesh'/Game/Assets/BaseContent/RPGTinyHeroWavePolyart/Mesh/HeadPart/Hair08_SM.Hair08_SM'"));
-	if ( HairAndHatSM.Succeeded() ) {
-		HairAndHatMesh->SetStaticMesh(HairAndHatSM.Object);
+	ConstructorHelpers::FObjectFinder<UStaticMesh> HairAndHatSM_Light(TEXT("StaticMesh'/Game/Assets/BaseContent/RPGTinyHeroWavePolyart/Mesh/HeadPart/Hair09_SM.Hair09_SM'"));
+	if ( HairAndHatSM_Light.Succeeded() ) {
+		HairAndHatMesh->SetStaticMesh(HairAndHatSM_Light.Object);
+		HairAndHatMesh_Light = HairAndHatSM_Light.Object;
 	}
+
+	ConstructorHelpers::FObjectFinder<UMaterialInterface> HairSMMat_Light(TEXT("Material'/Game/Assets/PlayerMaterial/Material/Light/MaskTintPolyart_Light_Hair.MaskTintPolyart_Light_Hair'"));
+
+	if ( HairSMMat_Light.Succeeded() ) {
+		HairMat_Light = HairSMMat_Light.Object;
+	}
+	
+	ConstructorHelpers::FObjectFinder<UStaticMesh> HairAndHatSM_Dark(TEXT("StaticMesh'/Game/Assets/BaseContent/RPGTinyHeroWavePolyart/Mesh/HeadPart/Hair02_SM.Hair02_SM'"));
+	if ( HairAndHatSM_Dark.Succeeded() ) {
+		HairAndHatMesh_Dark = HairAndHatSM_Dark.Object;
+	}
+
+	ConstructorHelpers::FObjectFinder<UMaterialInterface> HairSMMat_Dark(TEXT("Material'/Game/Assets/PlayerMaterial/Material/Dark/MaskTintPolyart_Dark_hair_notTh.MaskTintPolyart_Dark_hair_notTh'"));
+	if ( HairSMMat_Dark.Succeeded() ) {
+		HairMat_Dark = HairSMMat_Dark.Object;
+	}
+
+
 	HairAndHatMesh->SetupAttachment(GetMesh() , FName(TEXT("Head")));
 	HairAndHatMesh->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
 	HairAndHatMesh->SetRelativeRotation(FRotator(-90.0f , 0.0f , 0.0f));
 
 	EyesMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Eyes"));
-	ConstructorHelpers::FObjectFinder<UStaticMesh> EyesSM(TEXT("StaticMesh'/Game/Assets/BaseContent/RPGTinyHeroWavePolyart/Mesh/HeadPart/Eye08_SM.Eye08_SM'"));
-	if ( EyesSM.Succeeded() ) {
-		EyesMesh->SetStaticMesh(EyesSM.Object);
+	ConstructorHelpers::FObjectFinder<UStaticMesh> EyesSM_Light(TEXT("StaticMesh'/Game/Assets/BaseContent/RPGTinyHeroWavePolyart/Mesh/HeadPart/Eye08_SM.Eye08_SM'"));
+	if ( EyesSM_Light.Succeeded() ) {
+		EyesMesh->SetStaticMesh(EyesSM_Light.Object);
+		EyesMesh_Light = EyesSM_Light.Object;
 	}
+
+	ConstructorHelpers::FObjectFinder<UMaterialInterface> EyesSMMat_Light(TEXT("Material'/Game/Assets/PlayerMaterial/Material/Light/MaskTintPolyart_Light_Eye.MaskTintPolyart_Light_Eye'"));
+
+	if ( EyesSMMat_Light.Succeeded() ) {
+		EyesMat_Light = EyesSMMat_Light.Object;
+	}
+
+	ConstructorHelpers::FObjectFinder<UStaticMesh> EyesSM_Dark(TEXT("StaticMesh'/Game/Assets/BaseContent/RPGTinyHeroWavePolyart/Mesh/HeadPart/Eye01_SM.Eye01_SM'"));
+	if ( EyesSM_Dark.Succeeded() ) {
+		EyesMesh_Dark = EyesSM_Dark.Object;
+	}
+
+	ConstructorHelpers::FObjectFinder<UMaterialInterface> EyesSMMat_Dark(TEXT("Material'/Game/Assets/BaseContent/RPGTinyHeroWavePolyart/Material/DefaultPolyart_MAT.DefaultPolyart_MAT'"));
+
+	if ( EyesSMMat_Dark.Succeeded() ) {
+		EyesMat_Dark = EyesSMMat_Dark.Object;
+	}
+
 	EyesMesh->SetupAttachment(GetMesh() , FName(TEXT("Head")));
 	EyesMesh->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
 	EyesMesh->SetRelativeRotation(FRotator(-90.0f , 0.0f , 0.0f));
 
 	MouthMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mouth"));
-	ConstructorHelpers::FObjectFinder<UStaticMesh> MouthSM(TEXT("StaticMesh'/Game/Assets/BaseContent/RPGTinyHeroWavePolyart/Mesh/HeadPart/Mouth02_SM.Mouth02_SM'"));
-	if ( MouthSM.Succeeded() ) {
-		MouthMesh->SetStaticMesh(MouthSM.Object);
+	ConstructorHelpers::FObjectFinder<UStaticMesh> MouthSM_Light(TEXT("StaticMesh'/Game/Assets/BaseContent/RPGTinyHeroWavePolyart/Mesh/HeadPart/Mouth02_SM.Mouth02_SM'"));
+
+	if ( MouthSM_Light.Succeeded() ) {
+		MouthMesh->SetStaticMesh(MouthSM_Light.Object);
+		MouthMesh_Light = MouthSM_Light.Object;
 	}
+	ConstructorHelpers::FObjectFinder<UStaticMesh> MouthSM_Dark(TEXT("StaticMesh'/Game/Assets/BaseContent/RPGTinyHeroWavePolyart/Mesh/HeadPart/Mouth01_SM.Mouth01_SM'"));
+	if ( MouthSM_Dark.Succeeded() ) {
+		MouthMesh_Dark = MouthSM_Dark.Object;
+	}
+
 	MouthMesh->SetupAttachment(GetMesh() , FName(TEXT("Head")));
 	MouthMesh->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
 	MouthMesh->SetRelativeRotation(FRotator(-90.0f , 0.0f , 0.0f));
 
 	CloakMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Cloak"));
-	ConstructorHelpers::FObjectFinder<USkeletalMesh> CloakSM(TEXT("SkeletalMesh'/Game/Assets/BaseContent/RPGTinyHeroWavePolyart/Mesh/BodyPart/Cloak02_SK.Cloak02_SK'"));
-	if ( CloakSM.Succeeded() ) {
-		CloakMesh->SetSkeletalMesh(CloakSM.Object);
+	ConstructorHelpers::FObjectFinder<USkeletalMesh> CloakSM_Light(TEXT("SkeletalMesh'/Game/Assets/BaseContent/RPGTinyHeroWavePolyart/Mesh/BodyPart/Cloak02_SK.Cloak02_SK'"));
+	if ( CloakSM_Light.Succeeded() ) {
+		CloakMesh->SetSkeletalMesh(CloakSM_Light.Object);
+		CloakMesh_Light = CloakSM_Light.Object;
 	}
+
+	ConstructorHelpers::FObjectFinder<UMaterialInterface> CloakSMMat_Light(TEXT("Material'/Game/Assets/PlayerMaterial/Material/Light/MaskTintPolyart_Light_Cape.MaskTintPolyart_Light_Cape'"));
+
+	if ( CloakSMMat_Light.Succeeded() ) {
+		CloakMat_Light =  CloakSMMat_Light.Object;
+	}
+
+	ConstructorHelpers::FObjectFinder<USkeletalMesh> CloakSM_Dark(TEXT("SkeletalMesh'/Game/Assets/BaseContent/RPGTinyHeroWavePolyart/Mesh/BodyPart/Cloak03_SK.Cloak03_SK'"));
+	if ( CloakSM_Dark.Succeeded() ) {
+		CloakMesh_Dark = CloakSM_Dark.Object;
+	}
+
+	ConstructorHelpers::FObjectFinder<UMaterialInterface> CloakSMMat_Dark(TEXT("Material'/Game/Assets/PlayerMaterial/Material/Dark/MaskTintPolyart_cape.MaskTintPolyart_cape'"));
+	if ( CloakSMMat_Dark.Succeeded() ) {
+		CloakMat_Dark = CloakSMMat_Dark.Object;
+	}
+
 	CloakMesh->SetupAttachment(GetMesh() , FName(TEXT("CloakBone02")));
 	CloakMesh->SetRelativeLocation(FVector(40.0f , 20.0f , 0.0f));
 	CloakMesh->SetRelativeRotation(FRotator(90.0f , 0.0f , 0.0f));
@@ -146,6 +238,9 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 	Comp_LaserNiagara->SetupAttachment(SpawnLocSource);
 	Comp_LaserNiagara->SetIsReplicated(true);
 
+	
+	interactTag = CreateDefaultSubobject<UWidgetComponent>(TEXT("InteractTag Source"));
+	interactTag->SetupAttachment(GetMesh() , FName(TEXT("InteractTag")));
 	
 
 	// Sounds
@@ -205,37 +300,44 @@ void ACraftingStarCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-
-	
-	//	//idx++;
-	//}
 	SetPause(false);
+	interactTag->SetVisibility(false);
 
-	if ( HasAuthority() ) {
+
+	AController* controller = GetController();
+
+	if ( UUtilityFunction::IsHost (controller)) {
+		if ( LoadingWidgetRef == nullptr   && Cast<ACraftingStarGS>(GetWorld()->GetGameState())->isStartFlag == false)
+		{
+			//LoadingWB
+			LoadingWidgetRef = CreateWidget(GetWorld() , LoadingWidget);
+			LoadingWidgetRef->AddToViewport();
+		}
+
 		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("LOAD Server"));
 		LoadSaveData(true);
-		if ( LoadingWidgetRef == nullptr && LoadingWidget  && Cast<ACraftingStarGS>(GetWorld()->GetGameState())->isStartFlag == false)
-		{
-			//LoadingWB
-			LoadingWidgetRef = CreateWidget(GetWorld() , LoadingWidget);
-			LoadingWidgetRef->AddToViewport();
-		}
 	}
-	else {
-		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("LOAD Client"));
+	else if(controller != nullptr &&!controller->HasAuthority() && controller->IsLocalPlayerController()) {
 		
-		if ( LoadingWidgetRef == nullptr && LoadingWidget && Cast<ACraftingStarGS>(GetWorld()->GetGameState())->isStartFlag == false )
+		
+		if ( LoadingWidgetRef == nullptr  && Cast<ACraftingStarGS>(GetWorld()->GetGameState())->isStartFlag == false )
 		{
 			//LoadingWB
 			LoadingWidgetRef = CreateWidget(GetWorld() , LoadingWidget);
 			LoadingWidgetRef->AddToViewport();
 		}
 
-		LoadSaveData(false);
+		//호스트는 리플리케이션 문제로 통신지연이 되면 데이터 로드를 온전히 못할 수도 있으므로
+		//미리 데이터 갖고오기
+		//ACraftingStarPS* playerState = Cast<ACraftingStarPS>(GetPlayerState());
+		//playerState->PlayerData = data;
+		
+		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("LOAD Client"));
+		ServerRequestLoadSaveData();
 	}
 
 	// Hide Laser
-	switch ( HasAuthority() ) {
+	switch ( UUtilityFunction::IsHost(controller) ) {
 	case true:
 		Comp_LaserNiagara->Hide();
 		break;
@@ -907,6 +1009,8 @@ void ACraftingStarCharacter::DeactivateAbility() {
 			// Play Animation
 			GetMesh()->GetAnimInstance()->Montage_IsPlaying(DeactiveAbilityMontage);
 		}
+
+	
 	}
 	else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
 		// blank
@@ -946,6 +1050,7 @@ void ACraftingStarCharacter::MouseLeftPressed() {
 }
 
 void ACraftingStarCharacter::MouseLeftReleased() {
+
 	if ( nowAbility != EPlayerAbility::ENone ) {
 		if ( nowAbility == EPlayerAbility::ETelekinesis && KeepAbility ) {
 			//CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
@@ -1336,18 +1441,235 @@ void ACraftingStarCharacter::ServerRequestLoadSaveData_Implementation()
 	LoadSaveData(false);
 }
 
+//서버에게 각각 플레이어 데이터 적용해달라고 요청
 void ACraftingStarCharacter::LoadSaveData(bool isHost)
 {
+	UCraftingStarGameInstance* gameInstance = Cast<UCraftingStarGameInstance>(GetGameInstance());
+    if ( gameInstance == nullptr ) return;
+
+
 	
-	FOutputDeviceNull Ar;
+	if ( gameInstance->nowSaveGame == nullptr && isHost) {
+		//디버그 모드 표시
+		gameInstance->SetDebugFile();
+		gameInstance->isDebug = true;
+	}
+	
+	ACraftingStarGS* gameState = Cast<ACraftingStarGS>(GetWorld()->GetGameState());
+
+	if (isHost ) {
+		//호스트일 경우 진행도 데이터도 저장
+		//여기 부분에서 클라이언트 나갈 수도 있음. 주의깊게 보기
+		gameState->ProgressData = gameInstance->nowSaveGame->ProgressData;
+	}
+
+	//플레이어 위치 적용
+	FTransform transform = ( isHost ) ? gameInstance->nowSaveGame->ProgressData.HostPlayerPos : gameInstance->nowSaveGame->ProgressData.GuestPlayerPos;
+	GetCapsuleComponent()->SetWorldTransform(transform);
+	
+	////플레이어 위치에 제일 가까운 플레이어 스타트에 위치
+	//if ( UWorld* World = GetWorld() )
+	//{
+	//	if ( ACraftingStarGameMode* GameMode = Cast<ACraftingStarGameMode>(World->GetAuthGameMode()) )
+	//	{
+	//		GameMode->RespawnPlayer(this);
+	//	}
+	//}
 
 	if ( isHost ) {
-		CallFunctionByNameWithArguments(TEXT("BP_LoadSaveData_Server") , Ar , nullptr , true);
+		FVector pos = transform.GetLocation();
+		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("Host transform %f / %f / %f") ,pos.X,pos.Y,pos.Z ));
 	}
 	else {
-		CallFunctionByNameWithArguments(TEXT("BP_LoadSaveData_Client") , Ar , nullptr , true);
+		FVector pos = transform.GetLocation();
+		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("Guest transform %f / %f / %f") , pos.X , pos.Y , pos.Z));
 	}
 	
+	if ( isHost )gameState->isHostInit = true;
+	else gameState->isGuestInit = true;
+
+}
+
+void ACraftingStarCharacter::PlayerOutfit_Implementation(FPlayerData hostData , FPlayerData guestData)
+{
+	//gamestate - player 순회 후
+	//player state mode 에 맞는 메시를 player state owner인 캐릭터에 적용시켜주기
+	//딜레이 조심
+	ACraftingStarGS* gameState = Cast<ACraftingStarGS>(GetWorld()->GetGameState());
+	if ( gameState == nullptr )return;
+
+	
+	for(auto& playerPS : gameState->PlayerArray )
+	{
+		ACraftingStarPS* playerState = Cast<ACraftingStarPS>(playerPS);
+		if ( playerState == nullptr ) {
+			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("playerState is nullptr"));
+
+			continue;
+
+		}
+
+		ACraftingStarPC* playerController = Cast<ACraftingStarPC>(playerState->GetOwner());
+		if ( playerController == nullptr ) {
+			playerState->PlayerData = hostData;
+		}
+		else {
+			if ( UUtilityFunction::IsHost( playerController )) {
+				playerState->PlayerData = hostData;
+			}
+			else {
+				playerState->PlayerData = guestData;
+			}
+		}
+
+		ACraftingStarCharacter* playerCharacter = Cast<ACraftingStarCharacter>(playerState->GetPawn());
+		if ( playerCharacter == nullptr ) {
+			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("playerCharacter is nullptr"));
+			continue;
+		}
+		//호스트 데이터 적용
+		//지금 플레이어 캐릭터가 host인지
+		
+
+		FString EnumToString = TEXT("Invalid");
+		const UEnum* SEnum = FindObject<UEnum>(ANY_PACKAGE , TEXT("EPlayerRole") , true);
+		if ( SEnum )
+		{
+			EnumToString = SEnum->GetNameStringByValue((int64)playerState->PlayerData.Mode);
+		}
+		if ( playerCharacter->HasAuthority() ) {
+			
+			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("Host Role %s") , *EnumToString));
+		}
+		else {
+			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("Guest Role %s") , *EnumToString));
+		}
+
+
+		if ( playerState->PlayerData.Mode == EPlayerRole::ELight ) {
+			//라이트 메시 적용
+
+			//캐릭터 본
+			playerCharacter->GetMesh()->SetSkeletalMesh(BodyMesh_Light);
+			playerCharacter->GetMesh()->SetMaterial(0 , BodyMat_Light);
+			//머리
+			playerCharacter->HeadMesh->SetStaticMesh(HeadMesh_Light);
+			//헤어
+			playerCharacter->HairAndHatMesh->SetStaticMesh(HairAndHatMesh_Light);
+			playerCharacter->HairAndHatMesh->SetMaterial(0 , HairMat_Light);
+			//눈
+			playerCharacter->EyesMesh->SetStaticMesh(EyesMesh_Light);
+			playerCharacter->HairAndHatMesh->SetMaterial(0 , EyesMat_Light);
+			//입
+			playerCharacter->MouthMesh->SetStaticMesh(MouthMesh_Light);
+			//망토
+			playerCharacter->CloakMesh->SetSkeletalMesh(CloakMesh_Light);
+			playerCharacter->CloakMesh->SetMaterial(0 , CloakMat_Light);
+
+			//레이저 
+			playerCharacter->Comp_LaserNiagara->SystemChange(true);
+			
+		}
+		else if ( playerState->PlayerData.Mode == EPlayerRole::EDark){
+		    //다크 메시적용
+			//캐릭터 본
+			playerCharacter->GetMesh()->SetSkeletalMesh(BodyMesh_Dark);
+			playerCharacter->GetMesh()->SetMaterial(0 , BodyMat_Dark);
+			//머리
+			playerCharacter->HeadMesh->SetStaticMesh(HeadMesh_Dark);
+			//헤어
+			
+			playerCharacter->HairAndHatMesh->SetStaticMesh(HairAndHatMesh_Dark);
+
+			if ( HairMat_Dark == nullptr ) {
+				GEngine->AddOnScreenDebugMessage(-1 , 3 , FColor::Red , TEXT("HairMat_Dark is nullptr"));
+			}
+
+			playerCharacter->HairAndHatMesh->SetMaterial(0 , HairMat_Dark);
+			//눈
+			playerCharacter->EyesMesh->SetStaticMesh(EyesMesh_Dark);
+			//playerCharacter->HairAndHatMesh->SetMaterial(0 , EyesMat_Dark);
+			//입
+			playerCharacter->MouthMesh->SetStaticMesh(MouthMesh_Dark);
+			//망토
+			playerCharacter->CloakMesh->SetSkeletalMesh(CloakMesh_Dark);
+			playerCharacter->CloakMesh->SetMaterial(0 , CloakMat_Dark);
+
+			//레이저 
+			playerCharacter->Comp_LaserNiagara->SystemChange(false);
+		}
+	}
+
+}
+
+void ACraftingStarCharacter::PlayerUIInit_Implementation(EQuestID questId)
+{
+	UWidgetLayoutLibrary::RemoveAllWidgets(this);
+	GameWidgetRef = CreateWidget(GetWorld() , GameWidget);
+	GameWidgetRef->AddToViewport();
+
+	//앙상디 맵 시작이면 영상 재생
+	if ( questId == EQuestID::EIncendieStartMovie ) {
+		ACraftingStarGS* gameState = Cast<ACraftingStarGS>(GetWorld()->GetGameState());
+		if ( gameState == nullptr ) return;
+		gameState->SinglePlaySequence(gameState->IncendieStartSequence);
+
+		//재생하면서 바로 퀘스트 진행
+		if ( UUtilityFunction::IsHost(GetController()) ) {
+			gameState->ProgressData.questID = EQuestID::EIncendiePengdoNotMeet;
+		}
+	}
+
+
+
+	SetPause(false);
+}
+
+void ACraftingStarCharacter::SetInteractionFlag_Implementation(bool isHost , bool isInteraction) {
+	ACraftingStarCharacter* targetPlayer = this;
+	ACraftingStarGS* gameState = Cast<ACraftingStarGS>(GetWorld()->GetGameState());
+	if ( gameState == nullptr ) return;
+
+	if ( UUtilityFunction::IsHost(GetController())) {
+		//호스트
+		
+		for ( APlayerState* playerState : gameState->PlayerArray ) {
+			AController* controller = Cast<AController>(playerState->GetOwner());
+			if ( controller == nullptr ) return;
+			
+			if ( UUtilityFunction::IsHost(controller) && isHost ) {
+				//호스트 쪽의 호스트 캐릭터
+				targetPlayer = Cast<ACraftingStarCharacter>(playerState->GetPawn());
+				break;
+			}
+			else if(!UUtilityFunction::IsHost(controller) && !isHost ) {
+				//호스트 쪽의 게스트 캐릭터
+				targetPlayer = Cast<ACraftingStarCharacter>(playerState->GetPawn());
+				break;
+			}
+
+		}
+	}
+	else {
+		//게스트
+		for ( APlayerState* playerState : gameState->PlayerArray ) {
+			AController* controller = Cast<AController>(playerState->GetOwner());
+			
+			if ( controller == nullptr && isHost ) {
+				//게스트 쪽의 호스트 캐릭터
+				targetPlayer = Cast<ACraftingStarCharacter>(playerState->GetPawn());
+				break;
+			}
+			else if ( controller != nullptr && !isHost ) {
+				//게스트 쪽의 게스트 캐릭터
+				targetPlayer = Cast<ACraftingStarCharacter>(playerState->GetPawn());
+				break;
+			}
+		}
+	}
+	
+	if ( targetPlayer == nullptr ) return;
+	targetPlayer->interactTag->SetVisibility(isInteraction);
 }
 
 void ACraftingStarCharacter::ServerObtainAbility_Implementation(EPlayerAbility ability) {

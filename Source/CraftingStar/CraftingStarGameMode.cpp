@@ -4,6 +4,8 @@
 #include "CraftingStarCharacter.h"
 #include "CraftingStarPC.h"
 #include "CraftingStarGS.h"
+#include "CraftingStarPS.h"
+#include "CraftingStarGameInstance.h"
 #include "Misc/OutputDeviceNull.h"
 #include "Kismet/GameplayStatics.h"
 #include "UObject/ConstructorHelpers.h"
@@ -35,53 +37,6 @@ void ACraftingStarGameMode::PostLogin(APlayerController* newPlayer)
 {
 	Super::PostLogin(newPlayer);
 
-	if ( UUtilityFunction::IsHost(newPlayer) ) {
-		//isHost 일 시
-		//서버의 데이터 로드를 요청한다
-		//Cast<ACraftingStarCharacter>(newPlayer->GetPawn())->LoadSaveData();
-		
-		//캐릭터의 로드 함수를 부른다.
-	}
-	else {
-		//isHost가 아닐 시
-		//클라이언트의 데이터 로드를 요청한다
-		//Cast<ACraftingStarCharacter>(newPlayer->GetPawn())->LoadSaveData();
-	}
-
-	//ACraftingStarGS* CraftingStarGS = Cast<ACraftingStarGS>(UGameplayStatics::GetGameState(this));
-	//if (CraftingStarGS != nullptr) {
-	//	if (CraftingStarGS->PlayerArray.Num() >= 2) {
-
-
-
-	//		//3�� ����� �� �ε�(�ٷ� �ε��ϸ� PlayerState�� �������� ���� ���� ����)
-	//		FTimerHandle DelayTimerHandle;
-	//		float DelayTime = 3.0f;
-
-	//		GetWorld()->GetTimerManager().SetTimer(DelayTimerHandle, FTimerDelegate::CreateLambda([&]()
-	//			{
-	//				//�������Ʈ �Լ��� C++�� ȣ���ؾ���
-	//				auto GameInstance = UGameplayStatics::GetGameInstance(GetWorld());
-	//				UFunction* Function = GameInstance->GetClass()->FindFunctionByName(FName("Load"));
-
-
-	//				if (Function == nullptr)
-	//				{
-	//					return;
-	//				}
-
-	//				struct FLocalParameters{};
-	//				FLocalParameters Parameter;
-
-	//				GameInstance->ProcessEvent(Function,&Parameter);
-
-
-	//				// TimerHandle �ʱ�ȭ
-	//				GetWorld()->GetTimerManager().ClearTimer(DelayTimerHandle);
-	//			}), DelayTime, false);
-	//		
-	//	}
-	//}
 }
 
 void  ACraftingStarGameMode::InitGame()
@@ -126,31 +81,9 @@ void  ACraftingStarGameMode::Logout(AController* Exiting)
 	//���� ����� ���� �������� Ȯ��
 	if (UUtilityFunction::IsHost(Exiting)) {
 		GEngine->AddOnScreenDebugMessage(-1 , 3 , FColor::Red , FString::Printf(TEXT("Host Logout")));
-
-		//UGameplayStatics::OpenLevel(GetWorld(), FName("text"),true);
-		 
 	}
 	else {
 		GEngine->AddOnScreenDebugMessage(-1 , 3 , FColor::Red , FString::Printf(TEXT("Guest Logout")));
-
-		//ACharacter* hostCharacter  = UGameplayStatics::GetPlayerCharacter(GetWorld() , 0);
-		//if ( hostCharacter == nullptr ) return;
-		//
-
-		//ACraftingStarCharacter* host = Cast<ACraftingStarCharacter>(hostCharacter);
-		//if ( host == nullptr ) return;
-
-		//
-		////host->WorldMap();
-		//host->LogoutClient();
-
-		//UGameplayStatics::OpenLevel(GetWorld() , FName("text") , true);
-		
-		/*
-		if ( Online::GetSessionInterface(GetWorld()).IsValid() ) {
-			
-			Online::GetSessionInterface(GetWorld())->DestroySession();
-		}*/
 	}
 	
 }
@@ -167,6 +100,70 @@ void ACraftingStarGameMode::BeginPlay()
 	}
 }
 
+void ACraftingStarGameMode::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	if ( StartFlag ) {
+		if ( LoadFlag == true ) {
+
+			ACraftingStarCharacter* serverCharacter = Cast<ACraftingStarCharacter>(UGameplayStatics::GetPlayerCharacter(this , 0));
+			if ( serverCharacter == nullptr ) return;
+			UCraftingStarGameInstance* gameInstance = Cast<UCraftingStarGameInstance>(GetGameInstance());
+			if ( gameInstance == nullptr ) return;
+
+			//플레이어 데이터 로드
+			serverCharacter->PlayerOutfit(gameInstance->nowSaveGame->HostData , gameInstance->nowSaveGame->GuestData);
+			serverCharacter->PlayerUIInit(gameInstance->nowSaveGame->ProgressData.questID);
+			if ( gameInstance->nowSaveGame->ProgressData.questID == EQuestID::EIncendieStartMovie ) gameInstance->nowSaveGame->ProgressData.questID = EQuestID::EIncendiePengdoNotMeet;
+
+			//월드 데이터 로드
+			LoadWorldData(gameInstance->nowSaveGame);
+
+			//데이터 전부 로드하면 세이브
+			UUtilityFunction::Save(gameInstance);
+
+			LoadFlag = false;
+		}
+		else {
+			
+
+
+
+		}
+		
+	}
+	else {
+		
+		ACraftingStarGS* gameState = Cast<ACraftingStarGS>(UGameplayStatics::GetGameState(this));
+		if ( gameState == nullptr ) return;
+
+		
+
+		if ( gameState->isHostInit && gameState->isGuestInit ) {
+			StartFlag = true;
+			gameState->isStartFlag = true;
+
+			
+			GetWorld()->GetTimerManager().SetTimer(myTimerHandle , FTimerDelegate::CreateLambda([ & ] ()
+			{
+					LoadFlag = true;
+					
+					GetWorld()->GetTimerManager().ClearTimer(myTimerHandle);
+			}) , 5.0f , false); // 반복 실행을 하고 싶으면 false 대신 true 대입
+			
+			//타이머 콜백 불리기 전 게임 종료시 타이머 꺼야 오류안남
+
+		
+		}
+
+		
+		
+		// 타이머 초기화
+
+	}
+}
+
+
 void ACraftingStarGameMode::RestartPlayer(AController* NewPlayer) {
 	Super::RestartPlayer(NewPlayer);
 
@@ -181,23 +178,24 @@ void ACraftingStarGameMode::RestartPlayer(AController* NewPlayer) {
 	//GetWorld()->GetFirstPlayerController()->Possess(Player_Character);
 }
 
+void ACraftingStarGameMode::PlayerDied(ACharacter* Character)
+{
+	//ĳ������ �÷��̾� ��Ʈ�ѷ��� ���� ���۷��� ���ϱ�
+	AController* CharacterController = Character->GetController();
+	RestartPlayer(CharacterController);
 
 
+}
 
 void ACraftingStarGameMode::RespawnPlayer(ACharacter* NewPlayer)
 {
 	SpawnLoc = NewPlayer->GetActorLocation();
 	
-	//��� �÷��̾� ��ŸƮ �迭�� ��ȸ
-	//�÷��̾�� ���� ����� ���� ����
 	TArray<AActor*> FoundActors;
 	float closestDist = 20000000.0f;
 	int NearsIdx = 0;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerStart::StaticClass(), FoundActors);
 	GEngine->AddOnScreenDebugMessage(-1 , 2.0f , FColor::Red , FString::Printf(TEXT("FoundActor Num :: %d") , FoundActors.Num()));
-
-	
-
 
 	for (int i = 0; i < FoundActors.Num(); i++) {
 		if (closestDist > FVector::Distance(FoundActors[i]->GetActorLocation(), SpawnLoc)) {
@@ -215,25 +213,20 @@ void ACraftingStarGameMode::RespawnPlayer(ACharacter* NewPlayer)
 	}
 
 
+
 	//origin spawn
-	if ( Cast<ACraftingStarGS>(GetWorld()->GetGameState())->isOpenMegetonDoor == false ) {
+	if ( Cast<ACraftingStarGS>(GetWorld()->GetGameState())->isOpenMegetonDoor == false && megetonOriginPlayerStart != nullptr) {
 		
 		NewPlayer->SetActorLocation(megetonOriginPlayerStart->GetActorLocation());
+		megetonOriginPlayerStart = nullptr;
 		return;
 	}
 
-	//�÷��̾� ��ġ ����
+	megetonOriginPlayerStart = nullptr;
 	NewPlayer->SetActorLocation(FoundActors[NearsIdx]->GetActorLocation());
-
 }
 
 
 
-void ACraftingStarGameMode::PlayerDied(ACharacter* Character)
-{
-	//ĳ������ �÷��̾� ��Ʈ�ѷ��� ���� ���۷��� ���ϱ�
-	AController* CharacterController = Character->GetController();
-	RestartPlayer(CharacterController);
 
 
-}
