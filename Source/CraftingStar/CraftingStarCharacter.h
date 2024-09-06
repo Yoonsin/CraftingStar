@@ -334,7 +334,7 @@ public:
 	UFUNCTION(Server , Reliable , Category = "UI", BlueprintCallable)
 		void ServerStopLoadingWidget();
 	UFUNCTION(NetMulticast , Reliable , Category = "UI" , BlueprintCallable)
-		void PlayerUIInit(EQuestID questId);
+		void PlayerUIInit();
 
 	UPROPERTY(Replicated, VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
 	bool KeepAbility;
