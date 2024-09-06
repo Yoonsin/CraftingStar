@@ -24,19 +24,13 @@ ACraftingStarGameMode::ACraftingStarGameMode()
 		DefaultPawnClass = PlayerPawnBPClass.Class;
 		CharClass = PlayerPawnBPClass.Class;
 	}	
-	
-	
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
-	//SpawnLoc = FVector(165.f, 0.f, 124.f);
-	//SpawnRot = FRotator(0.f, 0.f, 0.f);
 }
 
 void ACraftingStarGameMode::PostLogin(APlayerController* newPlayer)
 {
 	Super::PostLogin(newPlayer);
-
 }
 
 void  ACraftingStarGameMode::InitGame()
@@ -50,8 +44,6 @@ void  ACraftingStarGameMode::InitGame()
 
 
 	//모든 클라이언트에서 모드 적용
-
-
 	//맵 위치 + 진행도 에 따라 달라지는 초기화 로직
 	switch (NowMapName)
 	{
@@ -59,7 +51,6 @@ void  ACraftingStarGameMode::InitGame()
 		break;
 	case EMapName::EKeyStar:		
 		if (ProgressLevel == 0) {
-			//Ʃ�丮�� ����
 			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("Tutorial Start")));
 		}
 		else if (ProgressLevel == 1) {
@@ -105,7 +96,6 @@ void ACraftingStarGameMode::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	if ( StartFlag ) {
 		if ( LoadFlag == true ) {
-
 			ACraftingStarCharacter* serverCharacter = Cast<ACraftingStarCharacter>(UGameplayStatics::GetPlayerCharacter(this , 0));
 			if ( serverCharacter == nullptr ) return;
 			UCraftingStarGameInstance* gameInstance = Cast<UCraftingStarGameInstance>(GetGameInstance());
@@ -113,78 +103,48 @@ void ACraftingStarGameMode::Tick(float DeltaTime)
 
 			//플레이어 데이터 로드
 			serverCharacter->PlayerOutfit(gameInstance->nowSaveGame->HostData , gameInstance->nowSaveGame->GuestData);
-			serverCharacter->PlayerUIInit(gameInstance->nowSaveGame->ProgressData.questID);
-			if ( gameInstance->nowSaveGame->ProgressData.questID == EQuestID::EIncendieStartMovie ) gameInstance->nowSaveGame->ProgressData.questID = EQuestID::EIncendiePengdoNotMeet;
+			serverCharacter->PlayerUIInit();
 
 			//월드 데이터 로드
 			LoadWorldData(gameInstance->nowSaveGame);
 
+			//퀘스트 데이터 로드
+			LoadQuestData(gameInstance->nowSaveGame);
+
 			//데이터 전부 로드하면 세이브
 			UUtilityFunction::Save(gameInstance);
-
 			LoadFlag = false;
-		}
-		else {
-			
-
-
-
-		}
-		
+		}	
 	}
 	else {
-		
 		ACraftingStarGS* gameState = Cast<ACraftingStarGS>(UGameplayStatics::GetGameState(this));
 		if ( gameState == nullptr ) return;
-
-		
-
 		if ( gameState->isHostInit && gameState->isGuestInit ) {
 			StartFlag = true;
 			gameState->isStartFlag = true;
 
-			
 			GetWorld()->GetTimerManager().SetTimer(myTimerHandle , FTimerDelegate::CreateLambda([ & ] ()
 			{
-					LoadFlag = true;
-					
+					LoadFlag = true;	
 					GetWorld()->GetTimerManager().ClearTimer(myTimerHandle);
 			}) , 5.0f , false); // 반복 실행을 하고 싶으면 false 대신 true 대입
 			
 			//타이머 콜백 불리기 전 게임 종료시 타이머 꺼야 오류안남
-
-		
-		}
-
-		
-		
+		}	
 		// 타이머 초기화
-
 	}
 }
 
 
-void ACraftingStarGameMode::RestartPlayer(AController* NewPlayer) {
+void ACraftingStarGameMode::RestartPlayer(AController* NewPlayer) 
+{
 	Super::RestartPlayer(NewPlayer);
-
-	////�÷��̾� ����
-	//FVector Location = FoundActors[NearsIdx]->GetActorLocation();
-	//FRotator Rotation{ 0.0f, 0.0f, 0.0f };
-	//FActorSpawnParameters PlayerSpawnParameters{};
-	//PlayerSpawnParameters.Owner = this;
-
-	////�÷��̾� ��Ʈ�ѷ� ��������
-	//APawn* Player_Character = GetWorld()->SpawnActor<APawn>(DefaultPawnClass, Location, Rotation, PlayerSpawnParameters);
-	//GetWorld()->GetFirstPlayerController()->Possess(Player_Character);
 }
 
 void ACraftingStarGameMode::PlayerDied(ACharacter* Character)
 {
-	//ĳ������ �÷��̾� ��Ʈ�ѷ��� ���� ���۷��� ���ϱ�
 	AController* CharacterController = Character->GetController();
 	RestartPlayer(CharacterController);
-
-
 }
 
 void ACraftingStarGameMode::RespawnPlayer(ACharacter* NewPlayer)
@@ -202,17 +162,11 @@ void ACraftingStarGameMode::RespawnPlayer(ACharacter* NewPlayer)
 			closestDist = FVector::Distance(FoundActors[i]->GetActorLocation(), SpawnLoc);
 			NearsIdx = i;		
 		}
-
-
 		//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Red , FoundActors[i]->GetName());
-		
-		
 		if ( FoundActors[i]->GetName().Contains(FString("PlayerStart_Origin")) ) {
 			megetonOriginPlayerStart = Cast<APlayerStart>(FoundActors[i]);
 		}
 	}
-
-
 
 	//origin spawn
 	if ( Cast<ACraftingStarGS>(GetWorld()->GetGameState())->isOpenMegetonDoor == false && megetonOriginPlayerStart != nullptr) {
@@ -221,7 +175,6 @@ void ACraftingStarGameMode::RespawnPlayer(ACharacter* NewPlayer)
 		megetonOriginPlayerStart = nullptr;
 		return;
 	}
-
 	megetonOriginPlayerStart = nullptr;
 	NewPlayer->SetActorLocation(FoundActors[NearsIdx]->GetActorLocation());
 }

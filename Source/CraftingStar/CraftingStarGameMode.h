@@ -28,9 +28,7 @@ public:
 		class APlayerStart* megetonOriginPlayerStart;
 
 	const FOnPlayerDiedSignature& GetOnPlayerDied() const { return OnPlayerDied; }
-
 	void RespawnPlayer(ACharacter* NewPlayer);
-
 	virtual void RestartPlayer(AController* NewPlayer) override;
 
 	bool StartFlag = false;
@@ -39,6 +37,9 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void LoadWorldData(UCraftingStarSaveGame* saveGame);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void LoadQuestData(UCraftingStarSaveGame* saveGame);
 
 protected:
 	virtual void BeginPlay() override;

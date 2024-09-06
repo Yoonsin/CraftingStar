@@ -1602,26 +1602,11 @@ void ACraftingStarCharacter::PlayerOutfit_Implementation(FPlayerData hostData , 
 
 }
 
-void ACraftingStarCharacter::PlayerUIInit_Implementation(EQuestID questId)
+void ACraftingStarCharacter::PlayerUIInit_Implementation()
 {
 	UWidgetLayoutLibrary::RemoveAllWidgets(this);
 	GameWidgetRef = CreateWidget(GetWorld() , GameWidget);
 	GameWidgetRef->AddToViewport();
-
-	//앙상디 맵 시작이면 영상 재생
-	if ( questId == EQuestID::EIncendieStartMovie ) {
-		ACraftingStarGS* gameState = Cast<ACraftingStarGS>(GetWorld()->GetGameState());
-		if ( gameState == nullptr ) return;
-		gameState->SinglePlaySequence(gameState->IncendieStartSequence);
-
-		//재생하면서 바로 퀘스트 진행
-		if ( UUtilityFunction::IsHost(GetController()) ) {
-			gameState->ProgressData.questID = EQuestID::EIncendiePengdoNotMeet;
-		}
-	}
-
-
-
 	SetPause(false);
 }
 
