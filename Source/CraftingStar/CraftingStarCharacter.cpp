@@ -706,7 +706,7 @@ void ACraftingStarCharacter::Telekinesis() {
 			case true:
 				selectedTarget = Hit.GetComponent();
 
-				PhysicsHandle->GrabComponent(selectedTarget , NAME_None , End , true);
+				//PhysicsHandle->GrabComponent(selectedTarget , NAME_None , End , true);
 				PhysicsHandle->GrabComponentAtLocationWithRotation(selectedTarget , NAME_None , Hit.Location , FRotator(0 , 0 , 0));
 
 				if ( selectedTarget ) {
@@ -799,7 +799,7 @@ void ACraftingStarCharacter::ServerGrabComponent_Implementation(FVector End, FHi
 	MulticastGrabComponent(End, Hit);
 }
 void ACraftingStarCharacter::MulticastGrabComponent_Implementation(FVector End, FHitResult Hit) {
-	PhysicsHandle->GrabComponentAtLocationWithRotation(selectedTarget , NAME_None , Hit.Component->GetRelativeLocation(), FRotator(0, 0, 0));
+	PhysicsHandle->GrabComponentAtLocationWithRotation(selectedTarget , NAME_None , Hit.Location, FRotator(0, 0, 0));
 	GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Grab Component"));
 
 	if ( selectedTarget ) {
