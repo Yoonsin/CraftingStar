@@ -75,5 +75,11 @@ enum class EQuestID : uint8
 	EMegetonMeet UMETA(DisplayName = "MegetonMeet"),
 	EMegetonGetKey UMETA(DisplayName = "MegetonGetKey") ,
 	EMegetonClear UMETA(DisplayName = "MegetonClear") ,
+	EMegetonTransition UMETA(DisplayName = "MegetonTransition"),
+	EIncendieStartMovie UMETA(DisplayName = "IncendieStartMovie"),
+	EIncendiePengdoNotMeet UMETA(DisplayName = "IncendiePengdoNotMeet") ,
+	EIncendiePengdoMeet UMETA(DisplayName = "IncendiePengdoMeet") ,
+	EIncendieClacierNotMeetAndPopoBerserk UMETA(DisplayName = "IncendieClacierNotMeetAndPopoBerserk"),
+	EIncendieClacierMeet UMETA(DisplayName = "IncendieClacierMeet"),
 };
 

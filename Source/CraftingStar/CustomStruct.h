@@ -72,9 +72,7 @@ public:
 	UPROPERTY(EditAnywhere , BlueprintReadWrite)
 		EQuestID questID = EQuestID::EMegetonNotMeet;
 	UPROPERTY(EditAnywhere , BlueprintReadWrite)
-		TArray<FString> CollectedKeysId;
-	UPROPERTY(EditAnywhere , BlueprintReadWrite)
-		TArray<FString> DestoryActors;
+		TArray<FString> WorldObjects;
 };
 
 

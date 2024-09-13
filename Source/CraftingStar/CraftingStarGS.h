@@ -6,6 +6,8 @@
 #include "GameFramework/GameState.h"
 #include "CustomEnum.h"
 #include "CustomStruct.h"
+#include "LevelSequencePlayer.h"
+#include "LevelSequence.h"
 #include "CraftingStarGS.generated.h"
 
 /**
@@ -33,5 +35,20 @@ public:
 
 	UPROPERTY(BlueprintReadWrite , meta = ( AllowPrivateAccess = "true" ))
 		bool isOpenMegetonDoor = false;
+
+	UPROPERTY(Replicated , BlueprintReadWrite , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+		bool isHostInInteractionRange = false;
+	UPROPERTY(Replicated , BlueprintReadWrite , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+		bool isGuestInInteractionRange = false;
+
+	UFUNCTION(BlueprintCallable)
+	void InteractChange(bool isHost,bool isInteraction);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void MultiCastPlaySequence(ULevelSequence* Sequence);
+
+	bool isHostInit = false;
+	bool isGuestInit = false;
+
 	
 };
