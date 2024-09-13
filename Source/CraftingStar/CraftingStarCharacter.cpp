@@ -313,6 +313,11 @@ void ACraftingStarCharacter::BeginPlay()
 			LoadingWidgetRef = CreateWidget(GetWorld() , LoadingWidget);
 			LoadingWidgetRef->AddToViewport();
 		}
+		
+		if ( GameWidgetRef == nullptr ) {
+			GameWidgetRef = CreateWidget(GetWorld() , GameWidget);
+			GameWidgetRef->AddToViewport();
+		}
 
 		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("LOAD Server"));
 		LoadSaveData(true);
@@ -325,6 +330,11 @@ void ACraftingStarCharacter::BeginPlay()
 			//LoadingWB
 			LoadingWidgetRef = CreateWidget(GetWorld() , LoadingWidget);
 			LoadingWidgetRef->AddToViewport();
+		}
+
+		if ( GameWidgetRef == nullptr ) {
+			GameWidgetRef = CreateWidget(GetWorld() , GameWidget);
+			GameWidgetRef->AddToViewport();
 		}
 
 		//호스트는 리플리케이션 문제로 통신지연이 되면 데이터 로드를 온전히 못할 수도 있으므로
@@ -579,12 +589,12 @@ void ACraftingStarCharacter::ServerStopLoadingWidget_Implementation()
 void ACraftingStarCharacter::MulticastStopLoadingWidget_Implementation()
 {
 
-    //GEngine->AddOnScreenDebugMessage(-1 , 3 , FColor::Red , FString::Printf(TEXT("RemoveWidget_MULTICAST")));
+    GEngine->AddOnScreenDebugMessage(-1 , 3 , FColor::Red , FString::Printf(TEXT("RemoveWidget_MULTICAST")));
 
 	UWidgetLayoutLibrary::RemoveAllWidgets(GetWorld());
 
 	//GameWB     
-	CreateWidget(GetWorld() , GameWidget)->AddToViewport();
+	//CreateWidget(GetWorld() , GameWidget)->AddToViewport();
 }
 
 
@@ -1604,13 +1614,30 @@ void ACraftingStarCharacter::PlayerOutfit_Implementation(FPlayerData hostData , 
 
 void ACraftingStarCharacter::PlayerUIInit_Implementation()
 {
-	UWidgetLayoutLibrary::RemoveAllWidgets(this);
-	GameWidgetRef = CreateWidget(GetWorld() , GameWidget);
-	GameWidgetRef->AddToViewport();
+	if ( HasAuthority() ) {
+		//authority
+		if ( LoadingWidgetRef != NULL ) {
+			LoadingWidgetRef->RemoveFromParent();
+			LoadingWidgetRef = NULL;
+		}
+	}
+	else {
+		//remote
+		ACraftingStarCharacter* PlayerCharacter = Cast<ACraftingStarCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld() , 0));
+		if ( PlayerCharacter != nullptr && PlayerCharacter->LoadingWidgetRef != NULL ) {
+			PlayerCharacter->LoadingWidgetRef->RemoveFromParent();
+			PlayerCharacter->LoadingWidgetRef = NULL;
+		}
+	}
+
 	SetPause(false);
 }
 
 void ACraftingStarCharacter::SetInteractionFlag_Implementation(bool isHost , bool isInteraction) {
+	//authority(서버)
+	//remote(서버)
+	//여기서 뭔가 조작하면 될 것 같은데
+
 	ACraftingStarCharacter* targetPlayer = this;
 	ACraftingStarGS* gameState = Cast<ACraftingStarGS>(GetWorld()->GetGameState());
 	if ( gameState == nullptr ) return;
