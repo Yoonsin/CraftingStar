@@ -619,7 +619,10 @@ void ACraftingStarCharacter::StopWorldMap() {
 }
 
 void ACraftingStarCharacter::SystemMenu() {
-	if ( SystemMenuWidgetRef == NULL ) {
+	auto playerState = Cast<ACraftingStarPS>(GetPlayerState());
+	if ( playerState == nullptr ) return;
+
+	if ( SystemMenuWidgetRef == NULL &&( playerState->NowState != EPlayerGMState::EInteraction )) {
 		SystemMenuWidgetRef = CreateWidget(GetWorld() , SystemMenuWidget);
 		SystemMenuWidgetRef->AddToViewport();
 		SetPause(true);
@@ -1459,7 +1462,7 @@ void ACraftingStarCharacter::LoadSaveData(bool isHost)
 
 
 	
-	if ( gameInstance->nowSaveGame == nullptr && isHost) {
+	if ( (gameInstance->nowSaveGame == nullptr || gameInstance->isDebug) && isHost) {
 		//디버그 모드 표시
 		gameInstance->SetDebugFile();
 		gameInstance->isDebug = true;
