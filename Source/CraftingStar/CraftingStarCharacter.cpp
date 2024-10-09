@@ -458,7 +458,7 @@ void ACraftingStarCharacter::UpdatePlayerAbility(EPlayerAbility playerAbility) {
 			DeactivateAbility();
 			switch ( HasAuthority() ) {
 			case true :
-				KeepAbility = false;
+				MulticastSetKeepAbility(false);
 				break;
 			case false :
 				ServerSetKeepAbility(false);
@@ -928,18 +928,15 @@ void ACraftingStarCharacter::ActivateAbility() {
 			// Play Animation
 			bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(AbilityMontage);
 			if ( !bIsMontagePlaying ) {
-				ServerAbility(true);	// request ability animation on server
-			}
-		}
-
-		if ( !GetMesh()->GetAnimInstance()->Montage_IsPlaying(AbilityMontage) ) {
-			switch ( HasAuthority() ) {
-			case true:
-				KeepAbility = true;
-				break;
-			case false:
-				ServerSetKeepAbility(true);
-				break;
+					ServerAbility(true);	// request ability animation on server
+				switch ( HasAuthority() ) {
+				case true:
+					MulticastSetKeepAbility(true);
+					break;
+				case false:
+					ServerSetKeepAbility(true);
+					break;
+				}
 			}
 		}
 
@@ -1005,7 +1002,7 @@ void ACraftingStarCharacter::DeactivateAbility() {
 		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Blast deactivate"));
 		switch ( HasAuthority() ) {
 		case true:
-			KeepAbility = false;
+			MulticastSetKeepAbility(false);
 			break;
 		case false:
 			ServerSetKeepAbility(false);
@@ -1041,7 +1038,7 @@ void ACraftingStarCharacter::MouseLeftPressed() {
 			if ( abilityReadyStatus ) {
 				switch ( HasAuthority() ) {
 				case true:
-					KeepAbility = true;
+					MulticastSetKeepAbility(true);
 					break;
 				case false:
 					ServerSetKeepAbility(true);
@@ -1073,7 +1070,7 @@ void ACraftingStarCharacter::MouseLeftReleased() {
 				WandReadySign = false;
 				switch ( HasAuthority() ) {
 				case true:
-					KeepAbility = false;
+					MulticastSetKeepAbility(false);
 					break;
 				case false:
 					ServerSetKeepAbility(false);
