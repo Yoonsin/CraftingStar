@@ -456,6 +456,7 @@ void ACraftingStarCharacter::UpdatePlayerAbility(EPlayerAbility playerAbility) {
 		if ( KeepAbility ) {
 			WandReadySign = false;
 			DeactivateAbility();
+			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("2"));
 			switch ( HasAuthority() ) {
 			case true :
 				KeepAbility = false;
@@ -925,7 +926,7 @@ void ACraftingStarCharacter::ActivateAbility() {
 		else if ( Cast<ACraftingStarPS>(GetPlayerState())->PlayerData.Mode == EPlayerRole::ELight ) {
 			audioComp->SetSound(SW_EmissionLight);
 		}
-		audioComp->Play();		
+		audioComp->Play();
 
 		if ( AbilityMontage ) {
 			// Play Animation
@@ -1006,6 +1007,7 @@ void ACraftingStarCharacter::DeactivateAbility() {
 		audioComp->SetSound(NULL);
 
 		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Blast deactivate"));
+		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("3"));
 		switch ( HasAuthority() ) {
 		case true:
 			KeepAbility = false;
@@ -1074,6 +1076,7 @@ void ACraftingStarCharacter::MouseLeftReleased() {
 
 			if ( abilityReadyStatus ) {
 				WandReadySign = false;
+				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("4"));
 				switch ( HasAuthority() ) {
 				case true:
 					KeepAbility = false;

@@ -15,6 +15,7 @@ void UAnimNotify_WandReady::Notify(USkeletalMeshComponent* MeshComp , UAnimSeque
         if ( CharacterOwner )
         {
             CharacterOwner->WandReadySign = true;
+            GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("ready true"));
         }
     }
 }
