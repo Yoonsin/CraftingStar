@@ -169,6 +169,7 @@ void ULaserNiagaraComponent::MulticastLaser_Implementation(UNiagaraComponent* Ni
 		// Set End point
 		NiagaraComp->SetVectorParameter(FName(TEXT("LaserEnd")) , end);
 		// Show Laser
+		//GEngine->AddOnScreenDebugMessage(-1 , 3 , FColor::Green , FString::Printf(TEXT("Show Laser")));
 		NiagaraComp->SetVisibility(true);
 	}
 	else {
