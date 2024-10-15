@@ -346,16 +346,8 @@ void ACraftingStarCharacter::BeginPlay()
 		ServerRequestLoadSaveData();
 	}
 
-	// Hide Laser
-	switch ( UUtilityFunction::IsHost(controller) ) {
-	case true:
-		Comp_LaserNiagara->Hide();
-		break;
+	Comp_LaserNiagara->Hide();
 
-	case false:
-		Comp_LaserNiagara->ServerHide();
-		break;
-	}
 }
 
 void ACraftingStarCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
@@ -870,15 +862,7 @@ void ACraftingStarCharacter::MulticastAbility_Implementation(bool abilityState) 
 		}
 		GetMesh()->GetAnimInstance()->Montage_Play(DeactiveAbilityMontage , 1.0f);
 		// Hide Laser
-		switch ( HasAuthority() ) {
-		case true :
-			Comp_LaserNiagara->Hide();
-			break;
-			
-		case false :
-			Comp_LaserNiagara->ServerHide();
-			break;
-		}
+		Comp_LaserNiagara->Hide();
 	}
 }
 
