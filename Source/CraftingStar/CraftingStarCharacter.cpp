@@ -710,8 +710,11 @@ void ACraftingStarCharacter::Telekinesis() {
 	Comp_LaserNiagara->SetLaser(Hit , End);
 	
 	
-	if ( Hit.bBlockingHit ) {
-		if ( selectedTarget == NULL && Cast<ATelekinesisInteractableObject>(Hit.GetComponent()->GetOwner()) ) {
+	if ( Hit.bBlockingHit ) 
+	{
+		ensure(Hit.GetComponent());
+		if ( selectedTarget == NULL && Cast<ATelekinesisInteractableObject>(Hit.GetComponent()->GetOwner()) ) 
+		{
 			teleLaserDistance = Hit.Distance;
 			teleComponentDistance = Hit.Distance;
 			//teleForce = 5000.0f;
@@ -741,7 +744,8 @@ void ACraftingStarCharacter::Telekinesis() {
 	if ( selectedTarget != NULL ) {
 		//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("selected object distance: %f") , Hit.Distance));
 
-		if ( selectedTarget->GetOwner() ) {
+		//물체가 도충에 파괴된 경우 GetOwner()에서 크래시가 뜸, 그래서 IsValid를 사용
+		if ( IsValid(selectedTarget->GetOwner()) ) {
 			// Move target if it can be cast
 			// Change Tele' Interactive Actor's Outline Color
 			if ( Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner()) )
@@ -789,6 +793,10 @@ void ACraftingStarCharacter::ServerSelectTarget_Implementation(FHitResult Hit) {
 }
 void ACraftingStarCharacter::MulticastSelectTarget_Implementation(FHitResult Hit) {
 	selectedTarget = Hit.GetComponent();
+	//123
+	auto GrabActor = Cast<ATelekinesisInteractableObject>(Hit.GetComponent()->GetOwner());
+	GrabActor->SetTelekinesisOwner(this);
+	
 }
 
 
@@ -901,7 +909,16 @@ void ACraftingStarCharacter::RemoveTeleObjOutline() {
 
 // Wand Skill Animation Offset
 void ACraftingStarCharacter::SetOffsetAxis() {
-	OffsetAxis = UKismetMathLibrary::NormalizedDeltaRotator(GetControlRotation() , GetActorRotation());
+	
+	if ( HasAuthority() )
+	{
+		ServerSetOffsetAxis();
+	}
+	else
+	{
+		MulticastSetOffsetAxis();
+	}
+	
 }
 bool ACraftingStarCharacter::ServerSetOffsetAxis_Validate() {
 	return true;
@@ -909,8 +926,9 @@ bool ACraftingStarCharacter::ServerSetOffsetAxis_Validate() {
 void ACraftingStarCharacter::ServerSetOffsetAxis_Implementation() {
 	MulticastSetOffsetAxis();
 }
-void ACraftingStarCharacter::MulticastSetOffsetAxis_Implementation() {
-	SetOffsetAxis();
+void ACraftingStarCharacter::MulticastSetOffsetAxis_Implementation() 
+{
+	OffsetAxis = UKismetMathLibrary::NormalizedDeltaRotator(GetControlRotation() , GetActorRotation());
 }
 FRotator ACraftingStarCharacter::GetOffsetAxis() {
 	return OffsetAxis;

@@ -213,7 +213,7 @@ protected:
 	// Ability
 
 	void ActivateAbility();
-	void DeactivateAbility();
+
 	void ActivateAbility2();
 
 	// Wand Skill Animation: Blast, Telekinesis
@@ -243,6 +243,9 @@ protected:
 	void ServerUseProjectionBow();
 	UFUNCTION(NetMulticast , Reliable)
 	void MulticastUseProjectionBow();
+
+public:
+	void DeactivateAbility();
 
 
 public:
