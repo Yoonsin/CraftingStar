@@ -280,6 +280,9 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	// OnDamaged
+	AttackedCnt_Popo = 0;
+
 	// Ability
 	KeepAbility = false;
 	WandReadySign = false;
@@ -642,6 +645,42 @@ void ACraftingStarCharacter::StopSystemMenu() {
 
 void ACraftingStarCharacter::Interaction() {
 
+}
+
+void ACraftingStarCharacter::OnDamaged_Popo() {
+	AttackedCnt_Popo++;
+
+	if ( AttackedCnt_Popo >= 3 ) {
+		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("쓰러짐"));
+		OnFellDown_Popo();	// Play FellDownMontage_Popo
+	}
+	else {
+		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("맞음: %f") , AttackedCnt_Popo));
+
+		// Play HitMontage_Popo
+		if ( HitMontage_Popo ) {
+			// Play Animation
+			bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(HitMontage_Popo);
+		}
+	}
+}
+
+void ACraftingStarCharacter::OnFellDown_Popo() {
+	// Play FellDownMontage_Popo
+	if ( FellDownMontage_Popo ) {
+		// Play Animation
+		bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(FellDownMontage_Popo);
+	}
+}
+
+void ACraftingStarCharacter::OnRevive_Popo() {
+	AttackedCnt_Popo = 0;
+
+	// Play ReviveMontage_Popo
+	if ( ReviveMontage_Popo ) {
+		// Play Animation
+		bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(ReviveMontage_Popo);
+	}
 }
 
 // Magic Wand Line Trace for Ability

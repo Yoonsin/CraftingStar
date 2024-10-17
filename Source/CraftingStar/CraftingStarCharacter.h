@@ -145,6 +145,16 @@ public:
 	UPROPERTY(EditAnywhere , BlueprintReadOnly)
 	class UWidgetComponent* interactTag;
 
+	// On Damaged
+	UFUNCTION(BlueprintCallable)
+	void OnDamaged_Popo();
+	UFUNCTION(BlueprintCallable)
+	void OnFellDown_Popo();
+	UFUNCTION(BlueprintCallable)
+	void OnRevive_Popo();
+	
+	int AttackedCnt_Popo;
+
 	// Telekinesis
 	UPrimitiveComponent* selectedTarget;
 
@@ -209,6 +219,14 @@ protected:
 
 	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Sounds , meta = ( AllowPrivateAccess = "true" ))
 	class UAudioComponent* audioComp;
+
+	// OnDamaged
+	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = AnimMontage)
+	class UAnimMontage* FellDownMontage_Popo;
+	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = AnimMontage)
+	class UAnimMontage* ReviveMontage_Popo;
+	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = AnimMontage)
+	class UAnimMontage* HitMontage_Popo;
 
 	// Ability
 
