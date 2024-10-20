@@ -81,5 +81,7 @@ enum class EQuestID : uint8
 	EIncendiePengdoMeet UMETA(DisplayName = "IncendiePengdoMeet") ,
 	EIncendieClacierNotMeetAndPopoBerserk UMETA(DisplayName = "IncendieClacierNotMeetAndPopoBerserk"),
 	EIncendieClacierMeet UMETA(DisplayName = "IncendieClacierMeet"),
+	EIncendieRescueFrameGuardian UMETA(DisplayName = "IncendieRescueFrameGuardian"),
+	EIncendieExploreForest UMETA(DisplayName = "IncendieExploreForest") ,
 };
 
