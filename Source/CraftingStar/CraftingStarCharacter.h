@@ -145,15 +145,25 @@ public:
 	UPROPERTY(EditAnywhere , BlueprintReadOnly)
 	class UWidgetComponent* interactTag;
 
-	// On Damaged
+	// On Damaged: Popo Attack Interaction
 	UFUNCTION(BlueprintCallable)
 	void OnDamaged_Popo();
 	UFUNCTION(BlueprintCallable)
-	void OnFellDown_Popo();
+	void OnCollapsed_Popo();
 	UFUNCTION(BlueprintCallable)
 	void OnRevive_Popo();
+
+	// On Damaged: Replicate Animation
+	UFUNCTION(Server , Reliable , WithValidation , Category = "Animation")
+	void ServerPlayOnDamagedMontage(UAnimMontage* animMontage);
+	UFUNCTION(NetMulticast , Reliable , Category = "Animation")
+	void MulticastPlayOnDamagedMontage(UAnimMontage* animMontage);
 	
+	// On Damaged: Attacked Count
 	int AttackedCnt_Popo;
+
+	UPROPERTY(Replicated , EditAnywhere , BlueprintReadWrite , Category = Popo , meta = ( AllowPrivateAccess = "true" ))
+	bool isCollapsed;
 
 	// Telekinesis
 	UPrimitiveComponent* selectedTarget;
@@ -222,7 +232,7 @@ protected:
 
 	// OnDamaged
 	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = AnimMontage)
-	class UAnimMontage* FellDownMontage_Popo;
+	class UAnimMontage* CollapsedMontage_Popo;
 	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = AnimMontage)
 	class UAnimMontage* ReviveMontage_Popo;
 	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = AnimMontage)

@@ -280,8 +280,9 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	// OnDamaged
+	// On Damaged
 	AttackedCnt_Popo = 0;
+	isCollapsed = false;
 
 	// Ability
 	KeepAbility = false;
@@ -647,30 +648,44 @@ void ACraftingStarCharacter::Interaction() {
 
 }
 
+// On Damaged
 void ACraftingStarCharacter::OnDamaged_Popo() {
 	AttackedCnt_Popo++;
 
 	if ( AttackedCnt_Popo >= 3 ) {
 		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("쓰러짐"));
-		OnFellDown_Popo();	// Play FellDownMontage_Popo
+		OnCollapsed_Popo();	// Play CollapsedMontage_Popo
 	}
 	else {
 		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("맞음: %f") , AttackedCnt_Popo));
 
 		// Play HitMontage_Popo
-		if ( HitMontage_Popo ) {
-			// Play Animation
-			bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(HitMontage_Popo);
+		switch ( HasAuthority() ) {
+		case true:
+			MulticastPlayOnDamagedMontage(HitMontage_Popo);
+			break;
+		case false:
+			ServerPlayOnDamagedMontage(HitMontage_Popo);
+			break;
 		}
 	}
 }
 
-void ACraftingStarCharacter::OnFellDown_Popo() {
-	// Play FellDownMontage_Popo
-	if ( FellDownMontage_Popo ) {
-		// Play Animation
-		bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(FellDownMontage_Popo);
+void ACraftingStarCharacter::OnCollapsed_Popo() {
+	// Play FellCollapsedMontage_Popo
+	switch ( HasAuthority() ) {
+		case true:
+			MulticastPlayOnDamagedMontage(CollapsedMontage_Popo);
+			break;
+		case false:
+			ServerPlayOnDamagedMontage(CollapsedMontage_Popo);
+			break;
 	}
+
+	// Deactive Player Movement
+	GetCharacterMovement()->DisableMovement();
+
+	isCollapsed = true;
 }
 
 void ACraftingStarCharacter::OnRevive_Popo() {
@@ -679,7 +694,20 @@ void ACraftingStarCharacter::OnRevive_Popo() {
 	// Play ReviveMontage_Popo
 	if ( ReviveMontage_Popo ) {
 		// Play Animation
-		bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(ReviveMontage_Popo);
+		GetMesh()->GetAnimInstance()->Montage_Play(ReviveMontage_Popo , 1.0f);
+	}
+}
+
+bool ACraftingStarCharacter::ServerPlayOnDamagedMontage_Validate(UAnimMontage* animMontage) {
+	return true;
+}
+void ACraftingStarCharacter::ServerPlayOnDamagedMontage_Implementation(UAnimMontage* animMontage) {
+	MulticastPlayOnDamagedMontage(animMontage);
+}
+void ACraftingStarCharacter::MulticastPlayOnDamagedMontage_Implementation(UAnimMontage* animMontage) {
+	if ( animMontage ) {
+		// Play Animation
+		GetMesh()->GetAnimInstance()->Montage_Play(animMontage , 1.0f);
 	}
 }
 
