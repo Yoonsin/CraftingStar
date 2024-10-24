@@ -145,25 +145,44 @@ public:
 	UPROPERTY(EditAnywhere , BlueprintReadOnly)
 	class UWidgetComponent* interactTag;
 
-	// On Damaged: Popo Attack Interaction
-	UFUNCTION(BlueprintCallable)
-	void OnDamaged_Popo();
-	UFUNCTION(BlueprintCallable)
-	void OnCollapsed_Popo();
-	UFUNCTION(BlueprintCallable)
-	void OnRevive_Popo();
+	// Character On Collapsed Base
+	UFUNCTION(BlueprintCallable, Category = "Popo")
+	void OnCollapsed();
 
-	// On Damaged: Replicate Animation
-	UFUNCTION(Server , Reliable , WithValidation , Category = "Animation")
-	void ServerPlayOnDamagedMontage(UAnimMontage* animMontage);
-	UFUNCTION(NetMulticast , Reliable , Category = "Animation")
-	void MulticastPlayOnDamagedMontage(UAnimMontage* animMontage);
+	// On Damaged: Popo Attack Interaction
+	UFUNCTION(BlueprintCallable , Category = "Popo")
+	void OnDamaged_Popo();
+	UFUNCTION(BlueprintCallable , Category = "Popo")
+	void OnCollapsed_Popo();
+
+	// Character On Revive Base
+	UFUNCTION(BlueprintCallable , Category = "Popo")
+	void OnRevive();
+	// OnRevive: Popo Attack Interaction
+	UFUNCTION(BlueprintCallable , Category = "Popo")
+	void OnRevive_Popo();
 	
 	// On Damaged: Attacked Count
 	int AttackedCnt_Popo;
 
 	UPROPERTY(Replicated , EditAnywhere , BlueprintReadWrite , Category = Popo , meta = ( AllowPrivateAccess = "true" ))
 	bool isCollapsed;
+	// Replicate: isCollapsed
+	UFUNCTION(Server , Reliable , WithValidation , Category = "Popo")
+	void ServerSetisCollapsed(bool collapsedValue);
+	UFUNCTION(NetMulticast , Unreliable , Category = "Popo")
+	void MulticastSetisCollapsed(bool collapsedValue);
+
+	// Replicate Animation: Play Montage
+	UFUNCTION(Server , Reliable , WithValidation , Category = "Animation")
+	void ServerPlayMontage(UAnimMontage* animMontage);
+	UFUNCTION(NetMulticast , Reliable , Category = "Animation")
+	void MulticastPlayMontage(UAnimMontage* animMontage);
+	// Replicate Animation: Stop Montage
+	UFUNCTION(Server , Reliable , WithValidation , Category = "Animation")
+	void ServerStopMontage(UAnimMontage* animMontage);
+	UFUNCTION(NetMulticast , Reliable , Category = "Animation")
+	void MulticastStopMontage(UAnimMontage* animMontage);
 
 	// Telekinesis
 	UPrimitiveComponent* selectedTarget;
@@ -388,7 +407,10 @@ private:
 	class UStaticMeshComponent* MouthMesh;
 	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
 	class USkeletalMeshComponent* CloakMesh;
-	
+
+	// Revival Interactive Range
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Interaction , meta = ( AllowPrivateAccess = "true" ))
+	class USphereComponent* RevivalInteractiveRange;
 
 	// Mesh: Weapons & Skills
 	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
