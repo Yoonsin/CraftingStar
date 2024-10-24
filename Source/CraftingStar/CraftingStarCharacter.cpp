@@ -728,7 +728,6 @@ void ACraftingStarCharacter::OnCollapsed_Popo() {
 
 // Character On Revive Base
 void ACraftingStarCharacter::OnRevive() {
-	GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("OnRevive"));
 
 	// Set isCollapsed False
 	switch ( HasAuthority() ) {
