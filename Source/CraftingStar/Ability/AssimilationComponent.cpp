@@ -166,5 +166,5 @@ void UAssimilationComponent::ShowHaloEffect(bool bShow)
 			
 	}
 
-	else UE_LOG(LogTemp , Warning , TEXT("레이저가 안보이는건 HaloEffcet가 Null이라는건데이게 어떻게 가능하지?"));
+	else UE_LOG(LogTemp , Warning , TEXT("HaloEffcet Null"));
 }
