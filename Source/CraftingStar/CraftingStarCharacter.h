@@ -145,6 +145,45 @@ public:
 	UPROPERTY(EditAnywhere , BlueprintReadOnly)
 	class UWidgetComponent* interactTag;
 
+	// Character On Collapsed Base
+	UFUNCTION(BlueprintCallable, Category = "Popo")
+	void OnCollapsed();
+
+	// On Damaged: Popo Attack Interaction
+	UFUNCTION(BlueprintCallable , Category = "Popo")
+	void OnDamaged_Popo();
+	UFUNCTION(BlueprintCallable , Category = "Popo")
+	void OnCollapsed_Popo();
+
+	// Character On Revive Base
+	UFUNCTION(BlueprintCallable , Category = "Popo")
+	void OnRevive();
+	// OnRevive: Popo Attack Interaction
+	UFUNCTION(BlueprintCallable , Category = "Popo")
+	void OnRevive_Popo();
+	
+	// On Damaged: Attacked Count
+	int AttackedCnt_Popo;
+
+	UPROPERTY(Replicated , EditAnywhere , BlueprintReadWrite , Category = Popo , meta = ( AllowPrivateAccess = "true" ))
+	bool isCollapsed;
+	// Replicate: isCollapsed
+	UFUNCTION(Server , Reliable , WithValidation , Category = "Popo")
+	void ServerSetisCollapsed(bool collapsedValue);
+	UFUNCTION(NetMulticast , Unreliable , Category = "Popo")
+	void MulticastSetisCollapsed(bool collapsedValue);
+
+	// Replicate Animation: Play Montage
+	UFUNCTION(Server , Reliable , WithValidation , Category = "Animation")
+	void ServerPlayMontage(UAnimMontage* animMontage);
+	UFUNCTION(NetMulticast , Reliable , Category = "Animation")
+	void MulticastPlayMontage(UAnimMontage* animMontage);
+	// Replicate Animation: Stop Montage
+	UFUNCTION(Server , Reliable , WithValidation , Category = "Animation")
+	void ServerStopMontage(UAnimMontage* animMontage);
+	UFUNCTION(NetMulticast , Reliable , Category = "Animation")
+	void MulticastStopMontage(UAnimMontage* animMontage);
+
 	// Telekinesis
 	UPrimitiveComponent* selectedTarget;
 
@@ -209,6 +248,14 @@ protected:
 
 	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Sounds , meta = ( AllowPrivateAccess = "true" ))
 	class UAudioComponent* audioComp;
+
+	// OnDamaged
+	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = AnimMontage)
+	class UAnimMontage* CollapsedMontage_Popo;
+	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = AnimMontage)
+	class UAnimMontage* ReviveMontage_Popo;
+	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = AnimMontage)
+	class UAnimMontage* HitMontage_Popo;
 
 	// Ability
 
@@ -363,7 +410,10 @@ private:
 	class UStaticMeshComponent* MouthMesh;
 	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
 	class USkeletalMeshComponent* CloakMesh;
-	
+
+	// Revival Interactive Range
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Interaction , meta = ( AllowPrivateAccess = "true" ))
+	class USphereComponent* RevivalInteractiveRange;
 
 	// Mesh: Weapons & Skills
 	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))

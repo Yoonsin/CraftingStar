@@ -12,6 +12,7 @@
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/SphereComponent.h"
 #include "Components/InputComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
@@ -38,6 +39,8 @@
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "Misc/OutputDeviceNull.h"
+#include "Engine/BlueprintGeneratedClass.h"
+#include "Popo.h"
 
 //////////////////////////////////////////////////////////////////////////
 // ACraftingStarCharacter
@@ -280,6 +283,15 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	// Revival Interactive Range
+	RevivalInteractiveRange = CreateDefaultSubobject<USphereComponent>(TEXT("RevivalInteractiveRange"));
+	RevivalInteractiveRange->SetupAttachment(RootComponent);
+	RevivalInteractiveRange->InitSphereRadius(150.f);
+
+	// On Damaged
+	AttackedCnt_Popo = 0;
+	isCollapsed = false;
+
 	// Ability
 	KeepAbility = false;
 	WandReadySign = false;
@@ -290,6 +302,7 @@ void ACraftingStarCharacter::GetLifetimeReplicatedProps(TArray< FLifetimePropert
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(ACraftingStarCharacter , OffsetAxis);
 	DOREPLIFETIME(ACraftingStarCharacter , KeepAbility);
+	DOREPLIFETIME(ACraftingStarCharacter , isCollapsed);
 }
 
 
@@ -348,6 +361,10 @@ void ACraftingStarCharacter::BeginPlay()
 
 	Comp_LaserNiagara->Hide();
 
+	// Revival
+	RevivalInteractiveRange->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	// Popo
+	AttackedCnt_Popo = 0;
 }
 
 void ACraftingStarCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
@@ -404,9 +421,14 @@ void ACraftingStarCharacter::Tick(float DeltaTime)
 {
 	//          Ӹ          ɷ              ʿ        Ʈ
 	Super::Tick(DeltaTime);
-	
-	//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("current anim: %s") , GetMesh()->GetAnimInstance()->GetCurrentActiveMontage()));
-	
+	/*
+	if ( isCollapsed ) {
+		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Dead"));
+	}
+	else {
+		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Alive"));
+	}*/
+
 	if ( KeepAbility && WandReadySign ) {
 		// Activate Ability
 		if ( nowAbility != EPlayerAbility::ENone ) {
@@ -432,7 +454,6 @@ void ACraftingStarCharacter::ServerSetKeepAbility_Implementation(bool isKeeping)
 }
 void ACraftingStarCharacter::MulticastSetKeepAbility_Implementation(bool isKeeping) {
 	KeepAbility = isKeeping;
-
 }
 
 void ACraftingStarCharacter::UpdatePlayerAbility(EPlayerAbility playerAbility) {
@@ -634,6 +655,169 @@ void ACraftingStarCharacter::StopSystemMenu() {
 
 void ACraftingStarCharacter::Interaction() {
 
+}
+
+// Character On Collapsed Base
+void ACraftingStarCharacter::OnCollapsed() {
+	// Play CollapsedMontage_Popo
+	switch ( HasAuthority() ) {
+	case true:
+		MulticastPlayMontage(CollapsedMontage_Popo);
+		break;
+	case false:
+		ServerPlayMontage(CollapsedMontage_Popo);
+		break;
+	}
+
+	// Disable Player Movement
+	GetCharacterMovement()->DisableMovement();
+
+	// Set isCollapsed True
+	switch ( HasAuthority() ) {
+	case true:
+		MulticastSetisCollapsed(true);
+		break;
+	case false:
+		ServerSetisCollapsed(true);
+		break;
+	}
+}
+
+// On Damaged by Popo
+void ACraftingStarCharacter::OnDamaged_Popo() {
+	AttackedCnt_Popo++;
+
+	if ( AttackedCnt_Popo >= 3 ) {
+		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("쓰러짐"));
+		OnCollapsed_Popo();	// Play CollapsedMontage_Popo
+	}
+	else {
+		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("맞음: %f") , AttackedCnt_Popo));
+
+		// Play HitMontage_Popo
+		switch ( HasAuthority() ) {
+		case true:
+			MulticastPlayMontage(HitMontage_Popo);
+			break;
+		case false:
+			ServerPlayMontage(HitMontage_Popo);
+			break;
+		}
+	}
+}
+
+// On Collapsed by Popo
+void ACraftingStarCharacter::OnCollapsed_Popo() {
+	OnCollapsed();
+
+	// Find Popo
+	UClass* PopoBP = StaticLoadClass(APopo::StaticClass() , nullptr , TEXT("Blueprint'/Game/NPC/Monster/Blueprint/Popo/BP_Popo.BP_Popo_C'"));
+	AActor* MyPopo = UGameplayStatics::GetActorOfClass(GetWorld() , PopoBP);
+	APopo* PopoActor = Cast<APopo>(MyPopo);
+	
+	// Increase Popo CatchedPlayerCnt
+	if ( PopoActor ) {
+		PopoActor->CatchedPlayerCnt++;
+
+		PopoActor->CheckCatchedAll();
+	}
+
+	// Prepare for Revival
+	RevivalInteractiveRange->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+}
+
+// Character On Revive Base
+void ACraftingStarCharacter::OnRevive() {
+	GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("OnRevive"));
+
+	// Set isCollapsed False
+	switch ( HasAuthority() ) {
+	case true:
+		MulticastSetisCollapsed(false);
+		break;
+	case false:
+		ServerSetisCollapsed(false);
+		break;
+	}
+
+	// Enable Player Movement
+	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+
+	// Stop CollapsedMontage_Popo and Play ReviveMontage_Popo
+	if ( CollapsedMontage_Popo && ReviveMontage_Popo ) {
+		// Play Animation
+		switch ( HasAuthority() ) {
+		case true:
+			MulticastStopMontage(CollapsedMontage_Popo);
+			MulticastPlayMontage(ReviveMontage_Popo);
+			break;
+		case false:
+			ServerStopMontage(CollapsedMontage_Popo);
+			ServerPlayMontage(ReviveMontage_Popo);
+			break;
+		}
+	}
+
+	// Disable Interactive Range
+	RevivalInteractiveRange->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+// On Revive by another Player
+void ACraftingStarCharacter::OnRevive_Popo() {
+	OnRevive();
+
+	AttackedCnt_Popo = 0;
+
+	// Find Popo
+	UClass* PopoBP = StaticLoadClass(APopo::StaticClass() , nullptr , TEXT("Blueprint'/Game/NPC/Monster/Blueprint/Popo/BP_Popo.BP_Popo_C'"));
+	AActor* MyPopo = UGameplayStatics::GetActorOfClass(GetWorld() , PopoBP);
+	APopo* PopoActor = Cast<APopo>(MyPopo);
+
+	// Decrease Popo CatchedPlayerCnt
+	if ( PopoActor ) {
+		PopoActor->CatchedPlayerCnt--;
+	}
+}
+// Set and Replicate isCollapsed
+bool ACraftingStarCharacter::ServerSetisCollapsed_Validate(bool collapsedValue) {
+	return true;
+}
+void ACraftingStarCharacter::ServerSetisCollapsed_Implementation(bool collapsedValue) {
+	MulticastSetisCollapsed(collapsedValue);
+}
+void ACraftingStarCharacter::MulticastSetisCollapsed_Implementation(bool collapsedValue) {
+	isCollapsed = collapsedValue;
+	if ( collapsedValue ) {
+		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Dead!"));
+	}
+	else {
+		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Alive!"));
+	}
+}
+
+bool ACraftingStarCharacter::ServerPlayMontage_Validate(UAnimMontage* animMontage) {
+	return true;
+}
+void ACraftingStarCharacter::ServerPlayMontage_Implementation(UAnimMontage* animMontage) {
+	MulticastPlayMontage(animMontage);
+}
+void ACraftingStarCharacter::MulticastPlayMontage_Implementation(UAnimMontage* animMontage) {
+	if ( animMontage ) {
+		// Play Animation
+		GetMesh()->GetAnimInstance()->Montage_Play(animMontage , 1.0f);
+	}
+}
+bool ACraftingStarCharacter::ServerStopMontage_Validate(UAnimMontage* animMontage) {
+	return true;
+}
+void ACraftingStarCharacter::ServerStopMontage_Implementation(UAnimMontage* animMontage) {
+	MulticastStopMontage(animMontage);
+}
+void ACraftingStarCharacter::MulticastStopMontage_Implementation(UAnimMontage* animMontage) {
+	if ( animMontage ) {
+		// Play Animation
+		GetMesh()->GetAnimInstance()->Montage_Play(animMontage , 1.0f);
+	}
 }
 
 // Magic Wand Line Trace for Ability
@@ -934,7 +1118,7 @@ void ACraftingStarCharacter::ActivateAbility() {
 			// Play Animation
 			bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(AbilityMontage);
 			if ( !bIsMontagePlaying ) {
-					ServerAbility(true);	// request ability animation on server
+				ServerAbility(true);	// request ability animation on server
 				switch ( HasAuthority() ) {
 				case true:
 					MulticastSetKeepAbility(true);
@@ -1006,7 +1190,6 @@ void ACraftingStarCharacter::DeactivateAbility() {
 		audioComp->SetSound(NULL);
 
 		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Blast deactivate"));
-		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("3"));
 		switch ( HasAuthority() ) {
 		case true:
 			MulticastSetKeepAbility(false);
@@ -1243,7 +1426,6 @@ void  ACraftingStarCharacter::LookUp(float Value) {
 				}
 			}
 			else if ( 360 - CameraBoomMaxPitch <= CurrentPitch/* && CurrentPitch < 360*/ ) {
-				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("2")));
 				NewPitch = FMath::Clamp(CurrentPitch - Value , 360 - CameraBoomMaxPitch , 360.f);
 				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("%f") , NewPitch));
 
