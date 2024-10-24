@@ -2,6 +2,8 @@
 
 
 #include "TelekinesisInteractableObject.h"
+#include <Net/UnrealNetwork.h>
+#include "CraftingStarCharacter.h"
 
 // Sets default values
 ATelekinesisInteractableObject::ATelekinesisInteractableObject()
@@ -10,7 +12,8 @@ ATelekinesisInteractableObject::ATelekinesisInteractableObject()
 	PrimaryActorTick.bCanEverTick = true;
 
 	// Set this Component's Replication Property
-	SetReplicates(true);
+	// SetReplicates() 에는 초기화 되기 이전(EX: Constructor)에 사용하지 않고, 객체가 만들어진 이후(EX: BeginPlay)에 사용하는 것이 바람직하다.
+	//SetReplicates(true);
 	bReplicates = true;
 
 	// Set Rotation
@@ -22,6 +25,7 @@ ATelekinesisInteractableObject::ATelekinesisInteractableObject()
 		ActorMesh->SetStaticMesh(ActorSM.Object);
 		ActorMesh->SetIsReplicated(true);
 	}
+	SetRootComponent(ActorMesh);
 }
 
 void ATelekinesisInteractableObject::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
@@ -71,4 +75,36 @@ void ATelekinesisInteractableObject::EraseOuline() {
 
 void ATelekinesisInteractableObject::ChangeOutlineColor() {
 
+}
+
+void ATelekinesisInteractableObject::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if ( IsValid(ControllingPlayer) )
+	{
+		//플레이어가 잡은 액터가 터졌을 경우
+		//ControllingPlayer->DeactivateAbility(); 
+	}
+	
+}
+
+void ATelekinesisInteractableObject::SetTelekinesisOwner(ACraftingStarCharacter* Player)
+{
+	if ( HasAuthority() )
+	{
+		MulticastSetTelekinesisOwner(Player);
+	}
+	else
+	{
+		ServerSetTelekinesisOwner(Player);
+	}
+}
+
+void ATelekinesisInteractableObject::ServerSetTelekinesisOwner_Implementation(ACraftingStarCharacter* Player)
+{
+	MulticastSetTelekinesisOwner(Player);
+}
+
+void ATelekinesisInteractableObject::MulticastSetTelekinesisOwner_Implementation(ACraftingStarCharacter* Player)
+{
+	ControllingPlayer = Player;
 }

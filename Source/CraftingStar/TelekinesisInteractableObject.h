@@ -42,4 +42,17 @@ public:
 	virtual void EraseOuline();
 
 	virtual void ChangeOutlineColor();
+
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+private:
+	class ACraftingStarCharacter* ControllingPlayer;
+
+public:
+	//telekinesis에 의해 움직여지고 있을 때 움직이고 있는 CraftingStarCharacter를 설정하는 함수.
+	void SetTelekinesisOwner(class ACraftingStarCharacter* Player);
+
+	UFUNCTION(Server, Unreliable)
+	void ServerSetTelekinesisOwner(class ACraftingStarCharacter* Player);
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastSetTelekinesisOwner(class ACraftingStarCharacter* Player);
 };
