@@ -44,10 +44,7 @@ void APopo::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 }
 
-void APopo::CheckCatchedAll() {
-	if ( CatchedPlayerCnt >= 2 ) {
-		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Catch All Players"));
-		// 저장된 진행 내역 불러오기 (시퀀스부터 재생)
-	}
+int APopo::CheckCatchedPlayerCnt() {
+	return CatchedPlayerCnt;
 }
 

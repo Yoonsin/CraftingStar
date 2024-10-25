@@ -145,15 +145,15 @@ public:
 	UPROPERTY(EditAnywhere , BlueprintReadOnly)
 	class UWidgetComponent* interactTag;
 
-	// Character On Collapsed Base
+	// Character On KnockedDown Base
 	UFUNCTION(BlueprintCallable, Category = "Popo")
-	void OnCollapsed();
+	void OnKnockedDown();
 
 	// On Damaged: Popo Attack Interaction
 	UFUNCTION(BlueprintCallable , Category = "Popo")
 	void OnDamaged_Popo();
 	UFUNCTION(BlueprintCallable , Category = "Popo")
-	void OnCollapsed_Popo();
+	void OnKnockedDown_Popo();
 
 	// Character On Revive Base
 	UFUNCTION(BlueprintCallable , Category = "Popo")
@@ -166,12 +166,12 @@ public:
 	int AttackedCnt_Popo;
 
 	UPROPERTY(Replicated , EditAnywhere , BlueprintReadWrite , Category = Popo , meta = ( AllowPrivateAccess = "true" ))
-	bool isCollapsed;
-	// Replicate: isCollapsed
+	bool isKnockedDown;
+	// Replicate: isKnockedDown
 	UFUNCTION(Server , Reliable , WithValidation , Category = "Popo")
-	void ServerSetisCollapsed(bool collapsedValue);
+	void ServerSetisKnockedDown(bool knockedDownValue);
 	UFUNCTION(NetMulticast , Unreliable , Category = "Popo")
-	void MulticastSetisCollapsed(bool collapsedValue);
+	void MulticastSetisKnockedDown(bool knockedDownValue);
 
 	// Replicate Animation: Play Montage
 	UFUNCTION(Server , Reliable , WithValidation , Category = "Animation")
@@ -251,7 +251,7 @@ protected:
 
 	// OnDamaged
 	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = AnimMontage)
-	class UAnimMontage* CollapsedMontage_Popo;
+	class UAnimMontage* KnockedDownMontage_Popo;
 	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = AnimMontage)
 	class UAnimMontage* ReviveMontage_Popo;
 	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = AnimMontage)

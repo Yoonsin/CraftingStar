@@ -290,7 +290,7 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 
 	// On Damaged
 	AttackedCnt_Popo = 0;
-	isCollapsed = false;
+	isKnockedDown = false;
 
 	// Ability
 	KeepAbility = false;
@@ -302,7 +302,7 @@ void ACraftingStarCharacter::GetLifetimeReplicatedProps(TArray< FLifetimePropert
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(ACraftingStarCharacter , OffsetAxis);
 	DOREPLIFETIME(ACraftingStarCharacter , KeepAbility);
-	DOREPLIFETIME(ACraftingStarCharacter , isCollapsed);
+	DOREPLIFETIME(ACraftingStarCharacter , isKnockedDown);
 }
 
 
@@ -422,7 +422,7 @@ void ACraftingStarCharacter::Tick(float DeltaTime)
 	//          Ӹ          ɷ              ʿ        Ʈ
 	Super::Tick(DeltaTime);
 	/*
-	if ( isCollapsed ) {
+	if ( isKnockedDown ) {
 		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Dead"));
 	}
 	else {
@@ -657,28 +657,28 @@ void ACraftingStarCharacter::Interaction() {
 
 }
 
-// Character On Collapsed Base
-void ACraftingStarCharacter::OnCollapsed() {
-	// Play CollapsedMontage_Popo
+// Character On KnockedDown Base
+void ACraftingStarCharacter::OnKnockedDown() {
+	// Play KnockedDownMontage_Popo
 	switch ( HasAuthority() ) {
 	case true:
-		MulticastPlayMontage(CollapsedMontage_Popo);
+		MulticastPlayMontage(KnockedDownMontage_Popo);
 		break;
 	case false:
-		ServerPlayMontage(CollapsedMontage_Popo);
+		ServerPlayMontage(KnockedDownMontage_Popo);
 		break;
 	}
 
 	// Disable Player Movement
 	GetCharacterMovement()->DisableMovement();
 
-	// Set isCollapsed True
+	// Set isKnockedDown True
 	switch ( HasAuthority() ) {
 	case true:
-		MulticastSetisCollapsed(true);
+		MulticastSetisKnockedDown(true);
 		break;
 	case false:
-		ServerSetisCollapsed(true);
+		ServerSetisKnockedDown(true);
 		break;
 	}
 }
@@ -689,7 +689,7 @@ void ACraftingStarCharacter::OnDamaged_Popo() {
 
 	if ( AttackedCnt_Popo >= 3 ) {
 		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("쓰러짐"));
-		OnCollapsed_Popo();	// Play CollapsedMontage_Popo
+		OnKnockedDown_Popo();	// Play KnockedDownMontage_Popo
 	}
 	else {
 		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("맞음: %f") , AttackedCnt_Popo));
@@ -706,9 +706,9 @@ void ACraftingStarCharacter::OnDamaged_Popo() {
 	}
 }
 
-// On Collapsed by Popo
-void ACraftingStarCharacter::OnCollapsed_Popo() {
-	OnCollapsed();
+// On KnockedDown by Popo
+void ACraftingStarCharacter::OnKnockedDown_Popo() {
+	OnKnockedDown();
 
 	// Find Popo
 	UClass* PopoBP = StaticLoadClass(APopo::StaticClass() , nullptr , TEXT("Blueprint'/Game/NPC/Monster/Blueprint/Popo/BP_Popo.BP_Popo_C'"));
@@ -718,8 +718,7 @@ void ACraftingStarCharacter::OnCollapsed_Popo() {
 	// Increase Popo CatchedPlayerCnt
 	if ( PopoActor ) {
 		PopoActor->CatchedPlayerCnt++;
-
-		PopoActor->CheckCatchedAll();
+		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("포포 냠냠: %d") , PopoActor->CatchedPlayerCnt));
 	}
 
 	// Prepare for Revival
@@ -729,29 +728,29 @@ void ACraftingStarCharacter::OnCollapsed_Popo() {
 // Character On Revive Base
 void ACraftingStarCharacter::OnRevive() {
 
-	// Set isCollapsed False
+	// Set isKnockedDown False
 	switch ( HasAuthority() ) {
 	case true:
-		MulticastSetisCollapsed(false);
+		MulticastSetisKnockedDown(false);
 		break;
 	case false:
-		ServerSetisCollapsed(false);
+		ServerSetisKnockedDown(false);
 		break;
 	}
 
 	// Enable Player Movement
 	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 
-	// Stop CollapsedMontage_Popo and Play ReviveMontage_Popo
-	if ( CollapsedMontage_Popo && ReviveMontage_Popo ) {
+	// Stop KnockedDownMontage_Popo and Play ReviveMontage_Popo
+	if ( KnockedDownMontage_Popo && ReviveMontage_Popo ) {
 		// Play Animation
 		switch ( HasAuthority() ) {
 		case true:
-			MulticastStopMontage(CollapsedMontage_Popo);
+			MulticastStopMontage(KnockedDownMontage_Popo);
 			MulticastPlayMontage(ReviveMontage_Popo);
 			break;
 		case false:
-			ServerStopMontage(CollapsedMontage_Popo);
+			ServerStopMontage(KnockedDownMontage_Popo);
 			ServerPlayMontage(ReviveMontage_Popo);
 			break;
 		}
@@ -777,16 +776,16 @@ void ACraftingStarCharacter::OnRevive_Popo() {
 		PopoActor->CatchedPlayerCnt--;
 	}
 }
-// Set and Replicate isCollapsed
-bool ACraftingStarCharacter::ServerSetisCollapsed_Validate(bool collapsedValue) {
+// Set and Replicate isKnockedDown
+bool ACraftingStarCharacter::ServerSetisKnockedDown_Validate(bool knockedDownValue) {
 	return true;
 }
-void ACraftingStarCharacter::ServerSetisCollapsed_Implementation(bool collapsedValue) {
-	MulticastSetisCollapsed(collapsedValue);
+void ACraftingStarCharacter::ServerSetisKnockedDown_Implementation(bool knockedDownValue) {
+	MulticastSetisKnockedDown(knockedDownValue);
 }
-void ACraftingStarCharacter::MulticastSetisCollapsed_Implementation(bool collapsedValue) {
-	isCollapsed = collapsedValue;
-	if ( collapsedValue ) {
+void ACraftingStarCharacter::MulticastSetisKnockedDown_Implementation(bool knockedDownValue) {
+	isKnockedDown = knockedDownValue;
+	if ( knockedDownValue ) {
 		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Dead!"));
 	}
 	else {
