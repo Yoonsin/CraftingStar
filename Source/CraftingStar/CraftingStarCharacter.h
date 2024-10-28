@@ -368,7 +368,7 @@ public:
 	void UpdatePlayerGMState(EPlayerGMState playerGMState);
 
 	/* Ability */
-	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	UPROPERTY(Replicated, VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
 	EPlayerAbility nowAbility = EPlayerAbility::ENone;
 	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
 	bool abilityReadyStatus = false;
