@@ -66,7 +66,6 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 0.2f;
 
-
 	ConstructorHelpers::FObjectFinder<USkeletalMesh> BodySM_Light(TEXT("SkeletalMesh'/Game/Assets/BaseContent/RPGTinyHeroWavePolyart/Mesh/BodyPart/Body10_SK.Body10_SK'"));
 	if ( BodySM_Light.Succeeded() ) {
 		GetMesh()->SetSkeletalMesh(BodySM_Light.Object);
