@@ -302,6 +302,7 @@ void ACraftingStarCharacter::GetLifetimeReplicatedProps(TArray< FLifetimePropert
 	DOREPLIFETIME(ACraftingStarCharacter , OffsetAxis);
 	DOREPLIFETIME(ACraftingStarCharacter , KeepAbility);
 	DOREPLIFETIME(ACraftingStarCharacter , isCollapsed);
+	DOREPLIFETIME(ACraftingStarCharacter , nowAbility);
 }
 
 
