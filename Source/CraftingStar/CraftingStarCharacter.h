@@ -120,7 +120,7 @@ public:
 	FRotator OffsetAxis;
 	UFUNCTION(Server , Reliable , WithValidation , BlueprintCallable , Category = "AimOffset")
 	void ServerSetOffsetAxis();
-	UFUNCTION(NetMulticast , Unreliable , Category = "AimOffset")
+	UFUNCTION(NetMulticast , Unreliable , BlueprintCallable, Category = "AimOffset")
 	void MulticastSetOffsetAxis();
 	UFUNCTION(BlueprintCallable)
 	void SetOffsetAxis();
@@ -368,8 +368,13 @@ public:
 	void UpdatePlayerGMState(EPlayerGMState playerGMState);
 
 	/* Ability */
-	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	UPROPERTY(Replicated, VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
 	EPlayerAbility nowAbility = EPlayerAbility::ENone;
+	UFUNCTION(Server , Reliable , WithValidation , Category = "Ability")
+	void ServerSetNowAbility(EPlayerAbility NewAbility);
+	UFUNCTION(NetMulticast , Unreliable , Category = "Ability")
+	void MulticastSetNowAbility(EPlayerAbility NewAbility);
+	
 	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
 	bool abilityReadyStatus = false;
 

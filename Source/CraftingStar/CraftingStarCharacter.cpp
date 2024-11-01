@@ -301,6 +301,7 @@ void ACraftingStarCharacter::GetLifetimeReplicatedProps(TArray< FLifetimePropert
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(ACraftingStarCharacter , OffsetAxis);
+	DOREPLIFETIME(ACraftingStarCharacter , nowAbility);
 	DOREPLIFETIME(ACraftingStarCharacter , KeepAbility);
 	DOREPLIFETIME(ACraftingStarCharacter , isKnockedDown);
 }
@@ -469,7 +470,6 @@ void ACraftingStarCharacter::UpdatePlayerAbility(EPlayerAbility playerAbility) {
 		if ( KeepAbility ) {
 			WandReadySign = false;
 			DeactivateAbility();
-			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("2"));
 			switch ( HasAuthority() ) {
 			case true :
 				MulticastSetKeepAbility(false);
@@ -491,8 +491,24 @@ void ACraftingStarCharacter::UpdatePlayerAbility(EPlayerAbility playerAbility) {
 	}
 
 	// update now ability
-	nowAbility = playerAbility;
+	switch ( HasAuthority() ) {
+	case true:
+		MulticastSetNowAbility(playerAbility);
+		break;
+	case false:
+		ServerSetNowAbility(playerAbility);
+		break;
+	}
 
+}
+bool ACraftingStarCharacter::ServerSetNowAbility_Validate(EPlayerAbility NewAbility) {
+	return true;
+}
+void ACraftingStarCharacter::ServerSetNowAbility_Implementation(EPlayerAbility NewAbility) {
+	MulticastSetNowAbility(NewAbility);
+}
+void ACraftingStarCharacter::MulticastSetNowAbility_Implementation(EPlayerAbility NewAbility) {
+	nowAbility = NewAbility;
 }
 
 void ACraftingStarCharacter::UpdatePlayerGMState(EPlayerGMState playerGMState) {
@@ -785,12 +801,6 @@ void ACraftingStarCharacter::ServerSetisKnockedDown_Implementation(bool knockedD
 }
 void ACraftingStarCharacter::MulticastSetisKnockedDown_Implementation(bool knockedDownValue) {
 	isKnockedDown = knockedDownValue;
-	if ( knockedDownValue ) {
-		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Dead!"));
-	}
-	else {
-		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Alive!"));
-	}
 }
 
 bool ACraftingStarCharacter::ServerPlayMontage_Validate(UAnimMontage* animMontage) {
@@ -967,7 +977,7 @@ void ACraftingStarCharacter::ServerSelectTarget_Implementation(FHitResult Hit) {
 }
 void ACraftingStarCharacter::MulticastSelectTarget_Implementation(FHitResult Hit) {
 	selectedTarget = Hit.GetComponent();
-	//123
+
 	auto GrabActor = Cast<ATelekinesisInteractableObject>(Hit.GetComponent()->GetOwner());
 	GrabActor->SetTelekinesisOwner(this);
 	
@@ -1073,7 +1083,7 @@ void ACraftingStarCharacter::RemoveTeleObjOutline() {
 
 }
 
-// Wand Skill Animation Offset
+// Wand Skill Aim Offset
 void ACraftingStarCharacter::SetOffsetAxis() {
 	
 	if ( HasAuthority() )
@@ -1199,13 +1209,12 @@ void ACraftingStarCharacter::DeactivateAbility() {
 
 		CameraBoom->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
 		CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
-		if ( DeactiveAbilityMontage ) {
-			ServerAbility(false);	// request ability animation on server
-			// Play Animation
-			GetMesh()->GetAnimInstance()->Montage_IsPlaying(DeactiveAbilityMontage);
-		}
 
-	
+		// Play Animation
+		bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(DeactiveAbilityMontage);
+		if ( !bIsMontagePlaying && DeactiveAbilityMontage ) {
+			ServerAbility(false);	// request ability animation on server
+		}
 	}
 	else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
 		// blank
@@ -1256,7 +1265,6 @@ void ACraftingStarCharacter::MouseLeftReleased() {
 
 			if ( abilityReadyStatus ) {
 				WandReadySign = false;
-				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("4"));
 				switch ( HasAuthority() ) {
 				case true:
 					MulticastSetKeepAbility(false);
@@ -1390,66 +1398,26 @@ void ACraftingStarCharacter::TurnAtRate(float Rate)
 }
 
 void  ACraftingStarCharacter::LookUp(float Value) {
-	//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("LookUpValue: %f") , Value));
 	// Add Pitch Input Value of Controller
-
 	if ( nowAbility == EPlayerAbility::ETelekinesis && KeepAbility ) {
 		if ( Value != 0.0f && CameraBoom ) {
-			
-			//float CameraBoomYaw = CameraBoom->GetComponentRotation().Yaw;
-
 			float CurrentPitch = Cast<ACraftingStarPC>(GetController())->GetControlRotation().Pitch;
-
-			//APlayerController* const PC = Cast<APlayerController>(Controller);
-			//float CurrentYaw = PC->RotationInput.Yaw;
-
-			//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("PC Rot: %f %f %f") , Cast<ACraftingStarPC>(GetController())->GetControlRotation().Pitch , Cast<ACraftingStarPC>(GetController())->GetControlRotation().Yaw , Cast<ACraftingStarPC>(GetController())->GetControlRotation().Roll));
-			/*
-			if ( CameraBoomYaw >= CameraBoomMinPitch && CameraBoomYaw <= CameraBoomMaxPitch ) {
-				//Cast<ACraftingStarPC>(GetController())->AddPitchInput(Value);
-				//RotationInput.Pitch += !IsLookInputIgnored() ? Val * InputPitchScale : 0.f;
-				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("if문 진입")));
-				AddControllerPitchInput(Value);
-
-			}
-			*/
-
 			float NewPitch = 0.f;
-			if ( /*0 <= CurrentPitch && */CurrentPitch <= -CameraBoomMinPitch ) {
-				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("1")));
+			if ( CurrentPitch <= -CameraBoomMinPitch ) {
 				NewPitch = FMath::Clamp(CurrentPitch - Value , 0.f , -CameraBoomMinPitch);
 
 				if ( CurrentPitch <= 0 ) {
 					NewPitch = 360.f - Value;
 				}
 			}
-			else if ( 360 - CameraBoomMaxPitch <= CurrentPitch/* && CurrentPitch < 360*/ ) {
+			else if ( 360 - CameraBoomMaxPitch <= CurrentPitch ) {
 				NewPitch = FMath::Clamp(CurrentPitch - Value , 360 - CameraBoomMaxPitch , 360.f);
-				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("%f") , NewPitch));
 
 				if ( 360 <= CurrentPitch ) {
 					NewPitch = -Value;
 				}
-			}/*
-			else {
-				if ( -CameraBoomMinPitch < CurrentPitch && CurrentPitch <= 180 ) {
-					GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("3")));
-					NewPitch = -CameraBoomMinPitch;			// Apply to Equal to or Less than 180 (excluded 0~CameraBoomMinPitch)
-				}
-				else if ( 180 < CurrentPitch && CurrentPitch < 360 - CameraBoomMaxPitch ) {
-					GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("4")));
-					NewPitch = 360.f - CameraBoomMaxPitch;	// Apply to Greater than 180 (excluded CameraBoomMaxPitch~360)
-				}
-			}*/
+			}
 			Cast<ACraftingStarPC>(GetController())->SetControlRotation(FRotator(NewPitch , Cast<ACraftingStarPC>(GetController())->GetControlRotation().Yaw , Cast<ACraftingStarPC>(GetController())->GetControlRotation().Roll));
-			
-			/*
-			float NewPitch = CurrentPitch + Value;
-
-			NewPitch = FMath::Clamp(NewPitch , CameraBoomMinPitch , CameraBoomMaxPitch);
-
-			CameraBoom->SetRelativeRotation(FRotator(NewPitch , CameraBoom->GetRelativeRotation().Yaw , CameraBoom->GetRelativeRotation().Roll));
-			*/
 		}
 	}
 	else {
