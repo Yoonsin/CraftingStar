@@ -675,6 +675,31 @@ void ACraftingStarCharacter::Interaction() {
 
 // Character On KnockedDown Base
 void ACraftingStarCharacter::OnKnockedDown() {
+	// Cancel Previous skill if it is Running
+	if ( nowAbility == EPlayerAbility::EBlast ) {
+		if ( KeepAbility ) {
+			WandReadySign = false;
+			DeactivateAbility();
+			switch ( HasAuthority() ) {
+			case true:
+				MulticastSetKeepAbility(false);
+				break;
+			case false:
+				ServerSetKeepAbility(false);
+				break;
+			}
+		}
+	}
+	else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
+		GEngine->AddOnScreenDebugMessage(-1 , 3 , FColor::Red , FString::Printf(TEXT("Try To Cancel tele")));
+		if ( abilityReadyStatus ) {
+			// Deactivate Telekinesis Skill
+			MouseLeftReleased();
+			ActivateAbility();
+			abilityReadyStatus = false;
+		}
+	}
+
 	// Play KnockedDownMontage_Popo
 	switch ( HasAuthority() ) {
 	case true:
@@ -1112,112 +1137,116 @@ FRotator ACraftingStarCharacter::GetOffsetAxis() {
 
 // Input Ability (Key: E)
 void ACraftingStarCharacter::ActivateAbility() {
-	if ( nowAbility == EPlayerAbility::EBlast ) {
-		// Sound
-		if ( Cast<ACraftingStarPS>(GetPlayerState())->PlayerData.Mode == EPlayerRole::EDark ) {
-			audioComp->SetSound(SW_EmissionDark);
-		}
-		else if ( Cast<ACraftingStarPS>(GetPlayerState())->PlayerData.Mode == EPlayerRole::ELight ) {
-			audioComp->SetSound(SW_EmissionLight);
-		}
-		audioComp->Play();
+	if ( !isKnockedDown ) {
+		if ( nowAbility == EPlayerAbility::EBlast ) {
+			// Sound
+			if ( Cast<ACraftingStarPS>(GetPlayerState())->PlayerData.Mode == EPlayerRole::EDark ) {
+				audioComp->SetSound(SW_EmissionDark);
+			}
+			else if ( Cast<ACraftingStarPS>(GetPlayerState())->PlayerData.Mode == EPlayerRole::ELight ) {
+				audioComp->SetSound(SW_EmissionLight);
+			}
+			audioComp->Play();
 
-		if ( AbilityMontage ) {
-			// Play Animation
-			bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(AbilityMontage);
-			if ( !bIsMontagePlaying ) {
-				ServerAbility(true);	// request ability animation on server
-				switch ( HasAuthority() ) {
-				case true:
-					MulticastSetKeepAbility(true);
-					break;
-				case false:
-					ServerSetKeepAbility(true);
-					break;
+			if ( AbilityMontage ) {
+				// Play Animation
+				bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(AbilityMontage);
+				if ( !bIsMontagePlaying ) {
+					ServerAbility(true);	// request ability animation on server
+					switch ( HasAuthority() ) {
+					case true:
+						MulticastSetKeepAbility(true);
+						break;
+					case false:
+						ServerSetKeepAbility(true);
+						break;
+					}
 				}
 			}
-		}
-
-		CameraBoom->SetRelativeLocation(FVector(0.0f , 100.0f , 100.0f));
-		CameraBoom->bUsePawnControlRotation = false; // Does not rotate the arm based on the controller
-	}
-	else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
-		//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Tele"));
-		if ( !abilityReadyStatus ) {
-			teleComponentDistance = 0;
-			//teleForce = 5000.0f;
-
-			abilityReadyStatus = true;
 
 			CameraBoom->SetRelativeLocation(FVector(0.0f , 100.0f , 100.0f));
-			CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
-			
-			bUseControllerRotationYaw = true;
-			GetCharacterMovement()->bOrientRotationToMovement = false; // Character doesn't move in the direction of input...
-			
-			CreateTeleObjOutline();
+			CameraBoom->bUsePawnControlRotation = false; // Does not rotate the arm based on the controller
 		}
-		else {
-			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Cancel"));
-			CameraBoom->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
-			//CameraBoom->bUsePawnControlRotation = false; // Does not rotate the arm based on the controller
-			
-			bUseControllerRotationYaw = false;
-			GetCharacterMovement()->bOrientRotationToMovement = true; // Character  moves in the direction of input...
+		else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
+			//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Tele"));
+			if ( !abilityReadyStatus ) {
+				teleComponentDistance = 0;
+				//teleForce = 5000.0f;
 
-			RemoveTeleObjOutline();
-			switch ( HasAuthority() ) {
-			case true :
-				if ( selectedTarget != NULL ) {
-					selectedTarget = NULL;
-				}
-				break;
-			case false :
-				ServerDeselectTarget();
-				break;
+				abilityReadyStatus = true;
+
+				CameraBoom->SetRelativeLocation(FVector(0.0f , 100.0f , 100.0f));
+				CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
+
+				bUseControllerRotationYaw = true;
+				GetCharacterMovement()->bOrientRotationToMovement = false; // Character doesn't move in the direction of input...
+
+				CreateTeleObjOutline();
 			}
+			else {
+				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Cancel"));
+				CameraBoom->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
+				//CameraBoom->bUsePawnControlRotation = false; // Does not rotate the arm based on the controller
 
-			abilityReadyStatus = false;
+				bUseControllerRotationYaw = false;
+				GetCharacterMovement()->bOrientRotationToMovement = true; // Character  moves in the direction of input...
+
+				RemoveTeleObjOutline();
+				switch ( HasAuthority() ) {
+				case true:
+					if ( selectedTarget != NULL ) {
+						selectedTarget = NULL;
+					}
+					break;
+				case false:
+					ServerDeselectTarget();
+					break;
+				}
+
+				abilityReadyStatus = false;
+			}
 		}
-	}
-	else if ( nowAbility == EPlayerAbility::EAbility_dummy1 )
-	{
-		UseProjectionTwoHanded();
-	}
+		else if ( nowAbility == EPlayerAbility::EAbility_dummy1 )
+		{
+			UseProjectionTwoHanded();
+		}
 
-	else if ( nowAbility == EPlayerAbility::EAbility_dummy2 )
-	{
-		AssimilationComponent->Assimilation();
+		else if ( nowAbility == EPlayerAbility::EAbility_dummy2 )
+		{
+			AssimilationComponent->Assimilation();
+		}
 	}
 }
 void ACraftingStarCharacter::DeactivateAbility() {
-	if ( nowAbility == EPlayerAbility::EBlast ) {
-		WandReadySign = false;
-		// Sound
-		audioComp->Stop();
-		audioComp->SetSound(NULL);
+	if ( !isKnockedDown ) {
+		if ( nowAbility == EPlayerAbility::EBlast ) {
+			WandReadySign = false;
+			// Sound
+			audioComp->Stop();
+			audioComp->SetSound(NULL);
 
-		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Blast deactivate"));
-		switch ( HasAuthority() ) {
-		case true:
-			MulticastSetKeepAbility(false);
-			break;
-		case false:
-			ServerSetKeepAbility(false);
-			break;
+			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Blast deactivate"));
+			switch ( HasAuthority() ) {
+			case true:
+				MulticastSetKeepAbility(false);
+				break;
+			case false:
+				ServerSetKeepAbility(false);
+				break;
+			}
+
+			CameraBoom->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
+			CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
+
+			// Play Animation
+			bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(DeactiveAbilityMontage);
+			if ( !bIsMontagePlaying && DeactiveAbilityMontage ) {
+				ServerAbility(false);	// request ability animation on server
+			}
 		}
-
-		CameraBoom->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
-		CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
-
-		// Play Animation
-		bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(DeactiveAbilityMontage);
-		if ( !bIsMontagePlaying && DeactiveAbilityMontage ) {
-			ServerAbility(false);	// request ability animation on server
+		else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
+			// blank
 		}
-	}
-	else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
-		// blank
 	}
 }
 
