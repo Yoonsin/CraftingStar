@@ -66,6 +66,18 @@ bool UCraftingStarGameInstance::SetDebugFile()
 		debugSaveGame->ProgressData.HostPlayerPos = MapSpawnDict[EMapName::EFlameAndIceStar].HostPlayerPos;
 		debugSaveGame->ProgressData.GuestPlayerPos = MapSpawnDict[EMapName::EFlameAndIceStar].GuestPlayerPos;
 	}
+	else if ( currentLevelName.Contains(FString("L_BossMap")) ) {
+		debugSaveGame->HostData.AbleAbility.Init(true , (int)EPlayerAbility::ENone + 1);
+		debugSaveGame->HostData.Mode = EPlayerRole::EDark;
+		debugSaveGame->GuestData.AbleAbility.Init(true , (int)EPlayerAbility::ENone + 1);
+		debugSaveGame->GuestData.Mode = EPlayerRole::ELight;
+
+		debugSaveGame->ProgressData.NowMapName = EMapName::EBossMap;
+		debugSaveGame->ProgressData.ProgressLevel = 0;
+		debugSaveGame->ProgressData.questID = EQuestID::EMegetonClear; //추후 보스 진행까지 적용
+		debugSaveGame->ProgressData.HostPlayerPos = MapSpawnDict[EMapName::EBossMap].HostPlayerPos;
+		debugSaveGame->ProgressData.GuestPlayerPos = MapSpawnDict[EMapName::EBossMap].GuestPlayerPos;
+	}
 
 	nowSaveGame = debugSaveGame;
 	return true;
