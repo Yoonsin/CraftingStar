@@ -83,7 +83,6 @@ void ULaserNiagaraComponent::SetLaser(FHitResult Hit , FVector End) {
 		}
 	}
 
-
 	if ( owner->nowAbility == EPlayerAbility::EBlast ) {
 		if ( Cast<ACraftingStarPS>(owner->GetPlayerState())->PlayerData.Mode == EPlayerRole::EDark ) {
 			ServerLaser(LaserImpact , false , Hit.bBlockingHit , Hit.Location , FLinearColor::Black);

@@ -304,6 +304,7 @@ void ACraftingStarCharacter::GetLifetimeReplicatedProps(TArray< FLifetimePropert
 	DOREPLIFETIME(ACraftingStarCharacter , nowAbility);
 	DOREPLIFETIME(ACraftingStarCharacter , KeepAbility);
 	DOREPLIFETIME(ACraftingStarCharacter , isKnockedDown);
+	DOREPLIFETIME(ACraftingStarCharacter , teleLaserDistance);
 }
 
 
@@ -430,20 +431,64 @@ void ACraftingStarCharacter::Tick(float DeltaTime)
 		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Alive"));
 	}*/
 
-	if ( KeepAbility && WandReadySign ) {
-		// Activate Ability
-		if ( nowAbility != EPlayerAbility::ENone ) {
+	if ( nowAbility != EPlayerAbility::ENone ) {
+		if ( WandReadySign ) {
 			if ( nowAbility == EPlayerAbility::EBlast ) {
-				// Activate Laser
-				WandLineTrace(10000.0f);
-
+				if ( KeepAbility ) {
+					// Activate Laser
+					WandLineTrace(10000.0f);
+				}
 			}
 			else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
-				Telekinesis();
+				// Check Floor
+				
+
+				// Activate Ability
+				if ( KeepAbility ) {
+					Telekinesis();
+					if ( selectedTarget && selectedTarget == CheckFloor() ) {
+						MouseLeftReleased();
+
+						GEngine->AddOnScreenDebugMessage(-1 , 3 , FColor::Red , FString::Printf(TEXT("sdf")));
+					}
+				}
 			}
 		}
 	}
 
+}
+
+// Check Floor
+UPrimitiveComponent* ACraftingStarCharacter::CheckFloor() {
+
+	/* Set LineTrace */
+
+	// Result oof LineTrace
+	FHitResult Hit;
+
+	// Ability Spawn Loc Socket Transform
+	FVector SpawnLocation = GetMesh()->GetComponentLocation();
+
+	// Start point and End point of LineTrace
+	FVector Start = SpawnLocation;
+	//FVector End = SpawnLocation - ( SpawnLocSource->GetUpVector() * 20 );
+	FVector End = SpawnLocation - FVector(0.f, 0.f, 50.f);
+
+	// Trace Channel: Custom Trace Channel - AbilitySpawn
+	ECollisionChannel Channel = ECollisionChannel::ECC_GameTraceChannel1;
+
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+
+	/* Execute LineTrace */
+	if ( GetWorld()->LineTraceSingleByChannel(Hit , Start , End , Channel , QueryParams) ) {
+		// Visualize LineTrace
+		//DrawDebugLine(GetWorld() , Start , End , FColor::Red);
+		
+		return Hit.GetComponent();
+	}
+
+	return NULL;
 }
 
 // Select Target
@@ -826,6 +871,9 @@ void ACraftingStarCharacter::ServerSetisKnockedDown_Implementation(bool knockedD
 }
 void ACraftingStarCharacter::MulticastSetisKnockedDown_Implementation(bool knockedDownValue) {
 	isKnockedDown = knockedDownValue;
+	if ( !isKnockedDown && RevivalParticle ) {
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld() , RevivalParticle , GetActorLocation());
+	}
 }
 
 bool ACraftingStarCharacter::ServerPlayMontage_Validate(UAnimMontage* animMontage) {
@@ -919,10 +967,10 @@ void ACraftingStarCharacter::Telekinesis() {
 	Comp_LaserNiagara->SetLaser(Hit , End);
 	
 	
-	if ( Hit.bBlockingHit ) 
+	if ( Hit.bBlockingHit && CheckFloor() != Hit.GetComponent() )
 	{
 		ensure(Hit.GetComponent());
-		if ( selectedTarget == NULL && Cast<ATelekinesisInteractableObject>(Hit.GetComponent()->GetOwner()) ) 
+		if ( selectedTarget == NULL && Cast<ATelekinesisInteractableObject>(Hit.GetComponent()->GetOwner()) )
 		{
 			teleLaserDistance = Hit.Distance;
 			teleComponentDistance = Hit.Distance;
@@ -930,9 +978,8 @@ void ACraftingStarCharacter::Telekinesis() {
 			// Grab selectedTarget Component
 			switch ( HasAuthority() ) {
 			case true:
-				selectedTarget = Hit.GetComponent();
 
-				//PhysicsHandle->GrabComponent(selectedTarget , NAME_None , End , true);
+				selectedTarget = Hit.GetComponent();
 				PhysicsHandle->GrabComponentAtLocationWithRotation(selectedTarget , NAME_None , Hit.Location , FRotator(0 , 0 , 0));
 
 				if ( selectedTarget ) {
@@ -944,7 +991,7 @@ void ACraftingStarCharacter::Telekinesis() {
 				break;
 			case false:
 				ServerSelectTarget(Hit);
-				ServerGrabComponent(End, Hit);
+				ServerGrabComponent(End , Hit);
 				break;
 			}
 		}
@@ -1002,10 +1049,6 @@ void ACraftingStarCharacter::ServerSelectTarget_Implementation(FHitResult Hit) {
 }
 void ACraftingStarCharacter::MulticastSelectTarget_Implementation(FHitResult Hit) {
 	selectedTarget = Hit.GetComponent();
-
-	auto GrabActor = Cast<ATelekinesisInteractableObject>(Hit.GetComponent()->GetOwner());
-	GrabActor->SetTelekinesisOwner(this);
-	
 }
 
 
@@ -1029,8 +1072,8 @@ bool ACraftingStarCharacter::ServerGrabComponent_Validate(FVector End, FHitResul
 void ACraftingStarCharacter::ServerGrabComponent_Implementation(FVector End, FHitResult Hit) {
 	MulticastGrabComponent(End, Hit);
 }
-void ACraftingStarCharacter::MulticastGrabComponent_Implementation(FVector End, FHitResult Hit) {
-	PhysicsHandle->GrabComponentAtLocationWithRotation(selectedTarget , NAME_None , Hit.Location, FRotator(0, 0, 0));
+void ACraftingStarCharacter::MulticastGrabComponent_Implementation(FVector End , FHitResult Hit) {
+	PhysicsHandle->GrabComponentAtLocationWithRotation(selectedTarget , NAME_None , Hit.Location , FRotator(0 , 0 , 0));
 	GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Grab Component"));
 
 	if ( selectedTarget ) {
@@ -1170,6 +1213,7 @@ void ACraftingStarCharacter::ActivateAbility() {
 		else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
 			//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Tele"));
 			if ( !abilityReadyStatus ) {
+				teleLaserDistance = 750;
 				teleComponentDistance = 0;
 				//teleForce = 5000.0f;
 
@@ -1309,7 +1353,7 @@ void ACraftingStarCharacter::MouseLeftReleased() {
 					{
 						GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("here"));
 						switch ( HasAuthority() ) {
-						case true :
+						case true:
 							PhysicsHandle->ReleaseComponent();
 							if ( Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner()) )
 							{
@@ -1318,13 +1362,15 @@ void ACraftingStarCharacter::MouseLeftReleased() {
 									selectedTarget->SetSimulatePhysics(true);
 								}
 							}
+							teleLaserDistance = 750;
+							teleComponentDistance = 0;
 
 							// Set CustomDepth Stencil Value to chagne Color
 							Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ActorMesh->SetCustomDepthStencilValue(0);
 
 							selectedTarget = NULL;
 							break;
-						case false :
+						case false:
 							ServerReleaseComponent();
 							ServerDeselectTarget();
 							break;
@@ -1334,12 +1380,8 @@ void ACraftingStarCharacter::MouseLeftReleased() {
 
 				if ( DeactiveAbilityMontage ) {
 					ServerAbility(false);	// request ability animation on server
-					// Play Animation
-					GetMesh()->GetAnimInstance()->Montage_IsPlaying(DeactiveAbilityMontage);
 				}
 
-				teleLaserDistance = 750;
-				teleComponentDistance = 0;
 				//teleForce = 5000.0f;
 
 				//GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...
@@ -1369,6 +1411,9 @@ void ACraftingStarCharacter::MulticastReleaseComponent_Implementation() {
 			}
 		}
 	}
+
+	teleLaserDistance = 750;
+	teleComponentDistance = 0;
 
 	// Set CustomDepth Stencil Value to chagne Color
 	Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ActorMesh->SetCustomDepthStencilValue(0);

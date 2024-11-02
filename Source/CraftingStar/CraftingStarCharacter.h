@@ -65,7 +65,6 @@ class ACraftingStarCharacter : public ACharacter
 
 	// Telekinesis
 
-	float teleLaserDistance = 750.0f;
 	float teleComponentDistance = 0.0f;
 	UPROPERTY(EditAnywhere , Category = "Forces")
 	float teleForce = 1000.0f;
@@ -251,11 +250,13 @@ protected:
 
 	// OnDamaged
 	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = AnimMontage)
+	class UAnimMontage* HitMontage_Popo;
+	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = AnimMontage)
 	class UAnimMontage* KnockedDownMontage_Popo;
 	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = AnimMontage)
 	class UAnimMontage* ReviveMontage_Popo;
-	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = AnimMontage)
-	class UAnimMontage* HitMontage_Popo;
+	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = Particle)
+	class UParticleSystem* RevivalParticle;
 
 	// Ability
 
@@ -264,6 +265,8 @@ protected:
 	void ActivateAbility2();
 
 	// Wand Skill Animation: Blast, Telekinesis
+	UPROPERTY(Replicated , VisibleAnywhere , BlueprintReadOnly , Category = "Telekinesis")
+	float teleLaserDistance = 750.0f;
 	// Activate Wand Skill
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = AnimMontage)
 	class UAnimMontage* AbilityMontage;
@@ -483,4 +486,6 @@ private:
 	// Control CameraBoom Rotation
 	float CameraBoomMinPitch = -30.0f;
 	float CameraBoomMaxPitch = 30.0f;
+
+	UPrimitiveComponent* CheckFloor();
 };
