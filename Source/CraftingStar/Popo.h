@@ -32,5 +32,5 @@ public:
 	int CatchedPlayerCnt;
 
 	UFUNCTION(BlueprintCallable)
-	void CheckCatchedAll();
+	int CheckCatchedPlayerCnt();
 };

@@ -289,7 +289,7 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 
 	// On Damaged
 	AttackedCnt_Popo = 0;
-	isCollapsed = false;
+	isKnockedDown = false;
 
 	// Ability
 	KeepAbility = false;
@@ -300,9 +300,10 @@ void ACraftingStarCharacter::GetLifetimeReplicatedProps(TArray< FLifetimePropert
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(ACraftingStarCharacter , OffsetAxis);
-	DOREPLIFETIME(ACraftingStarCharacter , KeepAbility);
-	DOREPLIFETIME(ACraftingStarCharacter , isCollapsed);
 	DOREPLIFETIME(ACraftingStarCharacter , nowAbility);
+	DOREPLIFETIME(ACraftingStarCharacter , KeepAbility);
+	DOREPLIFETIME(ACraftingStarCharacter , isKnockedDown);
+	DOREPLIFETIME(ACraftingStarCharacter , teleLaserDistance);
 }
 
 
@@ -422,27 +423,71 @@ void ACraftingStarCharacter::Tick(float DeltaTime)
 	//          Ӹ          ɷ              ʿ        Ʈ
 	Super::Tick(DeltaTime);
 	/*
-	if ( isCollapsed ) {
+	if ( isKnockedDown ) {
 		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Dead"));
 	}
 	else {
 		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Alive"));
 	}*/
 
-	if ( KeepAbility && WandReadySign ) {
-		// Activate Ability
-		if ( nowAbility != EPlayerAbility::ENone ) {
+	if ( nowAbility != EPlayerAbility::ENone ) {
+		if ( WandReadySign ) {
 			if ( nowAbility == EPlayerAbility::EBlast ) {
-				// Activate Laser
-				WandLineTrace(10000.0f);
-
+				if ( KeepAbility ) {
+					// Activate Laser
+					WandLineTrace(10000.0f);
+				}
 			}
 			else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
-				Telekinesis();
+				// Check Floor
+				
+
+				// Activate Ability
+				if ( KeepAbility ) {
+					Telekinesis();
+					if ( selectedTarget && selectedTarget == CheckFloor() ) {
+						MouseLeftReleased();
+
+						GEngine->AddOnScreenDebugMessage(-1 , 3 , FColor::Red , FString::Printf(TEXT("sdf")));
+					}
+				}
 			}
 		}
 	}
 
+}
+
+// Check Floor
+UPrimitiveComponent* ACraftingStarCharacter::CheckFloor() {
+
+	/* Set LineTrace */
+
+	// Result oof LineTrace
+	FHitResult Hit;
+
+	// Ability Spawn Loc Socket Transform
+	FVector SpawnLocation = GetMesh()->GetComponentLocation();
+
+	// Start point and End point of LineTrace
+	FVector Start = SpawnLocation;
+	//FVector End = SpawnLocation - ( SpawnLocSource->GetUpVector() * 20 );
+	FVector End = SpawnLocation - FVector(0.f, 0.f, 50.f);
+
+	// Trace Channel: Custom Trace Channel - AbilitySpawn
+	ECollisionChannel Channel = ECollisionChannel::ECC_GameTraceChannel1;
+
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+
+	/* Execute LineTrace */
+	if ( GetWorld()->LineTraceSingleByChannel(Hit , Start , End , Channel , QueryParams) ) {
+		// Visualize LineTrace
+		//DrawDebugLine(GetWorld() , Start , End , FColor::Red);
+		
+		return Hit.GetComponent();
+	}
+
+	return NULL;
 }
 
 // Select Target
@@ -469,7 +514,6 @@ void ACraftingStarCharacter::UpdatePlayerAbility(EPlayerAbility playerAbility) {
 		if ( KeepAbility ) {
 			WandReadySign = false;
 			DeactivateAbility();
-			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("2"));
 			switch ( HasAuthority() ) {
 			case true :
 				MulticastSetKeepAbility(false);
@@ -491,8 +535,24 @@ void ACraftingStarCharacter::UpdatePlayerAbility(EPlayerAbility playerAbility) {
 	}
 
 	// update now ability
-	nowAbility = playerAbility;
+	switch ( HasAuthority() ) {
+	case true:
+		MulticastSetNowAbility(playerAbility);
+		break;
+	case false:
+		ServerSetNowAbility(playerAbility);
+		break;
+	}
 
+}
+bool ACraftingStarCharacter::ServerSetNowAbility_Validate(EPlayerAbility NewAbility) {
+	return true;
+}
+void ACraftingStarCharacter::ServerSetNowAbility_Implementation(EPlayerAbility NewAbility) {
+	MulticastSetNowAbility(NewAbility);
+}
+void ACraftingStarCharacter::MulticastSetNowAbility_Implementation(EPlayerAbility NewAbility) {
+	nowAbility = NewAbility;
 }
 
 void ACraftingStarCharacter::UpdatePlayerGMState(EPlayerGMState playerGMState) {
@@ -657,28 +717,53 @@ void ACraftingStarCharacter::Interaction() {
 
 }
 
-// Character On Collapsed Base
-void ACraftingStarCharacter::OnCollapsed() {
-	// Play CollapsedMontage_Popo
+// Character On KnockedDown Base
+void ACraftingStarCharacter::OnKnockedDown() {
+	// Cancel Previous skill if it is Running
+	if ( nowAbility == EPlayerAbility::EBlast ) {
+		if ( KeepAbility ) {
+			WandReadySign = false;
+			DeactivateAbility();
+			switch ( HasAuthority() ) {
+			case true:
+				MulticastSetKeepAbility(false);
+				break;
+			case false:
+				ServerSetKeepAbility(false);
+				break;
+			}
+		}
+	}
+	else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
+		GEngine->AddOnScreenDebugMessage(-1 , 3 , FColor::Red , FString::Printf(TEXT("Try To Cancel tele")));
+		if ( abilityReadyStatus ) {
+			// Deactivate Telekinesis Skill
+			MouseLeftReleased();
+			ActivateAbility();
+			abilityReadyStatus = false;
+		}
+	}
+
+	// Play KnockedDownMontage_Popo
 	switch ( HasAuthority() ) {
 	case true:
-		MulticastPlayMontage(CollapsedMontage_Popo);
+		MulticastPlayMontage(KnockedDownMontage_Popo);
 		break;
 	case false:
-		ServerPlayMontage(CollapsedMontage_Popo);
+		ServerPlayMontage(KnockedDownMontage_Popo);
 		break;
 	}
 
 	// Disable Player Movement
 	GetCharacterMovement()->DisableMovement();
 
-	// Set isCollapsed True
+	// Set isKnockedDown True
 	switch ( HasAuthority() ) {
 	case true:
-		MulticastSetisCollapsed(true);
+		MulticastSetisKnockedDown(true);
 		break;
 	case false:
-		ServerSetisCollapsed(true);
+		ServerSetisKnockedDown(true);
 		break;
 	}
 }
@@ -689,7 +774,7 @@ void ACraftingStarCharacter::OnDamaged_Popo() {
 
 	if ( AttackedCnt_Popo >= 3 ) {
 		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("쓰러짐"));
-		OnCollapsed_Popo();	// Play CollapsedMontage_Popo
+		OnKnockedDown_Popo();	// Play KnockedDownMontage_Popo
 	}
 	else {
 		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("맞음: %f") , AttackedCnt_Popo));
@@ -706,9 +791,9 @@ void ACraftingStarCharacter::OnDamaged_Popo() {
 	}
 }
 
-// On Collapsed by Popo
-void ACraftingStarCharacter::OnCollapsed_Popo() {
-	OnCollapsed();
+// On KnockedDown by Popo
+void ACraftingStarCharacter::OnKnockedDown_Popo() {
+	OnKnockedDown();
 
 	// Find Popo
 	UClass* PopoBP = StaticLoadClass(APopo::StaticClass() , nullptr , TEXT("Blueprint'/Game/NPC/Monster/Blueprint/Popo/BP_Popo.BP_Popo_C'"));
@@ -718,8 +803,7 @@ void ACraftingStarCharacter::OnCollapsed_Popo() {
 	// Increase Popo CatchedPlayerCnt
 	if ( PopoActor ) {
 		PopoActor->CatchedPlayerCnt++;
-
-		PopoActor->CheckCatchedAll();
+		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("포포 냠냠: %d") , PopoActor->CatchedPlayerCnt));
 	}
 
 	// Prepare for Revival
@@ -729,29 +813,29 @@ void ACraftingStarCharacter::OnCollapsed_Popo() {
 // Character On Revive Base
 void ACraftingStarCharacter::OnRevive() {
 
-	// Set isCollapsed False
+	// Set isKnockedDown False
 	switch ( HasAuthority() ) {
 	case true:
-		MulticastSetisCollapsed(false);
+		MulticastSetisKnockedDown(false);
 		break;
 	case false:
-		ServerSetisCollapsed(false);
+		ServerSetisKnockedDown(false);
 		break;
 	}
 
 	// Enable Player Movement
 	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 
-	// Stop CollapsedMontage_Popo and Play ReviveMontage_Popo
-	if ( CollapsedMontage_Popo && ReviveMontage_Popo ) {
+	// Stop KnockedDownMontage_Popo and Play ReviveMontage_Popo
+	if ( KnockedDownMontage_Popo && ReviveMontage_Popo ) {
 		// Play Animation
 		switch ( HasAuthority() ) {
 		case true:
-			MulticastStopMontage(CollapsedMontage_Popo);
+			MulticastStopMontage(KnockedDownMontage_Popo);
 			MulticastPlayMontage(ReviveMontage_Popo);
 			break;
 		case false:
-			ServerStopMontage(CollapsedMontage_Popo);
+			ServerStopMontage(KnockedDownMontage_Popo);
 			ServerPlayMontage(ReviveMontage_Popo);
 			break;
 		}
@@ -777,20 +861,17 @@ void ACraftingStarCharacter::OnRevive_Popo() {
 		PopoActor->CatchedPlayerCnt--;
 	}
 }
-// Set and Replicate isCollapsed
-bool ACraftingStarCharacter::ServerSetisCollapsed_Validate(bool collapsedValue) {
+// Set and Replicate isKnockedDown
+bool ACraftingStarCharacter::ServerSetisKnockedDown_Validate(bool knockedDownValue) {
 	return true;
 }
-void ACraftingStarCharacter::ServerSetisCollapsed_Implementation(bool collapsedValue) {
-	MulticastSetisCollapsed(collapsedValue);
+void ACraftingStarCharacter::ServerSetisKnockedDown_Implementation(bool knockedDownValue) {
+	MulticastSetisKnockedDown(knockedDownValue);
 }
-void ACraftingStarCharacter::MulticastSetisCollapsed_Implementation(bool collapsedValue) {
-	isCollapsed = collapsedValue;
-	if ( collapsedValue ) {
-		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Dead!"));
-	}
-	else {
-		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Alive!"));
+void ACraftingStarCharacter::MulticastSetisKnockedDown_Implementation(bool knockedDownValue) {
+	isKnockedDown = knockedDownValue;
+	if ( !isKnockedDown && RevivalParticle ) {
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld() , RevivalParticle , GetActorLocation(), FRotator::ZeroRotator, FVector(3.f));
 	}
 }
 
@@ -885,10 +966,10 @@ void ACraftingStarCharacter::Telekinesis() {
 	Comp_LaserNiagara->SetLaser(Hit , End);
 	
 	
-	if ( Hit.bBlockingHit ) 
+	if ( Hit.bBlockingHit && CheckFloor() != Hit.GetComponent() )
 	{
 		ensure(Hit.GetComponent());
-		if ( selectedTarget == NULL && Cast<ATelekinesisInteractableObject>(Hit.GetComponent()->GetOwner()) ) 
+		if ( selectedTarget == NULL && Cast<ATelekinesisInteractableObject>(Hit.GetComponent()->GetOwner()) )
 		{
 			teleLaserDistance = Hit.Distance;
 			teleComponentDistance = Hit.Distance;
@@ -896,9 +977,8 @@ void ACraftingStarCharacter::Telekinesis() {
 			// Grab selectedTarget Component
 			switch ( HasAuthority() ) {
 			case true:
-				selectedTarget = Hit.GetComponent();
 
-				//PhysicsHandle->GrabComponent(selectedTarget , NAME_None , End , true);
+				selectedTarget = Hit.GetComponent();
 				PhysicsHandle->GrabComponentAtLocationWithRotation(selectedTarget , NAME_None , Hit.Location , FRotator(0 , 0 , 0));
 
 				if ( selectedTarget ) {
@@ -910,7 +990,7 @@ void ACraftingStarCharacter::Telekinesis() {
 				break;
 			case false:
 				ServerSelectTarget(Hit);
-				ServerGrabComponent(End, Hit);
+				ServerGrabComponent(End , Hit);
 				break;
 			}
 		}
@@ -968,10 +1048,6 @@ void ACraftingStarCharacter::ServerSelectTarget_Implementation(FHitResult Hit) {
 }
 void ACraftingStarCharacter::MulticastSelectTarget_Implementation(FHitResult Hit) {
 	selectedTarget = Hit.GetComponent();
-	//123
-	auto GrabActor = Cast<ATelekinesisInteractableObject>(Hit.GetComponent()->GetOwner());
-	GrabActor->SetTelekinesisOwner(this);
-	
 }
 
 
@@ -995,8 +1071,8 @@ bool ACraftingStarCharacter::ServerGrabComponent_Validate(FVector End, FHitResul
 void ACraftingStarCharacter::ServerGrabComponent_Implementation(FVector End, FHitResult Hit) {
 	MulticastGrabComponent(End, Hit);
 }
-void ACraftingStarCharacter::MulticastGrabComponent_Implementation(FVector End, FHitResult Hit) {
-	PhysicsHandle->GrabComponentAtLocationWithRotation(selectedTarget , NAME_None , Hit.Location, FRotator(0, 0, 0));
+void ACraftingStarCharacter::MulticastGrabComponent_Implementation(FVector End , FHitResult Hit) {
+	PhysicsHandle->GrabComponentAtLocationWithRotation(selectedTarget , NAME_None , Hit.Location , FRotator(0 , 0 , 0));
 	GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Grab Component"));
 
 	if ( selectedTarget ) {
@@ -1074,7 +1150,7 @@ void ACraftingStarCharacter::RemoveTeleObjOutline() {
 
 }
 
-// Wand Skill Animation Offset
+// Wand Skill Aim Offset
 void ACraftingStarCharacter::SetOffsetAxis() {
 	
 	if ( HasAuthority() )
@@ -1103,113 +1179,117 @@ FRotator ACraftingStarCharacter::GetOffsetAxis() {
 
 // Input Ability (Key: E)
 void ACraftingStarCharacter::ActivateAbility() {
-	if ( nowAbility == EPlayerAbility::EBlast ) {
-		// Sound
-		if ( Cast<ACraftingStarPS>(GetPlayerState())->PlayerData.Mode == EPlayerRole::EDark ) {
-			audioComp->SetSound(SW_EmissionDark);
-		}
-		else if ( Cast<ACraftingStarPS>(GetPlayerState())->PlayerData.Mode == EPlayerRole::ELight ) {
-			audioComp->SetSound(SW_EmissionLight);
-		}
-		audioComp->Play();
+	if ( !isKnockedDown ) {
+		if ( nowAbility == EPlayerAbility::EBlast ) {
+			// Sound
+			if ( Cast<ACraftingStarPS>(GetPlayerState())->PlayerData.Mode == EPlayerRole::EDark ) {
+				audioComp->SetSound(SW_EmissionDark);
+			}
+			else if ( Cast<ACraftingStarPS>(GetPlayerState())->PlayerData.Mode == EPlayerRole::ELight ) {
+				audioComp->SetSound(SW_EmissionLight);
+			}
+			audioComp->Play();
 
-		if ( AbilityMontage ) {
-			// Play Animation
-			bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(AbilityMontage);
-			if ( !bIsMontagePlaying ) {
-				ServerAbility(true);	// request ability animation on server
-				switch ( HasAuthority() ) {
-				case true:
-					MulticastSetKeepAbility(true);
-					break;
-				case false:
-					ServerSetKeepAbility(true);
-					break;
+			if ( AbilityMontage ) {
+				// Play Animation
+				bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(AbilityMontage);
+				if ( !bIsMontagePlaying ) {
+					ServerAbility(true);	// request ability animation on server
+					switch ( HasAuthority() ) {
+					case true:
+						MulticastSetKeepAbility(true);
+						break;
+					case false:
+						ServerSetKeepAbility(true);
+						break;
+					}
 				}
 			}
-		}
-
-		CameraBoom->SetRelativeLocation(FVector(0.0f , 100.0f , 100.0f));
-		CameraBoom->bUsePawnControlRotation = false; // Does not rotate the arm based on the controller
-	}
-	else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
-		//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Tele"));
-		if ( !abilityReadyStatus ) {
-			teleComponentDistance = 0;
-			//teleForce = 5000.0f;
-
-			abilityReadyStatus = true;
 
 			CameraBoom->SetRelativeLocation(FVector(0.0f , 100.0f , 100.0f));
-			CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
-			
-			bUseControllerRotationYaw = true;
-			GetCharacterMovement()->bOrientRotationToMovement = false; // Character doesn't move in the direction of input...
-			
-			CreateTeleObjOutline();
+			CameraBoom->bUsePawnControlRotation = false; // Does not rotate the arm based on the controller
 		}
-		else {
-			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Cancel"));
-			CameraBoom->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
-			//CameraBoom->bUsePawnControlRotation = false; // Does not rotate the arm based on the controller
-			
-			bUseControllerRotationYaw = false;
-			GetCharacterMovement()->bOrientRotationToMovement = true; // Character  moves in the direction of input...
+		else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
+			//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Tele"));
+			if ( !abilityReadyStatus ) {
+				teleLaserDistance = 750;
+				teleComponentDistance = 0;
+				//teleForce = 5000.0f;
 
-			RemoveTeleObjOutline();
-			switch ( HasAuthority() ) {
-			case true :
-				if ( selectedTarget != NULL ) {
-					selectedTarget = NULL;
-				}
-				break;
-			case false :
-				ServerDeselectTarget();
-				break;
+				abilityReadyStatus = true;
+
+				CameraBoom->SetRelativeLocation(FVector(0.0f , 100.0f , 100.0f));
+				CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
+
+				bUseControllerRotationYaw = true;
+				GetCharacterMovement()->bOrientRotationToMovement = false; // Character doesn't move in the direction of input...
+
+				CreateTeleObjOutline();
 			}
+			else {
+				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Cancel"));
+				CameraBoom->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
+				//CameraBoom->bUsePawnControlRotation = false; // Does not rotate the arm based on the controller
 
-			abilityReadyStatus = false;
+				bUseControllerRotationYaw = false;
+				GetCharacterMovement()->bOrientRotationToMovement = true; // Character  moves in the direction of input...
+
+				RemoveTeleObjOutline();
+				switch ( HasAuthority() ) {
+				case true:
+					if ( selectedTarget != NULL ) {
+						selectedTarget = NULL;
+					}
+					break;
+				case false:
+					ServerDeselectTarget();
+					break;
+				}
+
+				abilityReadyStatus = false;
+			}
 		}
-	}
-	else if ( nowAbility == EPlayerAbility::EAbility_dummy1 )
-	{
-		UseProjectionTwoHanded();
-	}
+		else if ( nowAbility == EPlayerAbility::EAbility_dummy1 )
+		{
+			UseProjectionTwoHanded();
+		}
 
-	else if ( nowAbility == EPlayerAbility::EAbility_dummy2 )
-	{
-		AssimilationComponent->Assimilation();
+		else if ( nowAbility == EPlayerAbility::EAbility_dummy2 )
+		{
+			AssimilationComponent->Assimilation();
+		}
 	}
 }
 void ACraftingStarCharacter::DeactivateAbility() {
-	if ( nowAbility == EPlayerAbility::EBlast ) {
-		WandReadySign = false;
-		// Sound
-		audioComp->Stop();
-		audioComp->SetSound(NULL);
+	if ( !isKnockedDown ) {
+		if ( nowAbility == EPlayerAbility::EBlast ) {
+			WandReadySign = false;
+			// Sound
+			audioComp->Stop();
+			audioComp->SetSound(NULL);
 
-		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Blast deactivate"));
-		switch ( HasAuthority() ) {
-		case true:
-			MulticastSetKeepAbility(false);
-			break;
-		case false:
-			ServerSetKeepAbility(false);
-			break;
-		}
+			GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Blast deactivate"));
+			switch ( HasAuthority() ) {
+			case true:
+				MulticastSetKeepAbility(false);
+				break;
+			case false:
+				ServerSetKeepAbility(false);
+				break;
+			}
 
-		CameraBoom->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
-		CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
-		if ( DeactiveAbilityMontage ) {
-			ServerAbility(false);	// request ability animation on server
+			CameraBoom->SetRelativeLocation(FVector(0.0f , 0.0f , 0.0f));
+			CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
+
 			// Play Animation
-			GetMesh()->GetAnimInstance()->Montage_IsPlaying(DeactiveAbilityMontage);
+			bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(DeactiveAbilityMontage);
+			if ( !bIsMontagePlaying && DeactiveAbilityMontage ) {
+				ServerAbility(false);	// request ability animation on server
+			}
 		}
-
-	
-	}
-	else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
-		// blank
+		else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
+			// blank
+		}
 	}
 }
 
@@ -1257,7 +1337,6 @@ void ACraftingStarCharacter::MouseLeftReleased() {
 
 			if ( abilityReadyStatus ) {
 				WandReadySign = false;
-				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("4"));
 				switch ( HasAuthority() ) {
 				case true:
 					MulticastSetKeepAbility(false);
@@ -1273,7 +1352,7 @@ void ACraftingStarCharacter::MouseLeftReleased() {
 					{
 						GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("here"));
 						switch ( HasAuthority() ) {
-						case true :
+						case true:
 							PhysicsHandle->ReleaseComponent();
 							if ( Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner()) )
 							{
@@ -1282,13 +1361,15 @@ void ACraftingStarCharacter::MouseLeftReleased() {
 									selectedTarget->SetSimulatePhysics(true);
 								}
 							}
+							teleLaserDistance = 750;
+							teleComponentDistance = 0;
 
 							// Set CustomDepth Stencil Value to chagne Color
 							Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ActorMesh->SetCustomDepthStencilValue(0);
 
 							selectedTarget = NULL;
 							break;
-						case false :
+						case false:
 							ServerReleaseComponent();
 							ServerDeselectTarget();
 							break;
@@ -1298,12 +1379,8 @@ void ACraftingStarCharacter::MouseLeftReleased() {
 
 				if ( DeactiveAbilityMontage ) {
 					ServerAbility(false);	// request ability animation on server
-					// Play Animation
-					GetMesh()->GetAnimInstance()->Montage_IsPlaying(DeactiveAbilityMontage);
 				}
 
-				teleLaserDistance = 750;
-				teleComponentDistance = 0;
 				//teleForce = 5000.0f;
 
 				//GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...
@@ -1333,6 +1410,9 @@ void ACraftingStarCharacter::MulticastReleaseComponent_Implementation() {
 			}
 		}
 	}
+
+	teleLaserDistance = 750;
+	teleComponentDistance = 0;
 
 	// Set CustomDepth Stencil Value to chagne Color
 	Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ActorMesh->SetCustomDepthStencilValue(0);
@@ -1391,66 +1471,26 @@ void ACraftingStarCharacter::TurnAtRate(float Rate)
 }
 
 void  ACraftingStarCharacter::LookUp(float Value) {
-	//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("LookUpValue: %f") , Value));
 	// Add Pitch Input Value of Controller
-
 	if ( nowAbility == EPlayerAbility::ETelekinesis && KeepAbility ) {
 		if ( Value != 0.0f && CameraBoom ) {
-			
-			//float CameraBoomYaw = CameraBoom->GetComponentRotation().Yaw;
-
 			float CurrentPitch = Cast<ACraftingStarPC>(GetController())->GetControlRotation().Pitch;
-
-			//APlayerController* const PC = Cast<APlayerController>(Controller);
-			//float CurrentYaw = PC->RotationInput.Yaw;
-
-			//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("PC Rot: %f %f %f") , Cast<ACraftingStarPC>(GetController())->GetControlRotation().Pitch , Cast<ACraftingStarPC>(GetController())->GetControlRotation().Yaw , Cast<ACraftingStarPC>(GetController())->GetControlRotation().Roll));
-			/*
-			if ( CameraBoomYaw >= CameraBoomMinPitch && CameraBoomYaw <= CameraBoomMaxPitch ) {
-				//Cast<ACraftingStarPC>(GetController())->AddPitchInput(Value);
-				//RotationInput.Pitch += !IsLookInputIgnored() ? Val * InputPitchScale : 0.f;
-				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("if문 진입")));
-				AddControllerPitchInput(Value);
-
-			}
-			*/
-
 			float NewPitch = 0.f;
-			if ( /*0 <= CurrentPitch && */CurrentPitch <= -CameraBoomMinPitch ) {
-				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("1")));
+			if ( CurrentPitch <= -CameraBoomMinPitch ) {
 				NewPitch = FMath::Clamp(CurrentPitch - Value , 0.f , -CameraBoomMinPitch);
 
 				if ( CurrentPitch <= 0 ) {
 					NewPitch = 360.f - Value;
 				}
 			}
-			else if ( 360 - CameraBoomMaxPitch <= CurrentPitch/* && CurrentPitch < 360*/ ) {
+			else if ( 360 - CameraBoomMaxPitch <= CurrentPitch ) {
 				NewPitch = FMath::Clamp(CurrentPitch - Value , 360 - CameraBoomMaxPitch , 360.f);
-				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("%f") , NewPitch));
 
 				if ( 360 <= CurrentPitch ) {
 					NewPitch = -Value;
 				}
-			}/*
-			else {
-				if ( -CameraBoomMinPitch < CurrentPitch && CurrentPitch <= 180 ) {
-					GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("3")));
-					NewPitch = -CameraBoomMinPitch;			// Apply to Equal to or Less than 180 (excluded 0~CameraBoomMinPitch)
-				}
-				else if ( 180 < CurrentPitch && CurrentPitch < 360 - CameraBoomMaxPitch ) {
-					GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("4")));
-					NewPitch = 360.f - CameraBoomMaxPitch;	// Apply to Greater than 180 (excluded CameraBoomMaxPitch~360)
-				}
-			}*/
+			}
 			Cast<ACraftingStarPC>(GetController())->SetControlRotation(FRotator(NewPitch , Cast<ACraftingStarPC>(GetController())->GetControlRotation().Yaw , Cast<ACraftingStarPC>(GetController())->GetControlRotation().Roll));
-			
-			/*
-			float NewPitch = CurrentPitch + Value;
-
-			NewPitch = FMath::Clamp(NewPitch , CameraBoomMinPitch , CameraBoomMaxPitch);
-
-			CameraBoom->SetRelativeRotation(FRotator(NewPitch , CameraBoom->GetRelativeRotation().Yaw , CameraBoom->GetRelativeRotation().Roll));
-			*/
 		}
 	}
 	else {

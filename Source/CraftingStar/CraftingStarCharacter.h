@@ -65,7 +65,6 @@ class ACraftingStarCharacter : public ACharacter
 
 	// Telekinesis
 
-	float teleLaserDistance = 750.0f;
 	float teleComponentDistance = 0.0f;
 	UPROPERTY(EditAnywhere , Category = "Forces")
 	float teleForce = 1000.0f;
@@ -120,7 +119,7 @@ public:
 	FRotator OffsetAxis;
 	UFUNCTION(Server , Reliable , WithValidation , BlueprintCallable , Category = "AimOffset")
 	void ServerSetOffsetAxis();
-	UFUNCTION(NetMulticast , Unreliable , Category = "AimOffset")
+	UFUNCTION(NetMulticast , Unreliable , BlueprintCallable, Category = "AimOffset")
 	void MulticastSetOffsetAxis();
 	UFUNCTION(BlueprintCallable)
 	void SetOffsetAxis();
@@ -145,15 +144,15 @@ public:
 	UPROPERTY(EditAnywhere , BlueprintReadOnly)
 	class UWidgetComponent* interactTag;
 
-	// Character On Collapsed Base
+	// Character On KnockedDown Base
 	UFUNCTION(BlueprintCallable, Category = "Popo")
-	void OnCollapsed();
+	void OnKnockedDown();
 
 	// On Damaged: Popo Attack Interaction
 	UFUNCTION(BlueprintCallable , Category = "Popo")
 	void OnDamaged_Popo();
 	UFUNCTION(BlueprintCallable , Category = "Popo")
-	void OnCollapsed_Popo();
+	void OnKnockedDown_Popo();
 
 	// Character On Revive Base
 	UFUNCTION(BlueprintCallable , Category = "Popo")
@@ -166,12 +165,12 @@ public:
 	int AttackedCnt_Popo;
 
 	UPROPERTY(Replicated , EditAnywhere , BlueprintReadWrite , Category = Popo , meta = ( AllowPrivateAccess = "true" ))
-	bool isCollapsed;
-	// Replicate: isCollapsed
+	bool isKnockedDown;
+	// Replicate: isKnockedDown
 	UFUNCTION(Server , Reliable , WithValidation , Category = "Popo")
-	void ServerSetisCollapsed(bool collapsedValue);
+	void ServerSetisKnockedDown(bool knockedDownValue);
 	UFUNCTION(NetMulticast , Unreliable , Category = "Popo")
-	void MulticastSetisCollapsed(bool collapsedValue);
+	void MulticastSetisKnockedDown(bool knockedDownValue);
 
 	// Replicate Animation: Play Montage
 	UFUNCTION(Server , Reliable , WithValidation , Category = "Animation")
@@ -251,11 +250,13 @@ protected:
 
 	// OnDamaged
 	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = AnimMontage)
-	class UAnimMontage* CollapsedMontage_Popo;
+	class UAnimMontage* HitMontage_Popo;
+	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = AnimMontage)
+	class UAnimMontage* KnockedDownMontage_Popo;
 	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = AnimMontage)
 	class UAnimMontage* ReviveMontage_Popo;
-	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = AnimMontage)
-	class UAnimMontage* HitMontage_Popo;
+	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = Particle)
+	class UParticleSystem* RevivalParticle;
 
 	// Ability
 
@@ -264,6 +265,8 @@ protected:
 	void ActivateAbility2();
 
 	// Wand Skill Animation: Blast, Telekinesis
+	UPROPERTY(Replicated , VisibleAnywhere , BlueprintReadOnly , Category = "Telekinesis")
+	float teleLaserDistance = 750.0f;
 	// Activate Wand Skill
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = AnimMontage)
 	class UAnimMontage* AbilityMontage;
@@ -370,6 +373,11 @@ public:
 	/* Ability */
 	UPROPERTY(Replicated, VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
 	EPlayerAbility nowAbility = EPlayerAbility::ENone;
+	UFUNCTION(Server , Reliable , WithValidation , Category = "Ability")
+	void ServerSetNowAbility(EPlayerAbility NewAbility);
+	UFUNCTION(NetMulticast , Unreliable , Category = "Ability")
+	void MulticastSetNowAbility(EPlayerAbility NewAbility);
+	
 	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
 	bool abilityReadyStatus = false;
 
@@ -478,4 +486,6 @@ private:
 	// Control CameraBoom Rotation
 	float CameraBoomMinPitch = -30.0f;
 	float CameraBoomMaxPitch = 30.0f;
+
+	UPrimitiveComponent* CheckFloor();
 };
