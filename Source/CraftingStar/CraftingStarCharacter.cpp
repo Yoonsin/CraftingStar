@@ -872,7 +872,7 @@ void ACraftingStarCharacter::ServerSetisKnockedDown_Implementation(bool knockedD
 void ACraftingStarCharacter::MulticastSetisKnockedDown_Implementation(bool knockedDownValue) {
 	isKnockedDown = knockedDownValue;
 	if ( !isKnockedDown && RevivalParticle ) {
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld() , RevivalParticle , GetActorLocation());
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld() , RevivalParticle , GetActorLocation(), FRotator::ZeroRotator, FVector(3.f));
 	}
 }
 
