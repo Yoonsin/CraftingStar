@@ -65,7 +65,6 @@ class ACraftingStarCharacter : public ACharacter
 
 	// Telekinesis
 
-	float teleComponentDistance = 0.0f;
 	UPROPERTY(EditAnywhere , Category = "Forces")
 	float teleForce = 1000.0f;
 
@@ -235,6 +234,8 @@ protected:
 	// Mouse Events
 	void MouseLeftPressed();
 	void MouseLeftReleased();
+	void MouseWheelUp();
+	void MouseWheelDown();
 
 	// Sounds
 	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Sounds , meta = ( AllowPrivateAccess = "true" ))
@@ -265,8 +266,18 @@ protected:
 	void ActivateAbility2();
 
 	// Wand Skill Animation: Blast, Telekinesis
+
+	// Telekinesis Controllable Distance
 	UPROPERTY(Replicated , VisibleAnywhere , BlueprintReadOnly , Category = "Telekinesis")
 	float teleLaserDistance = 750.0f;
+	UPROPERTY(Replicated , VisibleAnywhere , BlueprintReadOnly , Category = "Telekinesis")
+	float teleWheelValue = 100.0f;	// changes per wheel input
+
+	UFUNCTION(Server , Reliable , WithValidation , Category = "Telekinesis")
+	void ServerSetTeleLaserDistance(float newDistance);
+	UFUNCTION(NetMulticast , Unreliable , Category = "Telekinesis")
+	void MulticastSetTeleLaserDistance(float newDistance);
+
 	// Activate Wand Skill
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = AnimMontage)
 	class UAnimMontage* AbilityMontage;
