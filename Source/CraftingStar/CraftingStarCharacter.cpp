@@ -412,9 +412,13 @@ void ACraftingStarCharacter::SetupPlayerInputComponent(class UInputComponent* Pl
 
 	PlayerInputComponent->BindAction("Ability2" , IE_Pressed , this , &ACraftingStarCharacter::ActivateAbility2);
 
-	// mouse left click
+	// mouse left button
 	PlayerInputComponent->BindAction("Click" , IE_Pressed , this , &ACraftingStarCharacter::MouseLeftPressed);
 	PlayerInputComponent->BindAction("Click" , IE_Released , this , &ACraftingStarCharacter::MouseLeftReleased);
+
+	// mouse wheel button
+	PlayerInputComponent->BindAction("WheelUp" , IE_Pressed , this , &ACraftingStarCharacter::MouseWheelUp);
+	PlayerInputComponent->BindAction("WheelDown" , IE_Pressed , this , &ACraftingStarCharacter::MouseWheelDown);
 }
 
 
@@ -422,13 +426,6 @@ void ACraftingStarCharacter::Tick(float DeltaTime)
 {
 	//          Ӹ          ɷ              ʿ        Ʈ
 	Super::Tick(DeltaTime);
-	/*
-	if ( isKnockedDown ) {
-		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Dead"));
-	}
-	else {
-		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Alive"));
-	}*/
 
 	if ( nowAbility != EPlayerAbility::ENone ) {
 		if ( WandReadySign ) {
@@ -439,16 +436,12 @@ void ACraftingStarCharacter::Tick(float DeltaTime)
 				}
 			}
 			else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
-				// Check Floor
-				
-
 				// Activate Ability
 				if ( KeepAbility ) {
 					Telekinesis();
+					// Check SelectedTarget and Floor
 					if ( selectedTarget && selectedTarget == CheckFloor() ) {
 						MouseLeftReleased();
-
-						GEngine->AddOnScreenDebugMessage(-1 , 3 , FColor::Red , FString::Printf(TEXT("sdf")));
 					}
 				}
 			}
@@ -972,8 +965,7 @@ void ACraftingStarCharacter::Telekinesis() {
 		if ( selectedTarget == NULL && Cast<ATelekinesisInteractableObject>(Hit.GetComponent()->GetOwner()) )
 		{
 			teleLaserDistance = Hit.Distance;
-			teleComponentDistance = Hit.Distance;
-			//teleForce = 5000.0f;
+
 			// Grab selectedTarget Component
 			switch ( HasAuthority() ) {
 			case true:
@@ -1011,22 +1003,6 @@ void ACraftingStarCharacter::Telekinesis() {
 				switch ( HasAuthority() ) {
 				case true:
 					PhysicsHandle->SetTargetLocation(End);
-					teleComponentDistance = ( End - selectedTarget->GetComponentLocation() ).Size();
-					if ( teleComponentDistance <= 100 ) {
-						//teleForce = 0;
-						//selectedTarget->GetOwner()->GetRootComponent()->ComponentVelocity = FVector(0 , 0 , 0);
-						//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("selected object distance: %f") , teleComponentDistance));
-					}
-					else {
-						//teleForce = 3000.0f;
-						//selectedTarget->GetOwner()->GetRootComponent()->ComponentVelocity = UKismetMathLibrary::GetDirectionUnitVector(selectedTarget->GetComponentLocation() , End);
-						//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("selected object distance: %f") , teleComponentDistance));
-					}
-					
-					//selectedTarget->MoveComponent(UKismetMathLibrary::GetDirectionUnitVector(selectedTarget->GetComponentLocation() , End) * selectedTarget->GetMass() * teleForce , selectedTarget->GetComponentRotation() , true);
-					
-					//UKismetSystemLibrary::MoveComponentTo(selectedTarget , End , selectedTarget->GetRelativeRotation(), false, false, 0.1f, true, EMoveComponentAction::Type::Move , LatentInfo);
-					//selectedTarget->AddForce(UKismetMathLibrary::GetDirectionUnitVector(selectedTarget->GetComponentLocation() , End) * selectedTarget->GetMass() * teleForce);
 					break;
 				case false:
 					ServerTeleObjLoc(End);
@@ -1095,11 +1071,7 @@ void ACraftingStarCharacter::ServerTeleObjLoc_Implementation(FVector End) {
 	MulticastTeleObjLoc(End);
 }
 void ACraftingStarCharacter::MulticastTeleObjLoc_Implementation(FVector End) {
-	//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("teleObj RPC")));
-	//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("x : %f  y : %f  z : %f ") , End.X , End.Y , End.Z));
-	
 	PhysicsHandle->SetTargetLocation(End);
-	//selectedTarget->AddForce(UKismetMathLibrary::GetDirectionUnitVector(selectedTarget->GetComponentLocation(), End) * teleForce * selectedTarget->GetMass());
 }
 
 // Ability Animaition Replicate
@@ -1210,11 +1182,8 @@ void ACraftingStarCharacter::ActivateAbility() {
 			CameraBoom->bUsePawnControlRotation = false; // Does not rotate the arm based on the controller
 		}
 		else if ( nowAbility == EPlayerAbility::ETelekinesis ) {
-			//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , TEXT("Tele"));
 			if ( !abilityReadyStatus ) {
 				teleLaserDistance = 750;
-				teleComponentDistance = 0;
-				//teleForce = 5000.0f;
 
 				abilityReadyStatus = true;
 
@@ -1362,7 +1331,6 @@ void ACraftingStarCharacter::MouseLeftReleased() {
 								}
 							}
 							teleLaserDistance = 750;
-							teleComponentDistance = 0;
 
 							// Set CustomDepth Stencil Value to chagne Color
 							Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ActorMesh->SetCustomDepthStencilValue(0);
@@ -1390,6 +1358,55 @@ void ACraftingStarCharacter::MouseLeftReleased() {
 	}
 }
 
+// Mouse Wheel Up
+void ACraftingStarCharacter::MouseWheelUp() {
+	if ( nowAbility == EPlayerAbility::ETelekinesis ) {
+		if ( KeepAbility && PhysicsHandle->GrabbedComponent ) {
+			if ( teleLaserDistance <= 900 && teleLaserDistance >= 0 ) {
+				switch ( HasAuthority() ) {
+				case true:
+					MulticastSetTeleLaserDistance(teleLaserDistance + teleWheelValue);
+					break;
+				case false:
+					ServerSetTeleLaserDistance(teleLaserDistance + teleWheelValue);
+					break;
+				}
+				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("Mouse Wheel Up: %f") , teleLaserDistance));
+			}
+		}
+	}
+}
+
+// Mouse Wheel Down
+void ACraftingStarCharacter::MouseWheelDown() {
+	if ( nowAbility == EPlayerAbility::ETelekinesis ) {
+		if ( KeepAbility && PhysicsHandle->GrabbedComponent ) {
+			if ( teleLaserDistance <= 1000 && teleLaserDistance >= 100 ) {
+				switch ( HasAuthority() ) {
+				case true:
+					MulticastSetTeleLaserDistance(teleLaserDistance - teleWheelValue);
+					break;
+				case false:
+					ServerSetTeleLaserDistance(teleLaserDistance - teleWheelValue);
+					break;
+				}
+				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("Mouse Wheel Down: %f") , teleLaserDistance));
+			}
+		}
+	}
+}
+
+// Set and Replicate teleLaserDistance
+bool ACraftingStarCharacter::ServerSetTeleLaserDistance_Validate(float newDistance) {
+	return true;
+}
+void ACraftingStarCharacter::ServerSetTeleLaserDistance_Implementation(float newDistance) {
+	MulticastSetTeleLaserDistance(newDistance);
+}
+void ACraftingStarCharacter::MulticastSetTeleLaserDistance_Implementation(float newDistance) {
+	teleLaserDistance = newDistance;
+}
+
 // Release Component on Server
 bool ACraftingStarCharacter::ServerReleaseComponent_Validate() {
 	return true;
@@ -1412,7 +1429,6 @@ void ACraftingStarCharacter::MulticastReleaseComponent_Implementation() {
 	}
 
 	teleLaserDistance = 750;
-	teleComponentDistance = 0;
 
 	// Set CustomDepth Stencil Value to chagne Color
 	Cast<ATelekinesisInteractableObject>(selectedTarget->GetOwner())->ActorMesh->SetCustomDepthStencilValue(0);
