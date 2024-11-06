@@ -271,6 +271,18 @@ protected:
 
 	// Wand Skill Animation: Blast, Telekinesis
 
+	UPROPERTY(Replicated , VisibleAnywhere , BlueprintReadOnly , Category = "WandAbility")
+	FHitResult LaserHit;
+	UPROPERTY(Replicated , VisibleAnywhere , BlueprintReadOnly , Category = "WandAbility")
+	FVector LaserStart;
+	UPROPERTY(Replicated , VisibleAnywhere , BlueprintReadOnly , Category = "WandAbility")
+	FVector LaserEnd;
+
+	UFUNCTION(Server , Reliable , WithValidation , Category = "WandAbility")
+	void ServerSetLaserPoints(FHitResult Hit, FVector Start, FVector End);
+	UFUNCTION(NetMulticast , Unreliable , Category = "WandAbility")
+	void MulticastSetLaserPoints(FHitResult Hit , FVector Start , FVector End);
+
 	// Telekinesis Controllable Distance
 	UPROPERTY(Replicated , VisibleAnywhere , BlueprintReadOnly , Category = "Telekinesis")
 	float teleLaserDistance = 750.0f;
