@@ -257,6 +257,9 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 	static ConstructorHelpers::FObjectFinder<USoundWave> Resource_SW_Telekinesis(TEXT("SoundWave'/Game/Assets/Sound/telekinesis.telekinesis'"));
 	SW_Telekinesis = Resource_SW_Telekinesis.Object;
 
+	static ConstructorHelpers::FObjectFinder<USoundWave> Resource_SW_Revival(TEXT("SoundWave'/Game/SFX/heal.heal'"));
+	SW_Revival = Resource_SW_Revival.Object;
+
 	// Create a camera boom (pulls in towards the player if there is a collis`ion)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
@@ -301,6 +304,9 @@ void ACraftingStarCharacter::GetLifetimeReplicatedProps(TArray< FLifetimePropert
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(ACraftingStarCharacter , OffsetAxis);
 	DOREPLIFETIME(ACraftingStarCharacter , nowAbility);
+	DOREPLIFETIME(ACraftingStarCharacter , LaserHit);
+	DOREPLIFETIME(ACraftingStarCharacter , LaserStart);
+	DOREPLIFETIME(ACraftingStarCharacter , LaserEnd);
 	DOREPLIFETIME(ACraftingStarCharacter , KeepAbility);
 	DOREPLIFETIME(ACraftingStarCharacter , isKnockedDown);
 	DOREPLIFETIME(ACraftingStarCharacter , teleLaserDistance);
@@ -893,6 +899,19 @@ void ACraftingStarCharacter::MulticastStopMontage_Implementation(UAnimMontage* a
 	}
 }
 
+// Replicate: Laser Points
+bool ACraftingStarCharacter::ServerSetLaserPoints_Validate(FHitResult Hit , FVector Start , FVector End) {
+	return true;
+}
+void ACraftingStarCharacter::ServerSetLaserPoints_Implementation(FHitResult Hit , FVector Start , FVector End) {
+	MulticastSetLaserPoints(Hit, Start, End);
+}
+void ACraftingStarCharacter::MulticastSetLaserPoints_Implementation(FHitResult Hit , FVector Start , FVector End) {
+	LaserHit = Hit;
+	LaserStart = Start;
+	LaserEnd = End;
+}
+
 // Magic Wand Line Trace for Ability
 bool ACraftingStarCharacter::WandLineTrace(float distance) {
 
@@ -920,6 +939,15 @@ bool ACraftingStarCharacter::WandLineTrace(float distance) {
 	GetWorld()->LineTraceSingleByChannel(Hit , Start , End , Channel , QueryParams);
 	// Visualize LineTrace
 	//DrawDebugLine(GetWorld() , Start , End , FColor::Green);
+
+	switch ( HasAuthority() ) {
+	case true :
+		ServerSetLaserPoints(Hit , Start , End);
+		break;
+	case false :
+		MulticastSetLaserPoints(Hit , Start , End);
+		break;
+	}
 
 	Comp_LaserNiagara->SetLaser(Hit , End);
 
@@ -950,6 +978,15 @@ void ACraftingStarCharacter::Telekinesis() {
 
 	/* Execute LineTrace */
 	GetWorld()->LineTraceSingleByChannel(Hit , Start , End , Channel , QueryParams);
+
+	switch ( HasAuthority() ) {
+	case true:
+		ServerSetLaserPoints(Hit , Start , End);
+		break;
+	case false:
+		MulticastSetLaserPoints(Hit , Start , End);
+		break;
+	}
 
 	// Visualize LineTrace
 	DrawDebugLine(GetWorld() , Start , End , FColor::Green);

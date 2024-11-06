@@ -237,7 +237,7 @@ protected:
 	void MouseWheelUp();
 	void MouseWheelDown();
 
-	// Sounds
+	// Ability Sounds
 	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Sounds , meta = ( AllowPrivateAccess = "true" ))
 	class USoundWave* SW_EmissionDark;
 	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Sounds , meta = ( AllowPrivateAccess = "true" ))
@@ -245,6 +245,10 @@ protected:
 
 	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Sounds , meta = ( AllowPrivateAccess = "true" ))
 	class USoundWave* SW_Telekinesis;
+
+	// Revival Sound
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Sounds , meta = ( AllowPrivateAccess = "true" ))
+	class USoundWave* SW_Revival;
 
 	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Sounds , meta = ( AllowPrivateAccess = "true" ))
 	class UAudioComponent* audioComp;
@@ -266,6 +270,18 @@ protected:
 	void ActivateAbility2();
 
 	// Wand Skill Animation: Blast, Telekinesis
+
+	UPROPERTY(Replicated , VisibleAnywhere , BlueprintReadOnly , Category = "WandAbility")
+	FHitResult LaserHit;
+	UPROPERTY(Replicated , VisibleAnywhere , BlueprintReadOnly , Category = "WandAbility")
+	FVector LaserStart;
+	UPROPERTY(Replicated , VisibleAnywhere , BlueprintReadOnly , Category = "WandAbility")
+	FVector LaserEnd;
+
+	UFUNCTION(Server , Reliable , WithValidation , Category = "WandAbility")
+	void ServerSetLaserPoints(FHitResult Hit, FVector Start, FVector End);
+	UFUNCTION(NetMulticast , Unreliable , Category = "WandAbility")
+	void MulticastSetLaserPoints(FHitResult Hit , FVector Start , FVector End);
 
 	// Telekinesis Controllable Distance
 	UPROPERTY(Replicated , VisibleAnywhere , BlueprintReadOnly , Category = "Telekinesis")

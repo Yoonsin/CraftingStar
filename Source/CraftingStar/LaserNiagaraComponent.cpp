@@ -85,22 +85,22 @@ void ULaserNiagaraComponent::SetLaser(FHitResult Hit , FVector End) {
 
 	if ( owner->nowAbility == EPlayerAbility::EBlast ) {
 		if ( Cast<ACraftingStarPS>(owner->GetPlayerState())->PlayerData.Mode == EPlayerRole::EDark ) {
-			ServerLaser(LaserImpact , false , Hit.bBlockingHit , Hit.Location , FLinearColor::Black);
+			ServerLaser(LaserImpact , false , Hit.bBlockingHit , End , FLinearColor::Black);
 		}
 		else if ( Cast<ACraftingStarPS>(owner->GetPlayerState())->PlayerData.Mode == EPlayerRole::ELight ) {
-			ServerLaser(LaserImpact , false , Hit.bBlockingHit , Hit.Location , FLinearColor::White);
+			ServerLaser(LaserImpact , false , Hit.bBlockingHit , End , FLinearColor::White);
 		}
 	}
 	else if ( owner->nowAbility == EPlayerAbility::ETelekinesis ) {
 		if ( owner->selectedTarget ) {
 			if ( Hit.Component == owner->selectedTarget ) {
-				ServerLaser(LaserImpact , false , true , Hit.Location , FLinearColor(0.66 , 1 , 0 , 1));
+				ServerLaser(LaserImpact , false , true , End , FLinearColor(0.66 , 1 , 0 , 1));
 			} else {
-				ServerLaser(LaserImpact , false , false , Hit.Location , FLinearColor(0.66 , 1 , 0 , 1));
+				ServerLaser(LaserImpact , false , false , End , FLinearColor(0.66 , 1 , 0 , 1));
 			}
 		}
 		else {
-			ServerLaser(LaserImpact , false , Hit.bBlockingHit , Hit.Location , FLinearColor(0.66 , 1 , 0 , 1));
+			ServerLaser(LaserImpact , false , Hit.bBlockingHit , End , FLinearColor(0.66 , 1 , 0 , 1));
 		}
 	}
 }
