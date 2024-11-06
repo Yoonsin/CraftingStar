@@ -73,19 +73,21 @@ UENUM(BlueprintType)
 enum class EQuestID : uint8
 {
 	EMegetonNotMeet UMETA(DisplayName = "MegetonNotMeet") ,
-	EMegetonMeet UMETA(DisplayName = "MegetonMeet"),
+	EMegetonMeet UMETA(DisplayName = "MegetonMeet") ,
 	EMegetonGetKey UMETA(DisplayName = "MegetonGetKey") ,
 	EMegetonClear UMETA(DisplayName = "MegetonClear") ,
-	EMegetonTransition UMETA(DisplayName = "MegetonTransition"),
-	EIncendieStartMovie UMETA(DisplayName = "IncendieStartMovie"),
+	EMegetonTransition UMETA(DisplayName = "MegetonTransition") ,
+	EIncendieStartMovie UMETA(DisplayName = "IncendieStartMovie") ,
 	EIncendiePengdoNotMeet UMETA(DisplayName = "IncendiePengdoNotMeet") ,
 	EIncendiePengdoMeet UMETA(DisplayName = "IncendiePengdoMeet") ,
-	EIncendieClacierNotMeetAndPopoBerserk UMETA(DisplayName = "IncendieClacierNotMeetAndPopoBerserk"),
-	EIncendieClacierMeet UMETA(DisplayName = "IncendieClacierMeet"),
-	EIncendieRescueFrameGuardian UMETA(DisplayName = "IncendieRescueFrameGuardian"),
+	EIncendieClacierNotMeetAndPopoBerserk UMETA(DisplayName = "IncendieClacierNotMeetAndPopoBerserk") ,
+	EIncendieClacierMeet UMETA(DisplayName = "IncendieClacierMeet") ,
+	EIncendieRescueFrameGuardian UMETA(DisplayName = "IncendieRescueFrameGuardian") ,
 	EIncendieExploreForest UMETA(DisplayName = "IncendieExploreForest") ,
 	EIncendieArriveTheEndOfForest UMETA(DisplayName = "IncendieArriveTheEndOfForest") ,
 	EIncendiePuzzleClear UMETA(DisplayName = "IncendiePuzzleClear") ,
 	EIncendieRescueIncendie UMETA(DisplayName = "IncendieRescueIncendie") ,
+	EBossInStart UMETA(DisplayName = "BossInStart") ,
+	EBossInBattle UMETA(DisplayName = "BossInBattle") ,
+	EBossInDefeated UMETA(DisplayName = "BossDefeated")
 };
-
