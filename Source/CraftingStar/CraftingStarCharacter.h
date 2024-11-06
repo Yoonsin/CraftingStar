@@ -237,7 +237,7 @@ protected:
 	void MouseWheelUp();
 	void MouseWheelDown();
 
-	// Sounds
+	// Ability Sounds
 	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Sounds , meta = ( AllowPrivateAccess = "true" ))
 	class USoundWave* SW_EmissionDark;
 	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Sounds , meta = ( AllowPrivateAccess = "true" ))
@@ -245,6 +245,10 @@ protected:
 
 	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Sounds , meta = ( AllowPrivateAccess = "true" ))
 	class USoundWave* SW_Telekinesis;
+
+	// Revival Sound
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Sounds , meta = ( AllowPrivateAccess = "true" ))
+	class USoundWave* SW_Revival;
 
 	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Sounds , meta = ( AllowPrivateAccess = "true" ))
 	class UAudioComponent* audioComp;

@@ -257,6 +257,9 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 	static ConstructorHelpers::FObjectFinder<USoundWave> Resource_SW_Telekinesis(TEXT("SoundWave'/Game/Assets/Sound/telekinesis.telekinesis'"));
 	SW_Telekinesis = Resource_SW_Telekinesis.Object;
 
+	static ConstructorHelpers::FObjectFinder<USoundWave> Resource_SW_Revival(TEXT("SoundWave'/Game/SFX/heal.heal'"));
+	SW_Revival = Resource_SW_Revival.Object;
+
 	// Create a camera boom (pulls in towards the player if there is a collis`ion)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
