@@ -13,15 +13,22 @@ ULaserNiagaraComponent::ULaserNiagaraComponent()
 
 	// Ability: Laser Niagara System
 	LaserBody = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Laser Body"));
-	ConstructorHelpers::FObjectFinder<UNiagaraSystem> LaserBodyAsset(TEXT("NiagaraSystem'/Game/Assets/Effects/Laser/NS_Laser.NS_Laser'"));
+	//ConstructorHelpers::FObjectFinder<UNiagaraSystem> LaserBodyAsset(TEXT("NiagaraSystem'/Game/Assets/Effects/Laser/NS_Laser.NS_Laser'"));
+	ConstructorHelpers::FObjectFinder<UNiagaraSystem> LaserBodyAsset(TEXT("NiagaraSystem'/Game/Assets/Effects/Laser/StylizedToonBeam/NS_Beam_Dark.NS_Beam_Dark'"));
 	if ( LaserBodyAsset.Succeeded() ) {
 		LaserBody->SetAsset(LaserBodyAsset.Object);
 		LaserBody->SetupAttachment(this);
-		DarkLaser = LaserBodyAsset.Object;
+		BaseLaser = LaserBodyAsset.Object;
+	}
+	// Dark Niagara
+	ConstructorHelpers::FObjectFinder<UNiagaraSystem> LaserBodyAsset_Dark(TEXT("NiagaraSystem'/Game/Assets/Effects/Laser/StylizedToonBeam/NS_Beam_Dark.NS_Beam_Dark'"));
+	if ( LaserBodyAsset_Dark.Succeeded() ) {
+		DarkLaser = LaserBodyAsset_Dark.Object;
 	}
 
-	//Light Materials Append
-	ConstructorHelpers::FObjectFinder<UNiagaraSystem> LaserBodyAsset_Light(TEXT("NiagaraSystem'/Game/Assets/Effects/Laser/NS_Laser_Light.NS_Laser_Light'"));
+	// Light Niagara
+	//ConstructorHelpers::FObjectFinder<UNiagaraSystem> LaserBodyAsset_Light(TEXT("NiagaraSystem'/Game/Assets/Effects/Laser/NS_Laser_Light.NS_Laser_Light'"));
+	ConstructorHelpers::FObjectFinder<UNiagaraSystem> LaserBodyAsset_Light(TEXT("NiagaraSystem'/Game/Assets/Effects/Laser/StylizedToonBeam/NS_Beam_Light.NS_Beam_Light'"));
 	if ( LaserBodyAsset.Succeeded() ) {
 		LightLaser = LaserBodyAsset_Light.Object;
 	}
@@ -30,15 +37,22 @@ ULaserNiagaraComponent::ULaserNiagaraComponent()
 	LaserBody->SetIsReplicated(true);
 
 	LaserImpact = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Laser Impact"));
-	ConstructorHelpers::FObjectFinder<UNiagaraSystem> LaserImpactAsset(TEXT("NiagaraSystem'/Game/Assets/Effects/Laser/NS_LaserImpact.NS_LaserImpact'"));
+	//ConstructorHelpers::FObjectFinder<UNiagaraSystem> LaserImpactAsset(TEXT("NiagaraSystem'/Game/Assets/Effects/Laser/NS_LaserImpact.NS_LaserImpact'"));
+	ConstructorHelpers::FObjectFinder<UNiagaraSystem> LaserImpactAsset(TEXT("NiagaraSystem'/Game/Assets/Effects/Laser/StylizedToonBeam/NS_Hit_Dark.NS_Hit_Dark'"));
 	if ( LaserBodyAsset.Succeeded() ) {
-		DarkLaserImpact = LaserImpactAsset.Object;
 		LaserImpact->SetAsset(LaserImpactAsset.Object);
 		LaserImpact->SetupAttachment(this);
+		BaseLaserImpact = LaserImpactAsset.Object;
+	}
+	
+	ConstructorHelpers::FObjectFinder<UNiagaraSystem> LaserImpactAsset_Dark(TEXT("NiagaraSystem'/Game/Assets/Effects/Laser/StylizedToonBeam/NS_Hit_Dark.NS_Hit_Dark'"));
+	if ( LaserImpactAsset_Dark.Succeeded() ) {
+		DarkLaserImpact = LaserImpactAsset_Dark.Object;
 	}
 
 	//Light Materials Append
-	ConstructorHelpers::FObjectFinder<UNiagaraSystem> LaserImpactAsset_Light(TEXT("NiagaraSystem'/Game/Assets/Effects/Laser/NS_LaserImpact_Light.NS_LaserImpact_Light'"));
+	//ConstructorHelpers::FObjectFinder<UNiagaraSystem> LaserImpactAsset_Light(TEXT("NiagaraSystem'/Game/Assets/Effects/Laser/NS_LaserImpact_Light.NS_LaserImpact_Light'"));
+	ConstructorHelpers::FObjectFinder<UNiagaraSystem> LaserImpactAsset_Light(TEXT("NiagaraSystem'/Game/Assets/Effects/Laser/StylizedToonBeam/NS_Hit_Light.NS_Hit_Light'"));
 	if ( LaserBodyAsset.Succeeded() ) {
 		LightLaserImpact = LaserImpactAsset_Light.Object;
 	}
@@ -166,7 +180,7 @@ void ULaserNiagaraComponent::MulticastLaser_Implementation(UNiagaraComponent* Ni
 
 	if ( isBody ) {
 		// Set End point
-		NiagaraComp->SetVectorParameter(FName(TEXT("LaserEnd")) , end);
+		NiagaraComp->SetVectorParameter(FName(TEXT("User.beamEnd")) , end);
 		// Show Laser
 		//GEngine->AddOnScreenDebugMessage(-1 , 3 , FColor::Green , FString::Printf(TEXT("Show Laser")));
 		NiagaraComp->SetVisibility(true);

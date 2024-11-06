@@ -19,8 +19,10 @@ class CRAFTINGSTAR_API ULaserNiagaraComponent : public UNiagaraComponent
 private :
 	class ACraftingStarCharacter* owner;
 	void SetOwner();
+	class UNiagaraSystem* BaseLaser;
 	class UNiagaraSystem* LightLaser;
 	class UNiagaraSystem* DarkLaser;
+	class UNiagaraSystem* BaseLaserImpact;
 	class UNiagaraSystem* LightLaserImpact;
 	class UNiagaraSystem* DarkLaserImpact;
 
