@@ -319,8 +319,9 @@ void ACraftingStarCharacter::BeginPlay()
 
 
 	AController* controller = GetController();
-
+	
 	if ( UUtilityFunction::IsHost (controller)) {
+		GetWorld()->GetGameViewport()->RemoveAllViewportWidgets();
 		if ( LoadingWidgetRef == nullptr   && Cast<ACraftingStarGS>(GetWorld()->GetGameState())->isStartFlag == false)
 		{
 			//LoadingWB
@@ -337,8 +338,7 @@ void ACraftingStarCharacter::BeginPlay()
 		LoadSaveData(true);
 	}
 	else if(controller != nullptr &&!controller->HasAuthority() && controller->IsLocalPlayerController()) {
-		
-		
+		GetWorld()->GetGameViewport()->RemoveAllViewportWidgets();
 		if ( LoadingWidgetRef == nullptr  && Cast<ACraftingStarGS>(GetWorld()->GetGameState())->isStartFlag == false )
 		{
 			//LoadingWB
