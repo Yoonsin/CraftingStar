@@ -74,7 +74,7 @@ bool UCraftingStarGameInstance::SetDebugFile()
 
 		debugSaveGame->ProgressData.NowMapName = EMapName::EBossMap;
 		debugSaveGame->ProgressData.ProgressLevel = 0;
-		debugSaveGame->ProgressData.questID = EQuestID::EMegetonClear; //추후 보스 진행까지 적용
+		debugSaveGame->ProgressData.questID = EQuestID::EBossInStart; //추후 보스 진행까지 적용
 		debugSaveGame->ProgressData.HostPlayerPos = MapSpawnDict[EMapName::EBossMap].HostPlayerPos;
 		debugSaveGame->ProgressData.GuestPlayerPos = MapSpawnDict[EMapName::EBossMap].GuestPlayerPos;
 	}
