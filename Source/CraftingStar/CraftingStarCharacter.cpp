@@ -30,6 +30,7 @@
 #include "Net/UnrealNetwork.h"
 #include "UtilityFunction.h"
 #include "LaserNiagaraComponent.h"
+#include "Ability/LaserBeamComponent.h"
 #include "TelekinesisInteractableObject.h"
 #include "Ability/AssimilationComponent.h"
 #include "Ability/WeaponComponent.h"
@@ -294,6 +295,10 @@ ACraftingStarCharacter::ACraftingStarCharacter()
 	// Ability
 	KeepAbility = false;
 	WandReadySign = false;
+
+	// Test
+	LaserComponent = CreateDefaultSubobject<ULaserBeamComponent>(TEXT("LaserComponent"));
+	LaserComponent->SetupAttachment(SpawnLocSource);
 }
 
 void ACraftingStarCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
@@ -419,6 +424,9 @@ void ACraftingStarCharacter::SetupPlayerInputComponent(class UInputComponent* Pl
 	// mouse wheel button
 	PlayerInputComponent->BindAction("WheelUp" , IE_Pressed , this , &ACraftingStarCharacter::MouseWheelUp);
 	PlayerInputComponent->BindAction("WheelDown" , IE_Pressed , this , &ACraftingStarCharacter::MouseWheelDown);
+
+	// Test
+	PlayerInputComponent->BindAction("Test" , IE_Pressed , this , &ACraftingStarCharacter::Test);
 }
 
 
@@ -445,6 +453,15 @@ void ACraftingStarCharacter::Tick(float DeltaTime)
 					}
 				}
 			}
+		}
+	}
+	else {
+		if ( KeepAbility ) {
+			GEngine->AddOnScreenDebugMessage(-1 , 3 , FColor::Red , FString::Printf(TEXT("test: active")));
+			LaserComponent->SetLaser();
+		}
+		else {
+			GEngine->AddOnScreenDebugMessage(-1 , 3 , FColor::Red , FString::Printf(TEXT("test: no")));
 		}
 	}
 
@@ -1393,6 +1410,13 @@ void ACraftingStarCharacter::MouseWheelDown() {
 				GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("Mouse Wheel Down: %f") , teleLaserDistance));
 			}
 		}
+	}
+}
+
+// Test
+void ACraftingStarCharacter::Test() {
+	if ( LaserComponent ) {
+		KeepAbility = true;
 	}
 }
 

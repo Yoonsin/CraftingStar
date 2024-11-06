@@ -237,6 +237,8 @@ protected:
 	void MouseWheelUp();
 	void MouseWheelDown();
 
+	void Test();
+
 	// Sounds
 	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Sounds , meta = ( AllowPrivateAccess = "true" ))
 	class USoundWave* SW_EmissionDark;
@@ -308,8 +310,6 @@ protected:
 public:
 	void DeactivateAbility();
 
-
-public:
 	//레이저가 닿은 부분에서 호출하게 한다.
 	void LightAct(AActor* target , FVector Location);
 	UFUNCTION(Server, Reliable)
@@ -337,10 +337,18 @@ public:
 	UPROPERTY(EditAnywhere , Category = Bow)
 	FVector ArrowOffset;
 
+	// Set LineTrace Start Loc
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	class USceneComponent* SpawnLocSource;
+
 protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	// End of APawn interface
+
+	// Test
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly)
+	class ULaserBeamComponent* LaserComponent;
 
 public:
 	/** Returns CameraBoom subobject **/
@@ -408,26 +416,26 @@ public:
 	UFUNCTION(Server , Reliable , Category = "UI", BlueprintCallable)
 		void ServerStopLoadingWidget();
 
-	UPROPERTY(Replicated, VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	UPROPERTY(Replicated, VisibleAnywhere , BlueprintReadOnly , meta = ( AllowPrivateAccess = "true" ))
 	bool KeepAbility;
-	UFUNCTION(Server , Reliable , WithValidation , Category = "Ability")
+	UFUNCTION(Server , Reliable , WithValidation)
 	void ServerSetKeepAbility(bool isKeeping);
-	UFUNCTION(NetMulticast , Unreliable , Category = "Ability")
+	UFUNCTION(NetMulticast , Unreliable)
 	void MulticastSetKeepAbility(bool isKeeping);
 
 	bool canUseAbility;
 
 private:
 	// Character Mesh
-	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = CharMesh , meta = ( AllowPrivateAccess = "true" ))
 	class UStaticMeshComponent* HeadMesh;
-	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = CharMesh , meta = ( AllowPrivateAccess = "true" ))
 	class UStaticMeshComponent* HairAndHatMesh;
-	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = CharMesh , meta = ( AllowPrivateAccess = "true" ))
 	class UStaticMeshComponent* EyesMesh;
-	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = CharMesh , meta = ( AllowPrivateAccess = "true" ))
 	class UStaticMeshComponent* MouthMesh;
-	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = CharMesh , meta = ( AllowPrivateAccess = "true" ))
 	class USkeletalMeshComponent* CloakMesh;
 
 	// Revival Interactive Range
@@ -435,61 +443,57 @@ private:
 	class USphereComponent* RevivalInteractiveRange;
 
 	// Mesh: Weapons & Skills
-	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = Weapon , meta = ( AllowPrivateAccess = "true" ))
 	class UWeaponComponent* Weapon_rMesh;
-	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = Weapon , meta = ( AllowPrivateAccess = "true" ))
 	class UBowComponent* Bow_lMesh;
 	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
 	class ULaserNiagaraComponent* Comp_LaserNiagara;
 
-	// Set LineTrace Start Loc
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Ability, meta = (AllowPrivateAccess = "true"))
-	class USceneComponent* SpawnLocSource;
-
 	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
 	class UAssimilationComponent* AssimilationComponent;
 
-	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = CharMesh , meta = ( AllowPrivateAccess = "true" ))
 	class USkeletalMesh* BodyMesh_Light;
-	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = CharMesh , meta = ( AllowPrivateAccess = "true" ))
 	class UStaticMesh* HeadMesh_Light;
-	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = CharMesh , meta = ( AllowPrivateAccess = "true" ))
 	class UStaticMesh* HairAndHatMesh_Light;
-	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = CharMesh , meta = ( AllowPrivateAccess = "true" ))
 	class UStaticMesh* EyesMesh_Light;
-	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = CharMesh , meta = ( AllowPrivateAccess = "true" ))
 	class UStaticMesh* MouthMesh_Light;
-	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = CharMesh , meta = ( AllowPrivateAccess = "true" ))
 	class USkeletalMesh* CloakMesh_Light;
-	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = CharMesh , meta = ( AllowPrivateAccess = "true" ))
 	class UMaterialInterface* BodyMat_Light;
-	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = CharMesh , meta = ( AllowPrivateAccess = "true" ))
 	class UMaterialInterface* HairMat_Light;
-	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = CharMesh , meta = ( AllowPrivateAccess = "true" ))
 	class UMaterialInterface* EyesMat_Light;
-	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = CharMesh , meta = ( AllowPrivateAccess = "true" ))
 	class UMaterialInterface* CloakMat_Light;
 
 
-	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = CharMesh , meta = ( AllowPrivateAccess = "true" ))
 	class USkeletalMesh* BodyMesh_Dark;
-	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = CharMesh , meta = ( AllowPrivateAccess = "true" ))
 	class UStaticMesh* HeadMesh_Dark;
-	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = CharMesh , meta = ( AllowPrivateAccess = "true" ))
 	class UStaticMesh* HairAndHatMesh_Dark;
-	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = CharMesh , meta = ( AllowPrivateAccess = "true" ))
 	class UStaticMesh* EyesMesh_Dark;
-	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = CharMesh , meta = ( AllowPrivateAccess = "true" ))
 	class UStaticMesh* MouthMesh_Dark;
-	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = CharMesh , meta = ( AllowPrivateAccess = "true" ))
 	class USkeletalMesh* CloakMesh_Dark;
-	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = CharMesh , meta = ( AllowPrivateAccess = "true" ))
 	class UMaterialInterface* BodyMat_Dark;
-	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = CharMesh , meta = ( AllowPrivateAccess = "true" ))
 	class UMaterialInterface* HairMat_Dark;
-	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = CharMesh , meta = ( AllowPrivateAccess = "true" ))
 	class UMaterialInterface* EyesMat_Dark;
-	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Ability , meta = ( AllowPrivateAccess = "true" ))
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = CharMesh , meta = ( AllowPrivateAccess = "true" ))
 	class UMaterialInterface* CloakMat_Dark;
 
 	int idx = 0;
