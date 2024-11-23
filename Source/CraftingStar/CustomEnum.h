@@ -87,6 +87,7 @@ enum class EQuestID : uint8
 	EIncendieArriveTheEndOfForest UMETA(DisplayName = "IncendieArriveTheEndOfForest") ,
 	EIncendiePuzzleClear UMETA(DisplayName = "IncendiePuzzleClear") ,
 	EIncendieRescueIncendie UMETA(DisplayName = "IncendieRescueIncendie") ,
+	EIncendieTransition UMETA(DisplayName = "IncendieTransition") ,
 	EBossInStart UMETA(DisplayName = "BossInStart") ,
 	EBossInBattle UMETA(DisplayName = "BossInBattle") ,
 	EBossInDefeated UMETA(DisplayName = "BossDefeated")

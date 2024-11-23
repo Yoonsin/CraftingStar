@@ -121,7 +121,7 @@ bool UCraftingStarGameInstance::SaveFile( int targetIdx )
 			//GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("Host transform %f / %f / %f") , pos.X , pos.Y , pos.Z));
 			savingFile->HostData = playerState->PlayerData;
 
-			if ( savingFile->ProgressData.questID == EQuestID::EMegetonTransition ) continue;
+			if ( savingFile->ProgressData.questID == EQuestID::EMegetonTransition || savingFile->ProgressData.questID == EQuestID::EIncendieTransition) continue;
 
 			FTransform PlayerStartPos = GetClosestDistTransform(character->GetTransform().GetLocation());
 
@@ -142,7 +142,6 @@ bool UCraftingStarGameInstance::SaveFile( int targetIdx )
 	}
 
 
-
 	FString creatingFileName = "CraftingStarGame";
 	creatingFileName.Append(FString::FromInt(targetIdx));
 	
@@ -152,6 +151,11 @@ bool UCraftingStarGameInstance::SaveFile( int targetIdx )
 	if ( savingFile->ProgressData.questID == EQuestID::EMegetonTransition ) {
 		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("MegetonTransition ")));
 		savingFile->ProgressData.questID = EQuestID::EIncendieStartMovie;
+		nowSaveGame = savingFile;
+	}
+	else if ( savingFile->ProgressData.questID == EQuestID::EIncendieTransition ) {
+		GEngine->AddOnScreenDebugMessage(-1 , 3.0f , FColor::Green , FString::Printf(TEXT("IncendieTransition ")));
+		savingFile->ProgressData.questID = EQuestID::EBossInStart;
 		nowSaveGame = savingFile;
 	}
 
